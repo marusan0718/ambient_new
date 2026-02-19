@@ -25,38 +25,32 @@
 </head>
 
 <body class="min-h-screen text-slate-900">
-  <main class="min-h-screen flex items-center justify-center p-5 sm:p-8">
-    <div class="w-full max-w-xl">
-      <div class="rounded-[28px] border border-white/70 glass shadow-[0_20px_60px_rgba(15,23,42,0.10)] overflow-hidden">
-        <div class="px-6 sm:px-8 pt-7 pb-5">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="inline-flex items-center gap-2 rounded-full bg-white/80 border border-slate-200 px-3 py-1 text-xs text-slate-600">
-                <span id="dot" class="inline-block size-2 rounded-full bg-slate-400"></span>
-                <span id="modeText">Ready</span>
-              </div>
+  <main class="min-h-screen px-4 py-6 sm:px-8 sm:py-10">
+    <div class="mx-auto w-full max-w-5xl">
+      <header class="mb-4 sm:mb-6 flex items-center justify-between">
+        <div>
+          <p class="text-[11px] tracking-[0.22em] text-slate-500 uppercase">Ambient Interface</p>
+          <h1 class="mt-1 text-2xl sm:text-3xl font-semibold tracking-tight">Ambient Music</h1>
+        </div>
+        <div class="rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs text-slate-600">
+          次回更新 <span id="countdown" class="font-medium tabular-nums">—</span>
+        </div>
+      </header>
 
-              <h1 class="mt-3 text-2xl font-semibold tracking-tight">Ambient Music</h1>
-
-              <p class="mt-1 text-sm text-slate-600">季節、天気、風のゆらぎ。</p>
-              <p class="mt-1 text-sm text-slate-600">いまこの瞬間の自然と同期し、音楽を紡ぐ。</p>
+      <section class="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-4 sm:gap-5">
+        <article class="rounded-3xl border border-white/80 bg-white/78 backdrop-blur-md shadow-[0_14px_46px_rgba(15,23,42,0.10)] p-5 sm:p-7">
+          <div class="flex items-center justify-between gap-3">
+            <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
+              <span id="dot" class="inline-block size-2 rounded-full bg-slate-400"></span>
+              <span id="modeText">Ready</span>
             </div>
-
-            <div class="text-right">
-              <div class="text-[10px] sm:text-xs text-slate-500 whitespace-nowrap">自動更新</div>
-              <div id="countdown" class="mt-1 text-sm font-medium text-slate-700 tabular-nums">—</div>
-            </div>
+            <div id="statusChip" class="text-[11px] text-slate-500 tabular-nums">—</div>
           </div>
 
-          <button id="btnToggle"
-            class="mt-5 w-full rounded-3xl px-5 py-6 sm:py-7 transition active:scale-[0.99]
-                   bg-slate-900 text-white hover:bg-slate-800
-                   shadow-[0_18px_40px_rgba(15,23,42,0.22)]">
+          <button id="btnToggle" class="mt-5 w-full rounded-3xl px-5 py-6 sm:py-7 transition active:scale-[0.99] bg-slate-900 text-white hover:bg-slate-800 shadow-[0_18px_40px_rgba(15,23,42,0.22)]">
             <div class="flex items-center justify-center gap-4">
               <div class="grid place-items-center size-12 rounded-2xl bg-white/10 border border-white/15">
-                <svg id="iconSvg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="opacity-95">
-                  <path d="M8 5v14l11-7z"></path>
-                </svg>
+                <svg id="iconSvg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="opacity-95"><path d="M8 5v14l11-7z"></path></svg>
               </div>
               <div class="text-left">
                 <div id="btnLabel" class="text-xl font-semibold">Start</div>
@@ -65,55 +59,114 @@
             </div>
           </button>
 
-          <div class="mt-4">
-            <div class="rounded-2xl bg-white/75 border border-slate-200 px-4 py-3">
-              <div class="flex items-center justify-between">
-                <div class="text-xs text-slate-500">状態</div>
-                <div id="statusChip" class="text-[11px] text-slate-500 tabular-nums">—</div>
-              </div>
+          <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="rounded-2xl border border-slate-200 bg-white/85 px-4 py-3">
+              <div class="text-[11px] text-slate-500">再生状態</div>
               <div id="statusMain" class="mt-1 text-base font-medium text-slate-800">待機中</div>
-              <div id="statusSub" class="mt-0.5 text-[12px] text-slate-600">—</div>
+              <div id="statusSub" class="mt-0.5 text-xs text-slate-600">—</div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-white/85 px-4 py-3">
+              <div class="text-[11px] text-slate-500">環境モード</div>
+              <div id="envModeBadge" class="mt-1 text-sm font-medium text-slate-800">All Auto</div>
+              <div class="mt-0.5 text-xs text-slate-600">自動調整を優先</div>
             </div>
           </div>
-        </div>
 
-        <div class="border-t border-white/70 bg-white/55">
-          <div class="px-6 sm:px-8 py-4 flex items-center justify-between gap-3">
-            <button id="btnRefresh"
-              class="px-4 py-2 rounded-2xl text-sm bg-white/80 border border-slate-200 hover:bg-white active:scale-[0.99]">
-              更新
-            </button>
+          <div class="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <div class="rounded-xl border border-slate-200 bg-white/80 p-3"><div class="text-[10px] text-slate-500">Key</div><div id="metricKey" class="mt-1 text-sm font-medium text-slate-800">—</div></div>
+            <div class="rounded-xl border border-slate-200 bg-white/80 p-3"><div class="text-[10px] text-slate-500">Tempo</div><div id="metricTempo" class="mt-1 text-sm font-medium text-slate-800">—</div></div>
+            <div class="rounded-xl border border-slate-200 bg-white/80 p-3"><div class="text-[10px] text-slate-500">Brightness</div><div id="metricBrightness" class="mt-1 text-sm font-medium text-slate-800">—</div></div>
+            <div class="rounded-xl border border-slate-200 bg-white/80 p-3"><div class="text-[10px] text-slate-500">Sparkle Density</div><div id="metricSparkle" class="mt-1 text-sm font-medium text-slate-800">—</div></div>
+            <div class="rounded-xl border border-slate-200 bg-white/80 p-3"><div class="text-[10px] text-slate-500">Reverb Feel</div><div id="metricReverb" class="mt-1 text-sm font-medium text-slate-800">—</div></div>
+            <button id="btnRefresh" class="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 hover:bg-slate-50 active:scale-[0.99]">環境を更新</button>
+          </div>
+        </article>
 
+        <aside class="space-y-4">
+          <div class="rounded-3xl border border-white/80 bg-white/78 backdrop-blur-md shadow-[0_14px_46px_rgba(15,23,42,0.08)] p-4 sm:p-5">
             <details id="settingsDetails" class="group">
-              <summary
-                class="list-none cursor-pointer select-none px-4 py-2 rounded-2xl text-sm
-                       bg-white/80 border border-slate-200 hover:bg-white active:scale-[0.99]
-                       inline-flex items-center gap-2">
-                設定
+              <summary class="list-none cursor-pointer select-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm inline-flex items-center justify-between w-full">
+                調整をひらく
                 <span class="text-slate-400 group-open:rotate-180 transition">▾</span>
               </summary>
             </details>
+            <p class="mt-3 text-xs text-slate-600">再生を邪魔しない設計。必要な時だけ手動でそっと上書きできます。</p>
           </div>
-        </div>
-      </div>
+
+          <div class="rounded-3xl border border-white/80 bg-white/78 backdrop-blur-md shadow-[0_14px_46px_rgba(15,23,42,0.08)] p-4 sm:p-5">
+            <div class="text-xs text-slate-500">現在の自然</div>
+            <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+              <div class="rounded-xl border border-slate-200 bg-white px-3 py-2"><span class="text-slate-500">季節</span><div id="envSeason" class="font-medium text-slate-800 mt-0.5">Auto</div></div>
+              <div class="rounded-xl border border-slate-200 bg-white px-3 py-2"><span class="text-slate-500">時間</span><div id="envTime" class="font-medium text-slate-800 mt-0.5">Auto</div></div>
+              <div class="rounded-xl border border-slate-200 bg-white px-3 py-2"><span class="text-slate-500">天気</span><div id="envWeather" class="font-medium text-slate-800 mt-0.5">Auto</div></div>
+              <div class="rounded-xl border border-slate-200 bg-white px-3 py-2"><span class="text-slate-500">風 / UV</span><div id="envWindUv" class="font-medium text-slate-800 mt-0.5">—</div></div>
+            </div>
+          </div>
+        </aside>
+      </section>
     </div>
   </main>
 
-  <div id="settingsOverlay" class="fixed inset-0 z-50 hidden"><div id="settingsBackdrop" class="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px]"></div>
-    <div class="absolute inset-0 flex items-end sm:items-center justify-center p-3 sm:p-6"><div class="w-full max-w-[560px] rounded-[28px] bg-white/95 border border-slate-200 shadow-2xl overflow-hidden"><div class="px-5 sm:px-6 pt-4 pb-3 border-b border-slate-200"><div class="flex items-center justify-between gap-3"><div class="text-sm font-semibold text-slate-800">設定</div><button id="btnCloseSettings" class="px-3 py-1.5 rounded-xl text-sm bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.99]">閉じる</button></div><div class="mt-3 flex gap-2"><button data-tab="tabSettings" class="tabBtn flex-1 px-3 py-2 rounded-2xl text-sm border border-slate-200 bg-slate-900 text-white">設定</button><button data-tab="tabGuide" class="tabBtn flex-1 px-3 py-2 rounded-2xl text-sm border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">仕組み</button></div></div>
-        <div class="px-5 sm:px-6 py-4 max-h-[70vh] overflow-y-auto ios-scroll"><section id="tabSettings"><div class="grid grid-cols-1 sm:grid-cols-3 gap-3"><div><div class="text-xs text-slate-500 mb-1">季節</div><select id="seasonSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="spring">春</option><option value="summer">夏</option><option value="autumn">秋</option><option value="winter">冬</option></select></div><div><div class="text-xs text-slate-500 mb-1">時間</div><select id="timeSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="morning">朝</option><option value="day">昼</option><option value="evening">夕</option><option value="night">夜</option><option value="late">深夜</option></select></div><div><div class="text-xs text-slate-500 mb-1">天気</div><select id="weatherSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="clear">晴れ</option><option value="rain">雨</option><option value="other">その他</option></select></div></div>
-            <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4"><div class="text-sm font-semibold text-slate-800">ミックス（手動）</div><p class="mt-1 text-xs text-slate-600 leading-relaxed">鳥は「頻度」、風/水は「強さ」。0で静かに、100で多めに。設定は保存されます。</p><div class="mt-4 space-y-4"><div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">鳥（頻度）</div><div id="birdVal" class="text-xs font-medium text-slate-700 tabular-nums">50</div></div><input id="birdMix" type="range" min="0" max="100" step="1" class="w-full" /></div><div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">風（強さ）</div><div id="windVal" class="text-xs font-medium text-slate-700 tabular-nums">50</div></div><input id="windMix" type="range" min="0" max="100" step="1" class="w-full" /></div><div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">水（強さ）</div><div id="waterVal" class="text-xs font-medium text-slate-700 tabular-nums">50</div></div><input id="waterMix" type="range" min="0" max="100" step="1" class="w-full" /></div></div></div></section>
-          <section id="tabGuide" class="hidden">
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div class="text-sm font-semibold text-slate-800">このアプリの仕組み</div>
-              <p class="mt-2 text-sm text-slate-700 leading-relaxed">
-                自然の値をそのまま音量に結びつけるのではなく、心地よさのバランスを守りながら、
-                キーやテンポ、光の明るさ、きらめきの密度へとそっと織り込んでいます。
-              </p>
+  <div id="settingsOverlay" class="fixed inset-0 z-50 hidden">
+    <div id="settingsBackdrop" class="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px]"></div>
+    <div class="absolute inset-0 flex items-end sm:items-center justify-center p-3 sm:p-6">
+      <div class="w-full max-w-[760px] rounded-[30px] bg-white/95 border border-slate-200 shadow-2xl overflow-hidden">
+        <div class="px-5 sm:px-6 pt-4 pb-3 border-b border-slate-200">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm font-semibold text-slate-800">設定</div>
+            <div class="flex items-center gap-2">
+              <button id="btnAllAuto" class="px-3 py-1.5 rounded-xl text-xs border border-slate-200 bg-white hover:bg-slate-50">All Auto</button>
+              <button id="btnCloseSettings" class="px-3 py-1.5 rounded-xl text-sm bg-slate-900 text-white hover:bg-slate-800">閉じる</button>
+            </div>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button data-tab="tabSettings" class="tabBtn flex-1 px-3 py-2 rounded-2xl text-sm border border-slate-200 bg-slate-900 text-white">設定</button>
+            <button data-tab="tabGuide" class="tabBtn flex-1 px-3 py-2 rounded-2xl text-sm border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">仕組み</button>
+          </div>
+        </div>
+
+        <div class="px-5 sm:px-6 py-4 max-h-[74vh] overflow-y-auto ios-scroll">
+          <section id="tabSettings" class="space-y-4">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">Autoが標準。必要な項目だけManualで上書き。</div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div><div class="text-xs text-slate-500 mb-1">季節</div><select id="seasonSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="spring">春</option><option value="summer">夏</option><option value="autumn">秋</option><option value="winter">冬</option></select></div>
+              <div><div class="text-xs text-slate-500 mb-1">時間</div><select id="timeSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="morning">朝</option><option value="day">昼</option><option value="evening">夕</option><option value="night">夜</option><option value="late">深夜</option></select></div>
+              <div><div class="text-xs text-slate-500 mb-1">天気</div><select id="weatherSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="clear">晴れ</option><option value="other">曇り</option><option value="rain">雨</option></select></div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+              <div class="text-sm font-semibold text-slate-800">自然音の微調整</div>
+              <div class="mt-3 space-y-4">
+                <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">鳥</div><div id="birdVal" class="text-xs font-medium text-slate-700">50</div></div><input id="birdMix" type="range" min="0" max="100" step="1" class="w-full" /></div>
+                <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">風</div><div id="windVal" class="text-xs font-medium text-slate-700">50</div></div><input id="windMix" type="range" min="0" max="100" step="1" class="w-full" /></div>
+                <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">水</div><div id="waterVal" class="text-xs font-medium text-slate-700">50</div></div><input id="waterMix" type="range" min="0" max="100" step="1" class="w-full" /></div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+              <div class="text-sm font-semibold text-slate-800">音楽ニュアンス（表示用）</div>
+              <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">きらめき</div><span id="nuanceSparkleMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSparkle" type="range" min="0" max="100" value="50" class="w-full" /></div>
+                <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">スピード</div><span id="nuanceSpeedMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSpeed" type="range" min="0" max="100" value="50" class="w-full" /></div>
+                <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">明るさ</div><span id="nuanceBrightMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceBright" type="range" min="0" max="100" value="50" class="w-full" /></div>
+                <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">余韻</div><span id="nuanceReverbMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceReverb" type="range" min="0" max="100" value="50" class="w-full" /></div>
+              </div>
             </div>
           </section>
-        </div></div></div>
+
+          <section id="tabGuide" class="hidden space-y-3 text-sm leading-relaxed text-slate-700">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">自然の値をそのまま音量に結びつけるのではなく、心地よさのバランスを守りながら、<br>キーやテンポ、光の明るさ、きらめきの密度へとそっと織り込んでいます。</div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">春はC、夏はD、秋はEb、冬はA。<br>季節ごとにそっと基調となるキーを定めています。ハーモニーときらめきは常に同じ調の中で揺らぐため、音の世界が崩れることはありません。</div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">朝と昼は、わずかに速く。夜と深夜は、ゆっくりと。体感の“呼吸”を時間帯に寄せながら、背景の白も静かに移ろいます。</div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">晴れの日は、光をひらくように明るく。余韻は軽やかに整え、空気を澄ませます。雨の日は、少しだけ陰影を深めて。残響を重ね、しっとりとした余白をまとわせています。</div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">風が強まるほど、きらめきはわずかに増えていきます。<br>けれど決して騒がしくはならないように。瞬きが少しだけ増える、そのくらいの余白にとどめています。</div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">光が強い日中は、空気の透明度を少し高め、余韻を引き締めます。<br>きらりと差し込む光の感触を添えて、昼の心地よさをそっと押し上げます。</div>
+          </section>
+        </div>
+      </div>
+    </div>
   </div>
+
 
 <script>
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
@@ -153,9 +206,9 @@ function keyFromSeason(season){if(season==="spring")return"C";if(season==="summe
 function triad(rootNote){const r=Tone.Frequency(rootNote);return [r.toNote(),r.transpose(4).toNote(),r.transpose(7).toNote()];}
 function sparkleScale(key,weatherCat,time){const major={"C":["C5","D5","E5","F5","G5","A5","B5","C6"],"D":["D5","E5","F#5","G5","A5","B5","C#6","D6"],"Eb":["Eb5","F5","G5","Ab5","Bb5","C6","D6","Eb6"],"A":["A4","B4","C#5","D5","E5","F#5","G#5","A5"]};const pent={"C":["C5","D5","E5","G5","A5","C6"],"D":["D5","E5","F#5","A5","B5","D6"],"Eb":["Eb5","F5","G5","Bb5","C6","Eb6"],"A":["A4","B4","C#5","E5","F#5","A5"]};const usePent=(weatherCat==="rain")||(time==="night"||time==="late");return usePent?(pent[key]||pent["C"]):(major[key]||major["C"]);}function melodyScaleForKey(key){const map={"C":["C4","D4","E4","G4","A4","C5","E5"],"D":["D4","E4","F#4","A4","B4","D5","F#5"],"Eb":["Eb4","F4","G4","Bb4","C5","Eb5","G5"],"A":["A3","B3","C#4","E4","F#4","A4","C#5"]};return map[key]||map["C"];}function lowMelodyScaleForKey(key){const map={"C":["C3","E3","G3","A3","C4","E4"],"D":["D3","F#3","A3","B3","D4","F#4"],"Eb":["Eb3","G3","Bb3","C4","Eb4","G4"],"A":["A2","C#3","E3","F#3","A3","C#4"]};return map[key]||map["C"];}function melodyDuration(r){let d=randomBetween(1.8,4.8);if(r.time==="night"||r.time==="late")d*=1.25;if(r.weatherCat==="clear")d*=0.9;return clamp(d,1.4,6.8);}
 function getEnv(){const seasonSel=document.getElementById("seasonSel").value,timeSel=document.getElementById("timeSel").value,weatherSel=document.getElementById("weatherSel").value;const season=(seasonSel==="auto")?autoSeason():seasonSel;const time=(timeSel==="auto")?autoTimeBlock():timeSel;const weatherCat=(weatherSel==="auto")?weatherCategoryFromCode(lastWeather.code):weatherSel;return {season,time,weatherCat};}
-function prettyTimeLabel(t){if(t==="morning")return"朝";if(t==="day")return"昼";if(t==="evening")return"夕";if(t==="night")return"夜";if(t==="late")return"深夜";return t;} function prettyWeatherLabel(w){if(w==="clear")return"晴れ";if(w==="rain")return"雨";if(w==="other")return"その他";return w;}
+function prettyTimeLabel(t){if(t==="morning")return"朝";if(t==="day")return"昼";if(t==="evening")return"夕";if(t==="night")return"夜";if(t==="late")return"深夜";if(t==="spring")return"春";if(t==="summer")return"夏";if(t==="autumn")return"秋";if(t==="winter")return"冬";return t;} function prettyWeatherLabel(w){if(w==="clear")return"晴れ";if(w==="rain")return"雨";if(w==="other")return"曇り";return w;}
 function isDayTimeBlock(time){return(time==="day"||time==="morning"||time==="evening");}
-function applyParams(){const env=getEnv();const key=keyFromSeason(env.season);applyWhiteByTime(env.time);let bpm=66;if(env.time==="morning")bpm=74;if(env.time==="day")bpm=78;if(env.time==="evening")bpm=70;if(env.time==="night")bpm=60;if(env.time==="late")bpm=54;Tone.Transport.bpm.value=bpm;const seasonFx=SEASON_SOUND_PROFILE[env.season]||SEASON_SOUND_PROFILE.spring;const timeFx=TIME_SOUND_PROFILE[env.time]||TIME_SOUND_PROFILE.day;const weatherFx=WEATHER_SOUND_PROFILE[env.weatherCat]||WEATHER_SOUND_PROFILE.other;const windNorm=clamp((lastWeather.wind??0)/15,0,1);let cutoff=1950+980*weatherFx.brightness+560*seasonFx.brightness+460*timeFx.brightness;let wet=0.42+weatherFx.wet+0.04*timeFx.space;let decay=14.5+weatherFx.decay+4.0*timeFx.space+1.6*seasonFx.calm;const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;const showUv=(uvRaw!==null)&&isDayTimeBlock(env.time);const uvText=showUv?uvRaw.toFixed(1):"—";if(showUv){const u=clamp(uvRaw/11,0,1);cutoff+=560*u;wet-=0.06*u;decay-=1.2*u;}filter.frequency.value=clamp(cutoff,950,3600);masterReverb.wet.value=clamp(wet,0.28,0.70);masterReverb.decay=clamp(decay,9.0,20.0);if(birdFilter){birdFilter.frequency.value=clamp(2050+560*weatherFx.reflect+220*timeFx.brightness,1700,2950);}if(sparkleAutoPanner){let f=0.10;if(env.time==="day")f=0.13;if(env.time==="morning")f=0.12;if(env.time==="evening")f=0.11;if(env.time==="night")f=0.085;if(env.time==="late")f=0.070;sparkleAutoPanner.frequency.value=f;sparkleAutoPanner.depth=clamp(0.70+0.12*weatherFx.reflect+0.11*windNorm,0.62,0.92);}if(airHighpass){airHighpass.frequency.value=clamp(72+52*seasonFx.brightness+42*windNorm,60,155);}if(airChorus){airChorus.depth=clamp(0.10+0.16*seasonFx.shimmer+0.14*windNorm,0.08,0.22);airChorus.wet.value=clamp(0.12+0.08*timeFx.space+0.08*weatherFx.reflect,0.10,0.24);airChorus.frequency.value=clamp(0.15+0.28*windNorm,0.12,0.45);}if(sparkle){sparkle.harmonicity.value=clamp(1.7+0.7*seasonFx.shimmer+0.5*windNorm,1.4,3.1);sparkle.modulationIndex.value=clamp(2.1+1.2*weatherFx.reflect+0.9*windNorm,1.4,4.2);sparkle.volume.value=clamp(-13+2.4*weatherFx.reflect+1.6*timeFx.brightness,-15,-10);}if(crystalLead){crystalLead.harmonicity.value=clamp(2.15+0.5*seasonFx.shimmer+0.3*windNorm,1.8,3.2);crystalLead.modulationIndex.value=clamp(1.5+1.1*weatherFx.reflect+0.45*windNorm,1.1,3.2);crystalLead.volume.value=clamp(-19+2.8*weatherFx.reflect+1.2*timeFx.brightness,-21,-15);}if(stringPad){stringPad.volume.value=clamp(-20+2.1*timeFx.space+1.2*seasonFx.calm,-21,-16);}if(lowLead){lowLead.volume.value=clamp(-20+1.8*seasonFx.calm+1.0*timeFx.space,-21,-16);}if(lowDrone){lowDrone.volume.value=clamp(-22+2.2*seasonFx.calm+1.6*timeFx.space,-24,-17);}if(bellSynth){bellSynth.resonance=clamp(1150+380*weatherFx.reflect+240*windNorm,900,1800);bellSynth.modulationIndex=clamp(18+10*seasonFx.shimmer+8*weatherFx.reflect,12,34);bellSynth.volume.value=clamp(-23+3.0*weatherFx.reflect+1.2*timeFx.brightness,-25,-18);}if(chimeSynth){chimeSynth.harmonicity.value=clamp(2.4+0.9*seasonFx.shimmer+0.6*windNorm,2.0,4.0);chimeSynth.modulationIndex.value=clamp(2.0+1.5*weatherFx.reflect+0.6*windNorm,1.6,4.2);chimeSynth.volume.value=clamp(-24+2.6*weatherFx.reflect+0.8*timeFx.brightness,-25,-19);}if(stringEnsemble){stringEnsemble.volume.value=clamp(-22+2.2*timeFx.space+1.2*seasonFx.calm,-23,-17);}if(harmonySlots){const hAttack=clamp(2.2*seasonFx.padAttack*(1+0.28*timeFx.space),1.9,4.8);const hRelease=clamp(16.5+4.2*timeFx.space+2.0*seasonFx.calm,14.0,23.0);const hHarmonicity=clamp(1.35+0.45*seasonFx.shimmer+0.22*weatherFx.reflect,1.2,2.3);harmonySlots.forEach(slot=>{slot.synth.set({harmonicity:hHarmonicity,modulationIndex:clamp(1.2+0.4*weatherFx.reflect,1.0,2.0),envelope:{attack:hAttack,decay:0.7,sustain:0.8,release:hRelease},modulationEnvelope:{attack:0.4,decay:0.8,sustain:0.3,release:clamp(2.8+timeFx.space*1.6,2.8,4.4)}});});}if(windFilter){windFilter.frequency.value=clamp(340+120*weatherFx.reflect+90*windNorm,280,520);windFilter.Q.value=clamp(0.82+0.26*windNorm+(env.time==="late"?0.14:0),0.78,1.22);}if(waterFilter){waterFilter.frequency.value=clamp(780+210*weatherFx.reflect+80*timeFx.space,680,1080);}const windText=`${(lastWeather.wind??0).toFixed(1)} m/s`;setMediaSessionMetadata(`${env.season} / ${env.weatherCat} / wind ${windText} / UV ${uvText}`);const sub=`Key ${key} · ${prettyTimeLabel(env.time)} · ${prettyWeatherLabel(env.weatherCat)} · 風 ${(lastWeather.wind??0).toFixed(1)} · UV ${uvText}`;setStatusChip(describeWeather(lastWeather.code));if(isRunning)setStatus("再生中",sub);return {...env,key,bpm,seasonFx,timeFx,weatherFx,windNorm};}
+function applyParams(){const env=getEnv();const key=keyFromSeason(env.season);applyWhiteByTime(env.time);let bpm=66;if(env.time==="morning")bpm=74;if(env.time==="day")bpm=78;if(env.time==="evening")bpm=70;if(env.time==="night")bpm=60;if(env.time==="late")bpm=54;Tone.Transport.bpm.value=bpm;const seasonFx=SEASON_SOUND_PROFILE[env.season]||SEASON_SOUND_PROFILE.spring;const timeFx=TIME_SOUND_PROFILE[env.time]||TIME_SOUND_PROFILE.day;const weatherFx=WEATHER_SOUND_PROFILE[env.weatherCat]||WEATHER_SOUND_PROFILE.other;const windNorm=clamp((lastWeather.wind??0)/15,0,1);let cutoff=1950+980*weatherFx.brightness+560*seasonFx.brightness+460*timeFx.brightness;let wet=0.42+weatherFx.wet+0.04*timeFx.space;let decay=14.5+weatherFx.decay+4.0*timeFx.space+1.6*seasonFx.calm;const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;const showUv=(uvRaw!==null)&&isDayTimeBlock(env.time);const uvText=showUv?uvRaw.toFixed(1):"—";if(showUv){const u=clamp(uvRaw/11,0,1);cutoff+=560*u;wet-=0.06*u;decay-=1.2*u;}filter.frequency.value=clamp(cutoff,950,3600);masterReverb.wet.value=clamp(wet,0.28,0.70);masterReverb.decay=clamp(decay,9.0,20.0);if(birdFilter){birdFilter.frequency.value=clamp(2050+560*weatherFx.reflect+220*timeFx.brightness,1700,2950);}if(sparkleAutoPanner){let f=0.10;if(env.time==="day")f=0.13;if(env.time==="morning")f=0.12;if(env.time==="evening")f=0.11;if(env.time==="night")f=0.085;if(env.time==="late")f=0.070;sparkleAutoPanner.frequency.value=f;sparkleAutoPanner.depth=clamp(0.70+0.12*weatherFx.reflect+0.11*windNorm,0.62,0.92);}if(airHighpass){airHighpass.frequency.value=clamp(72+52*seasonFx.brightness+42*windNorm,60,155);}if(airChorus){airChorus.depth=clamp(0.10+0.16*seasonFx.shimmer+0.14*windNorm,0.08,0.22);airChorus.wet.value=clamp(0.12+0.08*timeFx.space+0.08*weatherFx.reflect,0.10,0.24);airChorus.frequency.value=clamp(0.15+0.28*windNorm,0.12,0.45);}if(sparkle){sparkle.harmonicity.value=clamp(1.7+0.7*seasonFx.shimmer+0.5*windNorm,1.4,3.1);sparkle.modulationIndex.value=clamp(2.1+1.2*weatherFx.reflect+0.9*windNorm,1.4,4.2);sparkle.volume.value=clamp(-13+2.4*weatherFx.reflect+1.6*timeFx.brightness,-15,-10);}if(crystalLead){crystalLead.harmonicity.value=clamp(2.15+0.5*seasonFx.shimmer+0.3*windNorm,1.8,3.2);crystalLead.modulationIndex.value=clamp(1.5+1.1*weatherFx.reflect+0.45*windNorm,1.1,3.2);crystalLead.volume.value=clamp(-19+2.8*weatherFx.reflect+1.2*timeFx.brightness,-21,-15);}if(stringPad){stringPad.volume.value=clamp(-20+2.1*timeFx.space+1.2*seasonFx.calm,-21,-16);}if(lowLead){lowLead.volume.value=clamp(-20+1.8*seasonFx.calm+1.0*timeFx.space,-21,-16);}if(lowDrone){lowDrone.volume.value=clamp(-22+2.2*seasonFx.calm+1.6*timeFx.space,-24,-17);}if(bellSynth){bellSynth.resonance=clamp(1150+380*weatherFx.reflect+240*windNorm,900,1800);bellSynth.modulationIndex=clamp(18+10*seasonFx.shimmer+8*weatherFx.reflect,12,34);bellSynth.volume.value=clamp(-23+3.0*weatherFx.reflect+1.2*timeFx.brightness,-25,-18);}if(chimeSynth){chimeSynth.harmonicity.value=clamp(2.4+0.9*seasonFx.shimmer+0.6*windNorm,2.0,4.0);chimeSynth.modulationIndex.value=clamp(2.0+1.5*weatherFx.reflect+0.6*windNorm,1.6,4.2);chimeSynth.volume.value=clamp(-24+2.6*weatherFx.reflect+0.8*timeFx.brightness,-25,-19);}if(stringEnsemble){stringEnsemble.volume.value=clamp(-22+2.2*timeFx.space+1.2*seasonFx.calm,-23,-17);}if(harmonySlots){const hAttack=clamp(2.2*seasonFx.padAttack*(1+0.28*timeFx.space),1.9,4.8);const hRelease=clamp(16.5+4.2*timeFx.space+2.0*seasonFx.calm,14.0,23.0);const hHarmonicity=clamp(1.35+0.45*seasonFx.shimmer+0.22*weatherFx.reflect,1.2,2.3);harmonySlots.forEach(slot=>{slot.synth.set({harmonicity:hHarmonicity,modulationIndex:clamp(1.2+0.4*weatherFx.reflect,1.0,2.0),envelope:{attack:hAttack,decay:0.7,sustain:0.8,release:hRelease},modulationEnvelope:{attack:0.4,decay:0.8,sustain:0.3,release:clamp(2.8+timeFx.space*1.6,2.8,4.4)}});});}if(windFilter){windFilter.frequency.value=clamp(340+120*weatherFx.reflect+90*windNorm,280,520);windFilter.Q.value=clamp(0.82+0.26*windNorm+(env.time==="late"?0.14:0),0.78,1.22);}if(waterFilter){waterFilter.frequency.value=clamp(780+210*weatherFx.reflect+80*timeFx.space,680,1080);}const windText=`${(lastWeather.wind??0).toFixed(1)} m/s`;setMediaSessionMetadata(`${env.season} / ${env.weatherCat} / wind ${windText} / UV ${uvText}`);const sub=`Key ${key} · ${prettyTimeLabel(env.time)} · ${prettyWeatherLabel(env.weatherCat)} · 風 ${(lastWeather.wind??0).toFixed(1)} · UV ${uvText}`;setStatusChip(describeWeather(lastWeather.code));if(isRunning)setStatus("再生中",sub);const mKey=document.getElementById("metricKey"),mTempo=document.getElementById("metricTempo"),mBright=document.getElementById("metricBrightness"),mSpark=document.getElementById("metricSparkle"),mRev=document.getElementById("metricReverb");if(mKey)mKey.textContent=key;if(mTempo)mTempo.textContent=`${Math.round(bpm)} BPM`;if(mBright)mBright.textContent=(cutoff>2500)?"High":(cutoff>1700?"Mid":"Soft");if(mSpark)mSpark.textContent=(windNorm>0.6||env.weatherCat==="clear")?"Fine+":"Quiet";if(mRev)mRev.textContent=(wet>0.5)?"Deep":(wet>0.38?"Airy":"Dry");const eSeason=document.getElementById("envSeason"),eTime=document.getElementById("envTime"),eWeather=document.getElementById("envWeather"),eWindUv=document.getElementById("envWindUv"),mode=document.getElementById("envModeBadge");if(eSeason)eSeason.textContent=prettyTimeLabel(env.season)||env.season;if(eTime)eTime.textContent=prettyTimeLabel(env.time);if(eWeather)eWeather.textContent=prettyWeatherLabel(env.weatherCat);if(eWindUv)eWindUv.textContent=`${(lastWeather.wind??0).toFixed(1)}m/s · UV ${uvText}`;if(mode){const sel=["seasonSel","timeSel","weatherSel"].map(id=>document.getElementById(id)?.value||"auto");mode.textContent=sel.every(v=>v==="auto")?"All Auto":"Auto + Manual";}return {...env,key,bpm,seasonFx,timeFx,weatherFx,windNorm};}
 function clearHarmonyScheduler(){if(chordEventId!==null){try{Tone.Transport.clear(chordEventId);}catch(e){} chordEventId=null;}}
 function harmonyGapSeconds(r){let g=randomBetween(0.55,2.1);const burstChance=(r.time==="day"||r.time==="morning")?0.30:(r.time==="evening")?0.24:(r.time==="night")?0.16:0.12;if(Math.random()<burstChance){g*=randomBetween(0.20,0.46);}if(r.time==="late")g*=1.12;if(r.time==="night")g*=1.04;if(r.weatherCat==="rain")g*=1.05;return clamp(g,0.22,3.3);} function octaveShifted(note,octShift){const f=Tone.Frequency(note);return f.transpose(12*octShift).toNote();}
 function pickOverlapMode(r){let base=0.52;if(r.time==="day"||r.time==="morning")base=0.60;if(r.time==="evening")base=0.54;if(r.time==="night")base=0.44;if(r.time==="late")base=0.32;if(r.weatherCat==="rain")base*=0.92;if(Math.random()>=base)return"none";let earlyWeight=0.78;if(r.time==="late")earlyWeight=0.62;if(r.time==="night")earlyWeight=0.70;if(r.weatherCat==="rain")earlyWeight*=0.95;return(Math.random()<earlyWeight)?"early":"tail";}
@@ -182,8 +235,8 @@ const tabButtons=Array.from(document.querySelectorAll(".tabBtn")),tabSettings=do
 function openSettings(){settingsOverlay.classList.remove("hidden");settingsDetails.open=false;document.documentElement.classList.add("overflow-hidden");document.body.classList.add("overflow-hidden");setTab("tabSettings");} function closeSettings(){settingsOverlay.classList.add("hidden");document.documentElement.classList.remove("overflow-hidden");document.body.classList.remove("overflow-hidden");}
 settingsDetails.addEventListener("toggle",()=>{if(settingsDetails.open)openSettings();}); btnCloseSettings.addEventListener("click",closeSettings); settingsBackdrop.addEventListener("click",closeSettings); document.addEventListener("keydown",(e)=>{if(e.key==="Escape")closeSettings();}); tabButtons.forEach(btn=>btn.addEventListener("click",()=>setTab(btn.dataset.tab)));
 document.getElementById("btnToggle").addEventListener("click",async()=>{if(!isRunning)await start();else stop();}); document.getElementById("btnRefresh").addEventListener("click",()=>refreshWeather()); ["seasonSel","timeSel","weatherSel"].forEach(id=>{document.getElementById(id).addEventListener("change",()=>{applyParams();if(isRunning)rebuildLoops();applyParams();});});
-function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}
-loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();
+function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}function bindUiNuance(){const ids=["nuanceSparkle","nuanceSpeed","nuanceBright","nuanceReverb"];ids.forEach(id=>{const el=document.getElementById(id);const chip=document.getElementById(id.replace("nuance","nuance")+"Mode");if(!el||!chip)return;el.addEventListener("input",()=>{const v=parseInt(el.value,10)||0;chip.textContent=(v===50)?"Auto":"Manual";chip.className="text-[10px] px-2 py-0.5 rounded-full border "+((v===50)?"border-slate-200 text-slate-500":"border-slate-900 text-slate-800 bg-slate-50");});});const btn=document.getElementById("btnAllAuto");if(btn){btn.addEventListener("click",()=>{["seasonSel","timeSel","weatherSel"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="auto";});ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value="50";const chip=document.getElementById(id+"Mode");if(chip){chip.textContent="Auto";chip.className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200";}});mixState.bird=50;mixState.wind=50;mixState.water=50;syncMixUI();saveMix();applyParams();if(isRunning)rebuildLoops();});}}
+loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();bindUiNuance();
 </script>
 </body>
 </html>
