@@ -94,6 +94,42 @@
     .caption-line + .caption-line{
       margin-top: 24px; /* UI TWEAK */
     }
+
+    .guide-pages{ /* UI TWEAK */
+      height: min(68vh, 520px);
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      position: relative;
+    }
+    .guide-pages::-webkit-scrollbar{display:none;} /* UI TWEAK */
+    .guide-page{ /* UI TWEAK */
+      min-height: 62vh;
+      scroll-snap-align: start;
+      display: grid;
+      align-content: center;
+      padding: 10vh 2px;
+    }
+    .guide-page-text{ /* UI TWEAK */
+      margin: 0;
+      line-height: 2.12;
+    }
+    .guide-page-text + .guide-page-text{margin-top: 18px;} /* UI TWEAK */
+    .guide-indicator{ /* UI TWEAK */
+      margin-top: 8px;
+      display:flex;
+      justify-content:center;
+      gap:7px;
+    }
+    .guide-dot{ /* UI TWEAK */
+      width: 5px;
+      height: 5px;
+      border-radius: 9999px;
+      background: rgba(30,41,59,0.24);
+      transition: background 240ms ease, transform 240ms ease;
+    }
+    .guide-dot.is-active{background: rgba(30,41,59,0.66);transform: scale(1.08);} /* UI TWEAK */
     @media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
         opacity: 1;
@@ -221,32 +257,61 @@
 
           <section id="tabGuide" class="hidden">
             <div class="guide-caption rippleHint museum-type"> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal guide-caption-title">Ambient Music</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal guide-caption-title">― 自然と呼吸を合わせる音の設計 ―</p> <!-- UI TWEAK -->
+              <div id="guidePages" class="guide-pages"> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="1"> <!-- UI TWEAK -->
+                  <p class="guide-page-text guide-caption-title">Ambient Music</p>
+                  <p class="guide-page-text guide-caption-title">― 自然と呼吸を合わせる音の設計 ―</p>
+                </article>
 
-              <p class="caption-line guide-reveal">季節、時間、天候、風、UV。</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal">このアプリは、自然の値をそのまま鳴らす設計ではありません。</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal">受け取った気配は、いったん静かに整えられます。</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal">そして調性、テンポ、明るさ、きらめき、余韻へと翻訳されます。</p> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="2"> <!-- UI TWEAK -->
+                  <p class="guide-page-text">季節、時間、天候、風、UV。</p>
+                  <p class="guide-page-text">このアプリは、自然の値をそのまま鳴らす設計ではありません。</p>
+                </article>
 
-              <p class="caption-line guide-reveal">和音は同一キーの三和音のみ。</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal">I / IV / V / vi を中心に、呼吸するように重なります。</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal">不安定さを避け、空間に溶ける輪郭を保ちます。</p> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="3"> <!-- UI TWEAK -->
+                  <p class="guide-page-text">受け取った気配は、いったん静かに整えられます。</p>
+                  <p class="guide-page-text">そして調性、テンポ、明るさ、きらめき、余韻へと翻訳されます。</p>
+                </article>
 
-              <p class="caption-line guide-reveal">晴れた昼は、わずかに明るく。</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal">雨の夜は、余韻が静かに深く。</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal">風が強い日は、きらめきが少しだけ揺れます。</p> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="4"> <!-- UI TWEAK -->
+                  <p class="guide-page-text">和音は同一キーの三和音のみ。</p>
+                  <p class="guide-page-text">I / IV / V / vi を中心に、呼吸するように重なります。</p>
+                  <p class="guide-page-text">不安定さを避け、空間に溶ける輪郭を保ちます。</p>
+                </article>
 
-              <p class="caption-line guide-reveal">変化は控えめです。</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal">けれど確実に、いまの空気をまといます。</p> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="5"> <!-- UI TWEAK -->
+                  <p class="guide-page-text">晴れた昼は、わずかに明るく。</p>
+                  <p class="guide-page-text">雨の夜は、余韻が静かに深く。</p>
+                  <p class="guide-page-text">風が強い日は、きらめきが少しだけ揺れます。</p>
+                </article>
 
-              <p class="caption-line guide-reveal">音源は保たれ、内部だけが静かに更新されます。</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal">だから、途切れません。</p> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="6"> <!-- UI TWEAK -->
+                  <p class="guide-page-text">変化は控えめです。</p>
+                  <p class="guide-page-text">けれど確実に、いまの空気をまといます。</p>
+                </article>
 
-              <p class="caption-line guide-reveal">同じ音は二度と鳴らない。</p>
+                <article class="guide-page" data-page="7"> <!-- UI TWEAK -->
+                  <p class="guide-page-text">音源は保たれ、内部だけが静かに更新されます。</p>
+                  <p class="guide-page-text">だから、途切れません。</p>
+                </article>
 
-              <p class="caption-line guide-reveal">再生するたび、</p> <!-- UI TWEAK -->
-              <p class="caption-line guide-reveal">この瞬間の自然が、音になります。</p> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="8"> <!-- UI TWEAK -->
+                  <p class="guide-page-text">同じ音は二度と鳴らない。</p>
+                  <p class="guide-page-text">再生するたび、</p>
+                  <p class="guide-page-text">この瞬間の自然が、音になります。</p>
+                </article>
+              </div>
+
+              <div id="guideIndicator" class="guide-indicator" aria-hidden="true"> <!-- UI TWEAK -->
+                <span class="guide-dot is-active"></span>
+                <span class="guide-dot"></span>
+                <span class="guide-dot"></span>
+                <span class="guide-dot"></span>
+                <span class="guide-dot"></span>
+                <span class="guide-dot"></span>
+                <span class="guide-dot"></span>
+                <span class="guide-dot"></span>
+              </div>
             </div>
           </section>
         </div>
@@ -565,7 +630,7 @@ function openSettings(){settingsOverlay.classList.remove("hidden");settingsDetai
 settingsDetails.addEventListener("toggle",()=>{if(settingsDetails.open)openSettings();}); btnCloseSettings.addEventListener("click",closeSettings); settingsBackdrop.addEventListener("click",closeSettings); document.addEventListener("keydown",(e)=>{if(e.key==="Escape")closeSettings();}); tabButtons.forEach(btn=>btn.addEventListener("click",()=>setTab(btn.dataset.tab)));
 document.getElementById("btnToggle").addEventListener("click",async()=>{if(!isRunning)await start();else stop();}); document.getElementById("btnRefresh").addEventListener("click",()=>refreshWeather()); ["seasonSel","timeSel","weatherSel"].forEach(id=>{document.getElementById(id).addEventListener("change",()=>{applyParams();if(isRunning&&!isRebuildingLoops)rebuildLoops();applyParams();});});
 function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}function bindUiNuance(){const ids=["nuanceSparkle","nuanceSpeed","nuanceBright","nuanceReverb"];ids.forEach(id=>{const el=document.getElementById(id);const chip=document.getElementById(id.replace("nuance","nuance")+"Mode");if(!el||!chip)return;el.addEventListener("input",()=>{const v=parseInt(el.value,10)||0;chip.textContent=(v===50)?"Auto":"Manual";chip.className="text-[10px] px-2 py-0.5 rounded-full border "+((v===50)?"border-slate-200 text-slate-500":"border-slate-900 text-slate-800 bg-slate-50");});});const btn=document.getElementById("btnAllAuto");if(btn){btn.addEventListener("click",()=>{["seasonSel","timeSel","weatherSel"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="auto";});ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value="50";const chip=document.getElementById(id+"Mode");if(chip){chip.textContent="Auto";chip.className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200";}});mixState.bird=50;mixState.wind=50;mixState.water=50;syncMixUI();saveMix();applyParams();if(isRunning)rebuildLoops();});}}
-function initGuideReveal(){const items=Array.from(document.querySelectorAll("#tabGuide .guide-reveal"));if(!items.length)return;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;if(reduced||!("IntersectionObserver" in window)){items.forEach(el=>el.classList.add("is-visible"));return;}const io=new IntersectionObserver((entries,observer)=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("is-visible");observer.unobserve(entry.target);}});},{root:null,threshold:0.12,rootMargin:"0px 0px -4% 0px"});items.forEach((el,i)=>{el.style.transitionDelay=`${Math.min(i*28,140)}ms`;io.observe(el);});} // UI TWEAK
+function initGuideReveal(){const scroller=document.getElementById("guidePages");const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(!scroller||!dots.length)return;const pages=Array.from(scroller.querySelectorAll(".guide-page"));const setActive=(idx)=>{dots.forEach((d,i)=>d.classList.toggle("is-active",i===idx));};const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;const hasIO=("IntersectionObserver" in window);if(!hasIO){setActive(0);return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=pages.indexOf(entry.target);if(idx>=0)setActive(idx);}});},{root:scroller,threshold:0.65});pages.forEach(p=>io.observe(p));if(reduced){setActive(0);} } // UI TWEAK
   loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();bindUiNuance();initGuideReveal();
 </script>
 </body>
