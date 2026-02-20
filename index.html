@@ -80,16 +80,28 @@
         radial-gradient(circle at 66% 64%, transparent 48%, rgba(15,23,42,0.06) 49%, transparent 50%),
         radial-gradient(circle at 66% 64%, transparent 60%, rgba(15,23,42,0.05) 61%, transparent 62%),
         radial-gradient(circle at 66% 64%, transparent 72%, rgba(15,23,42,0.04) 73%, transparent 74%);
-      filter: blur(1.4px);
+      filter: blur(1.6px);
+      animation: rippleBreathA 16s ease-in-out infinite; /* UI TWEAK */
+      transform-origin: right bottom;
     }
     .rippleHint::after{ /* UI TWEAK */
       right:-36px;
       bottom:-38px;
       width:232px;
       height:232px;
-      opacity:0.42;
-      transform:rotate(-7deg) scale(1.05);
-      filter: blur(1.8px);
+      opacity:0.34;
+      transform:rotate(-7deg) scale(1.04);
+      filter: blur(2px);
+      animation: rippleBreathB 15s ease-in-out infinite; /* UI TWEAK */
+      transform-origin: right bottom;
+    }
+    @keyframes rippleBreathA{ /* UI TWEAK */
+      0%,100%{opacity:0.20;transform:scale(1);} 
+      50%{opacity:0.28;transform:scale(1.02);} 
+    }
+    @keyframes rippleBreathB{ /* UI TWEAK */
+      0%,100%{opacity:0.16;transform:rotate(-7deg) scale(1.00);} 
+      50%{opacity:0.24;transform:rotate(-7deg) scale(1.02);} 
     }
     .rippleHint > *{position:relative;z-index:1;} /* UI TWEAK */
     .caption-line{margin:0;} /* UI TWEAK */
@@ -122,14 +134,14 @@
       scroll-snap-align: start;
       display: grid;
       align-content: start;
-      padding: 14vh 2px 6vh;
+      padding: 13vh 2px 7vh; /* UI TWEAK */
     }
     .guide-page-text{ /* UI TWEAK */
       margin: 0;
       line-height: 2.12;
     }
-    .guide-page-text + .guide-page-text{margin-top: 20px;} /* UI TWEAK */
-    .guide-page-text + .guide-page-text + .guide-page-text{margin-top: 15px;} /* UI TWEAK */
+    .guide-page-text + .guide-page-text{margin-top: 21px;} /* UI TWEAK */
+    .guide-page-text + .guide-page-text + .guide-page-text{margin-top: 14px;} /* UI TWEAK */
     .guide-indicator{ /* UI TWEAK */
       margin-top: 8px;
       display:flex;
@@ -140,16 +152,22 @@
       width: 12px;
       height: 1px;
       border-radius: 9999px;
-      background: rgba(30,41,59,0.20);
-      transition: background 240ms ease, transform 240ms ease, width 240ms ease;
+      background: rgba(30,41,59,0.14); /* UI TWEAK */
+      transition: background 320ms ease, transform 320ms ease, width 320ms ease, opacity 320ms ease;
+      opacity: 0.42; /* UI TWEAK */
     }
-    .guide-dot.is-active{width:16px;background: rgba(30,41,59,0.58);transform: none;} /* UI TWEAK */
+    .guide-dot.is-active{width:16px;background: rgba(30,41,59,0.62);opacity:0.84;animation: guideDotBreath 14s ease-in-out infinite;} /* UI TWEAK */
+    @keyframes guideDotBreath{ /* UI TWEAK */
+      0%,100%{opacity:0.55;}
+      50%{opacity:0.85;}
+    }
     @media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
         opacity: 1;
         transform: none;
         transition: none;
       }
+      .rippleHint::before,.rippleHint::after,.guide-dot.is-active{animation:none !important;} /* UI TWEAK */
     }
   </style>
 </head>
