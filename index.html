@@ -30,37 +30,26 @@
       overflow-wrap: normal;
     }
     .guide-card{
-      background: rgba(255,255,255,0.74);
-      border: 1px solid rgba(148,163,184,0.24);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 10px 30px rgba(15,23,42,0.05);
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(148,163,184,0.18);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      box-shadow: 0 4px 14px rgba(15,23,42,0.04);
     }
     .guide-reveal{
       opacity: 0;
       transform: translateY(8px);
-      filter: blur(3px);
-      transition: opacity 560ms ease, transform 560ms ease, filter 560ms ease;
-      will-change: opacity, transform, filter;
+      transition: opacity 420ms ease, transform 420ms ease;
+      will-change: opacity, transform;
     }
     .guide-reveal.is-visible{
       opacity: 1;
       transform: translateY(0);
-      filter: blur(0);
-    }
-    .guide-mark{
-      display: inline-block;
-      padding: 0.08rem 0.52rem;
-      border-radius: 9999px;
-      background: rgba(34,211,238,0.15);
-      color: #0f766e;
-      font-weight: 600;
     }
     @media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
         opacity: 1;
         transform: none;
-        filter: none;
         transition: none;
       }
     }
@@ -183,34 +172,34 @@
           </section>
 
           <section id="tabGuide" class="hidden space-y-3 text-sm leading-relaxed text-slate-700">
-            <div class="guide-card rounded-2xl p-4 sm:p-5 whitespace-pre-line">
-              <p class="guide-reveal">Ambient Music
-― 自然と呼吸を合わせる音の設計 ―</p>
+            <div class="guide-card rounded-2xl p-4 sm:p-5">
+              <div class="guide-reveal whitespace-pre-line">Ambient Music
+― 自然と呼吸を合わせる音の設計 ―</div>
 
-              <p class="guide-reveal">季節、時間、天候、風、UV。</p>
+              <div class="guide-reveal mt-5 whitespace-pre-line">季節、時間、天候、風、UV。</div>
 
-              <p class="guide-reveal">それらは直接鳴ることはありません。
+              <div class="guide-reveal mt-5 whitespace-pre-line">それらは直接鳴ることはありません。
 いったん静かに受け止められ、
-調性、テンポ、明るさ、きらめき、余韻へと翻訳されます。</p>
+調性、テンポ、明るさ、きらめき、余韻へと翻訳されます。</div>
 
-              <p class="guide-reveal">和音は同一キーの<span class="guide-mark">三和音のみ</span>。
-<span class="guide-mark">I / IV / V / vi</span> を中心に、
-二層のハーモニーが呼吸のように重なります。</p>
+              <div class="guide-reveal mt-5 whitespace-pre-line">和音は同一キーの三和音のみ。
+I / IV / V / vi を中心に、
+二層のハーモニーが呼吸のように重なります。</div>
 
-              <p class="guide-reveal">晴れた昼はわずかに明るく。
+              <div class="guide-reveal mt-5 whitespace-pre-line">晴れた昼はわずかに明るく。
 雨の夜は余韻が深く。
-風が強い日は、音が少し揺れる。</p>
+風が強い日は、音が少し揺れる。</div>
 
-              <p class="guide-reveal">変化は控えめです。
-けれど確実に、今日の空気をまといます。</p>
+              <div class="guide-reveal mt-5 whitespace-pre-line">変化は控えめです。
+けれど確実に、今日の空気をまといます。</div>
 
-              <p class="guide-reveal">音源は保たれ、内部だけが静かに更新されます。
-だから、途切れません。</p>
+              <div class="guide-reveal mt-5 whitespace-pre-line">音源は保たれ、内部だけが静かに更新されます。
+だから、途切れません。</div>
 
-              <p class="guide-reveal"><span class="guide-mark">同じ日は二度と鳴らない</span>。</p>
+              <div class="guide-reveal mt-5 whitespace-pre-line">同じ日は二度と鳴らない。</div>
 
-              <p class="guide-reveal">再生するたび、
-この瞬間の自然が、音になります。</p>
+              <div class="guide-reveal mt-5 whitespace-pre-line">再生するたび、
+この瞬間の自然が、音になります。</div>
             </div>
           </section>
         </div>
@@ -294,7 +283,7 @@ function openSettings(){settingsOverlay.classList.remove("hidden");settingsDetai
 settingsDetails.addEventListener("toggle",()=>{if(settingsDetails.open)openSettings();}); btnCloseSettings.addEventListener("click",closeSettings); settingsBackdrop.addEventListener("click",closeSettings); document.addEventListener("keydown",(e)=>{if(e.key==="Escape")closeSettings();}); tabButtons.forEach(btn=>btn.addEventListener("click",()=>setTab(btn.dataset.tab)));
 document.getElementById("btnToggle").addEventListener("click",async()=>{if(!isRunning)await start();else stop();}); document.getElementById("btnRefresh").addEventListener("click",()=>refreshWeather()); ["seasonSel","timeSel","weatherSel"].forEach(id=>{document.getElementById(id).addEventListener("change",()=>{applyParams();if(isRunning&&!isRebuildingLoops)rebuildLoops();applyParams();});});
 function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}function bindUiNuance(){const ids=["nuanceSparkle","nuanceSpeed","nuanceBright","nuanceReverb"];ids.forEach(id=>{const el=document.getElementById(id);const chip=document.getElementById(id.replace("nuance","nuance")+"Mode");if(!el||!chip)return;el.addEventListener("input",()=>{const v=parseInt(el.value,10)||0;chip.textContent=(v===50)?"Auto":"Manual";chip.className="text-[10px] px-2 py-0.5 rounded-full border "+((v===50)?"border-slate-200 text-slate-500":"border-slate-900 text-slate-800 bg-slate-50");});});const btn=document.getElementById("btnAllAuto");if(btn){btn.addEventListener("click",()=>{["seasonSel","timeSel","weatherSel"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="auto";});ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value="50";const chip=document.getElementById(id+"Mode");if(chip){chip.textContent="Auto";chip.className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200";}});mixState.bird=50;mixState.wind=50;mixState.water=50;syncMixUI();saveMix();applyParams();if(isRunning)rebuildLoops();});}}
-function initGuideReveal(){const items=Array.from(document.querySelectorAll("#tabGuide .guide-reveal"));if(!items.length)return;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;if(reduced){items.forEach(el=>el.classList.add("is-visible"));return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("is-visible");}else{entry.target.classList.remove("is-visible");}});},{root:null,threshold:0.12,rootMargin:"0px 0px -4% 0px"});items.forEach((el,i)=>{el.style.transitionDelay=`${Math.min(i*28,200)}ms`;io.observe(el);});}
+function initGuideReveal(){const items=Array.from(document.querySelectorAll("#tabGuide .guide-reveal"));if(!items.length)return;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;if(reduced){items.forEach(el=>el.classList.add("is-visible"));return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("is-visible");}else{entry.target.classList.remove("is-visible");}});},{root:null,threshold:0.12,rootMargin:"0px 0px -4% 0px"});items.forEach((el,i)=>{el.style.transitionDelay=`${Math.min(i*16,120)}ms`;io.observe(el);});}
   loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();bindUiNuance();initGuideReveal();
 </script>
 </body>
