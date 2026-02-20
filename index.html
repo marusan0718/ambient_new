@@ -72,22 +72,24 @@
       pointer-events:none;
       right:-42px;
       bottom:-44px;
-      width:220px;
-      height:220px;
+      width:260px;
+      height:260px;
       border-radius:48% 52% 51% 49% / 53% 47% 52% 48%;
       z-index:0;
       background:
-        radial-gradient(circle at 66% 64%, transparent 48%, rgba(15,23,42,0.09) 49%, transparent 50%),
-        radial-gradient(circle at 66% 64%, transparent 60%, rgba(15,23,42,0.08) 61%, transparent 62%),
-        radial-gradient(circle at 66% 64%, transparent 72%, rgba(15,23,42,0.07) 73%, transparent 74%);
+        radial-gradient(circle at 66% 64%, transparent 48%, rgba(15,23,42,0.06) 49%, transparent 50%),
+        radial-gradient(circle at 66% 64%, transparent 60%, rgba(15,23,42,0.05) 61%, transparent 62%),
+        radial-gradient(circle at 66% 64%, transparent 72%, rgba(15,23,42,0.04) 73%, transparent 74%);
+      filter: blur(1.4px);
     }
     .rippleHint::after{ /* UI TWEAK */
       right:-36px;
       bottom:-38px;
-      width:198px;
-      height:198px;
-      opacity:0.82;
-      transform:rotate(-7deg) scale(1.03);
+      width:232px;
+      height:232px;
+      opacity:0.42;
+      transform:rotate(-7deg) scale(1.05);
+      filter: blur(1.8px);
     }
     .rippleHint > *{position:relative;z-index:1;} /* UI TWEAK */
     .caption-line{margin:0;} /* UI TWEAK */
@@ -104,32 +106,44 @@
       position: relative;
     }
     .guide-pages::-webkit-scrollbar{display:none;} /* UI TWEAK */
+    .guide-pages::before{ /* UI TWEAK */
+      content:"";
+      position:absolute;
+      top: 12%;
+      left: 2px;
+      width: 1px;
+      height: 76px;
+      background: linear-gradient(to bottom, rgba(14,165,233,0.00), rgba(14,165,233,0.16), rgba(14,165,233,0.00));
+      pointer-events:none;
+      z-index:0;
+    }
     .guide-page{ /* UI TWEAK */
       min-height: 62vh;
       scroll-snap-align: start;
       display: grid;
-      align-content: center;
-      padding: 10vh 2px;
+      align-content: start;
+      padding: 14vh 2px 6vh;
     }
     .guide-page-text{ /* UI TWEAK */
       margin: 0;
       line-height: 2.12;
     }
-    .guide-page-text + .guide-page-text{margin-top: 18px;} /* UI TWEAK */
+    .guide-page-text + .guide-page-text{margin-top: 20px;} /* UI TWEAK */
+    .guide-page-text + .guide-page-text + .guide-page-text{margin-top: 15px;} /* UI TWEAK */
     .guide-indicator{ /* UI TWEAK */
       margin-top: 8px;
       display:flex;
       justify-content:center;
-      gap:7px;
+      gap:6px;
     }
     .guide-dot{ /* UI TWEAK */
-      width: 5px;
-      height: 5px;
+      width: 12px;
+      height: 1px;
       border-radius: 9999px;
-      background: rgba(30,41,59,0.24);
-      transition: background 240ms ease, transform 240ms ease;
+      background: rgba(30,41,59,0.20);
+      transition: background 240ms ease, transform 240ms ease, width 240ms ease;
     }
-    .guide-dot.is-active{background: rgba(30,41,59,0.66);transform: scale(1.08);} /* UI TWEAK */
+    .guide-dot.is-active{width:16px;background: rgba(30,41,59,0.58);transform: none;} /* UI TWEAK */
     @media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
         opacity: 1;
