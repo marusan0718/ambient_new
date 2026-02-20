@@ -29,28 +29,31 @@
       word-break: keep-all;
       overflow-wrap: normal;
     }
-    .guide-card{
-      background: rgba(255,255,255,0.78);
-      border: 1px solid rgba(148,163,184,0.18);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      box-shadow: 0 4px 14px rgba(15,23,42,0.04);
-    }
     .guide-reveal{
       opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 420ms ease, transform 420ms ease;
+      transform: translateY(4px);
+      transition: opacity 460ms ease, transform 460ms ease;
       will-change: opacity, transform;
     }
     .guide-reveal.is-visible{
       opacity: 1;
       transform: translateY(0);
     }
-    .guide-prose{
-      max-width: 54ch;
+    .guide-caption{
+      max-width: 52ch;
       margin-inline: auto;
-      line-height: 1.92;
       color: rgb(51 65 85);
+      font-size: clamp(15px, 1.55vw, 16px);
+      line-height: 2.18;
+    }
+    .guide-caption-title{
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      color: rgb(71 85 105);
+      text-transform: none;
+    }
+    .guide-block + .guide-block{
+      margin-top: 32px;
     }
     @media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
@@ -177,36 +180,36 @@
             </div>
           </section>
 
-          <section id="tabGuide" class="hidden space-y-3 text-sm leading-relaxed text-slate-700">
-            <div class="guide-card rounded-2xl p-5 sm:p-6">
-              <div class="guide-prose"><div class="guide-reveal whitespace-pre-line">Ambient Music
+          <section id="tabGuide" class="hidden text-slate-700">
+            <div class="guide-caption px-1 sm:px-2 py-2 sm:py-3">
+              <div class="guide-block guide-reveal whitespace-pre-line guide-caption-title">Ambient Music
 ― 自然と呼吸を合わせる音の設計 ―</div>
 
-              <div class="guide-reveal mt-6 whitespace-pre-line">季節、時間、天候、風、UV。</div>
+              <div class="guide-block guide-reveal whitespace-pre-line">季節、時間、天候、風、UV。</div>
 
-              <div class="guide-reveal mt-6 whitespace-pre-line">それらは直接鳴ることはありません。
+              <div class="guide-block guide-reveal whitespace-pre-line">それらは直接鳴ることはありません。
 いったん静かに受け止められ、
 調性、テンポ、明るさ、きらめき、余韻へと翻訳されます。</div>
 
-              <div class="guide-reveal mt-6 whitespace-pre-line">和音は同一キーの三和音のみ。
+              <div class="guide-block guide-reveal whitespace-pre-line">和音は同一キーの三和音のみ。
 I / IV / V / vi を中心に、
 二層のハーモニーが呼吸のように重なります。</div>
 
-              <div class="guide-reveal mt-6 whitespace-pre-line">晴れた昼はわずかに明るく。
+              <div class="guide-block guide-reveal whitespace-pre-line">晴れた昼はわずかに明るく。
 雨の夜は余韻が深く。
 風が強い日は、音が少し揺れる。</div>
 
-              <div class="guide-reveal mt-6 whitespace-pre-line">変化は控えめです。
+              <div class="guide-block guide-reveal whitespace-pre-line">変化は控えめです。
 けれど確実に、今日の空気をまといます。</div>
 
-              <div class="guide-reveal mt-6 whitespace-pre-line">音源は保たれ、内部だけが静かに更新されます。
+              <div class="guide-block guide-reveal whitespace-pre-line">音源は保たれ、内部だけが静かに更新されます。
 だから、途切れません。</div>
 
-              <div class="guide-reveal mt-6 whitespace-pre-line">同じ日は二度と鳴らない。</div>
+              <div class="guide-block guide-reveal whitespace-pre-line">同じ日は二度と鳴らない。</div>
 
-              <div class="guide-reveal mt-6 whitespace-pre-line">再生するたび、
+              <div class="guide-block guide-reveal whitespace-pre-line">再生するたび、
 この瞬間の自然が、音になります。</div>
-            </div></div>
+            </div>
           </section>
         </div>
       </div>
