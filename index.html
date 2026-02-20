@@ -31,8 +31,8 @@
     }
     .guide-reveal{
       opacity: 0;
-      transform: translateY(4px);
-      transition: opacity 460ms ease, transform 460ms ease;
+      transform: translateY(11px); /* UI TWEAK */
+      transition: opacity 820ms cubic-bezier(0.22, 1, 0.36, 1), transform 820ms cubic-bezier(0.22, 1, 0.36, 1); /* UI TWEAK */
       will-change: opacity, transform;
     }
     .guide-reveal.is-visible{
@@ -91,7 +91,7 @@
     }
     .rippleHint > *{position:relative;z-index:1;} /* UI TWEAK */
     .guide-block + .guide-block{
-      margin-top: 30px;
+      margin-top: 24px; /* UI TWEAK */
     }
     @media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
@@ -220,33 +220,32 @@
 
           <section id="tabGuide" class="hidden">
             <div class="guide-caption rippleHint museum-type"> <!-- UI TWEAK -->
-              <div class="guide-block guide-reveal whitespace-pre-line guide-caption-title">Ambient Music
-― 自然と呼吸を合わせる音の設計 ―</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal guide-caption-title">Ambient Music</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal guide-caption-title">― 自然と呼吸を合わせる音の設計 ―</div> <!-- UI TWEAK -->
 
-              <div class="guide-block guide-reveal whitespace-pre-line">季節、時間、天候、風、UV。</div>
+              <div class="guide-block guide-reveal">季節、時間、天候、風、UV。</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal">それらは直接鳴ることはありません。</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal">いったん静かに受け止められ、</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal">調性、テンポ、明るさ、きらめき、余韻へと翻訳されます。</div> <!-- UI TWEAK -->
 
-              <div class="guide-block guide-reveal whitespace-pre-line">それらは直接鳴ることはありません。
-いったん静かに受け止められ、
-調性、テンポ、明るさ、きらめき、余韻へと翻訳されます。</div>
+              <div class="guide-block guide-reveal">和音は同一キーの三和音のみ。</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal">I / IV / V / vi を中心に、</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal">二層のハーモニーが呼吸のように重なります。</div> <!-- UI TWEAK -->
 
-              <div class="guide-block guide-reveal whitespace-pre-line">和音は同一キーの三和音のみ。
-I / IV / V / vi を中心に、
-二層のハーモニーが呼吸のように重なります。</div>
+              <div class="guide-block guide-reveal">晴れた昼はわずかに明るく。</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal">雨の夜は余韻が深く。</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal">風が強い日は、音が少し揺れる。</div> <!-- UI TWEAK -->
 
-              <div class="guide-block guide-reveal whitespace-pre-line">晴れた昼はわずかに明るく。
-雨の夜は余韻が深く。
-風が強い日は、音が少し揺れる。</div>
+              <div class="guide-block guide-reveal">変化は控えめです。</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal">けれど確実に、今日の空気をまといます。</div> <!-- UI TWEAK -->
 
-              <div class="guide-block guide-reveal whitespace-pre-line">変化は控えめです。
-けれど確実に、今日の空気をまといます。</div>
+              <div class="guide-block guide-reveal">音源は保たれ、内部だけが静かに更新されます。</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal">だから、途切れません。</div> <!-- UI TWEAK -->
 
-              <div class="guide-block guide-reveal whitespace-pre-line">音源は保たれ、内部だけが静かに更新されます。
-だから、途切れません。</div>
+              <div class="guide-block guide-reveal">同じ音は二度と鳴らない。</div>
 
-              <div class="guide-block guide-reveal whitespace-pre-line">同じ音は二度と鳴らない。</div>
-
-              <div class="guide-block guide-reveal whitespace-pre-line">再生するたび、
-この瞬間の自然が、音になります。</div>
+              <div class="guide-block guide-reveal">再生するたび、</div> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal">この瞬間の自然が、音になります。</div> <!-- UI TWEAK -->
             </div>
           </section>
         </div>
@@ -565,7 +564,7 @@ function openSettings(){settingsOverlay.classList.remove("hidden");settingsDetai
 settingsDetails.addEventListener("toggle",()=>{if(settingsDetails.open)openSettings();}); btnCloseSettings.addEventListener("click",closeSettings); settingsBackdrop.addEventListener("click",closeSettings); document.addEventListener("keydown",(e)=>{if(e.key==="Escape")closeSettings();}); tabButtons.forEach(btn=>btn.addEventListener("click",()=>setTab(btn.dataset.tab)));
 document.getElementById("btnToggle").addEventListener("click",async()=>{if(!isRunning)await start();else stop();}); document.getElementById("btnRefresh").addEventListener("click",()=>refreshWeather()); ["seasonSel","timeSel","weatherSel"].forEach(id=>{document.getElementById(id).addEventListener("change",()=>{applyParams();if(isRunning&&!isRebuildingLoops)rebuildLoops();applyParams();});});
 function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}function bindUiNuance(){const ids=["nuanceSparkle","nuanceSpeed","nuanceBright","nuanceReverb"];ids.forEach(id=>{const el=document.getElementById(id);const chip=document.getElementById(id.replace("nuance","nuance")+"Mode");if(!el||!chip)return;el.addEventListener("input",()=>{const v=parseInt(el.value,10)||0;chip.textContent=(v===50)?"Auto":"Manual";chip.className="text-[10px] px-2 py-0.5 rounded-full border "+((v===50)?"border-slate-200 text-slate-500":"border-slate-900 text-slate-800 bg-slate-50");});});const btn=document.getElementById("btnAllAuto");if(btn){btn.addEventListener("click",()=>{["seasonSel","timeSel","weatherSel"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="auto";});ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value="50";const chip=document.getElementById(id+"Mode");if(chip){chip.textContent="Auto";chip.className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200";}});mixState.bird=50;mixState.wind=50;mixState.water=50;syncMixUI();saveMix();applyParams();if(isRunning)rebuildLoops();});}}
-function initGuideReveal(){const items=Array.from(document.querySelectorAll("#tabGuide .guide-reveal"));if(!items.length)return;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;if(reduced){items.forEach(el=>el.classList.add("is-visible"));return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("is-visible");}else{entry.target.classList.remove("is-visible");}});},{root:null,threshold:0.12,rootMargin:"0px 0px -4% 0px"});items.forEach((el,i)=>{el.style.transitionDelay=`${Math.min(i*16,120)}ms`;io.observe(el);});}
+function initGuideReveal(){const items=Array.from(document.querySelectorAll("#tabGuide .guide-reveal"));if(!items.length)return;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;if(reduced||!("IntersectionObserver" in window)){items.forEach(el=>el.classList.add("is-visible"));return;}const io=new IntersectionObserver((entries,observer)=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("is-visible");observer.unobserve(entry.target);}});},{root:null,threshold:0.12,rootMargin:"0px 0px -4% 0px"});items.forEach((el,i)=>{el.style.transitionDelay=`${Math.min(i*28,140)}ms`;io.observe(el);});} // UI TWEAK
   loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();bindUiNuance();initGuideReveal();
 </script>
 </body>
