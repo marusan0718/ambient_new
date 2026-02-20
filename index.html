@@ -232,7 +232,7 @@ function weatherCategoryFromCode(code){if(code===0||[1,2].includes(code))return"
 async function fetchWeatherByCoords(lat,lon){const url=new URL(OPEN_METEO_URL);url.searchParams.set("latitude",lat);url.searchParams.set("longitude",lon);url.searchParams.set("current","weather_code,wind_speed_10m");url.searchParams.set("daily","uv_index_max");url.searchParams.set("timezone","auto");const res=await fetch(url.toString());if(!res.ok)throw new Error("天気取得に失敗しました");const data=await res.json();const code=data?.current?.weather_code;const wind=data?.current?.wind_speed_10m;const uvArr=data?.daily?.uv_index_max;const uv=Array.isArray(uvArr)?uvArr[0]:null;if(typeof code!=="number"||typeof wind!=="number")throw new Error("天気データ形式が想定と違います");return {code,wind,uv:(typeof uv==="number"?uv:null)};}
 function getCurrentPosition(){return new Promise((resolve,reject)=>{if(!navigator.geolocation)return reject(new Error("このブラウザは位置情報に対応していません"));navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:false,timeout:8000,maximumAge:60_000});});}
 let wakeLock=null; async function requestWakeLock(){try{if(!("wakeLock" in navigator))return;wakeLock=await navigator.wakeLock.request("screen");wakeLock.addEventListener("release",()=>{wakeLock=null;});}catch(e){}} async function releaseWakeLock(){try{if(wakeLock)await wakeLock.release();}catch(e){}wakeLock=null;}
-// [STABILITY PATCH] lightweight runtime guards and recovery state
+// [STABILITY FIX] lightweight runtime guards and recovery state
 let lastSoundAt=Date.now();
 let audioRecoveryInFlight=false;
 let lastRecoveryAttemptAt=0;
@@ -255,7 +255,7 @@ function markLayerSound(layer){const now=Date.now();layerLastSoundAt[layer]=now;
 function trackedTriggerAttackRelease(target,...args){markSoundActivity();return target.triggerAttackRelease(...args);}
 function trackedTriggerAttackReleaseLayer(layer,target,...args){markLayerSound(layer);return target.triggerAttackRelease(...args);}
 
-// [STABILITY PATCH] robust context/transport resume for iOS Safari + background restores
+// [STABILITY FIX] robust context/transport resume for iOS Safari + background restores
 async function resumeAudioIfNeeded(reason="unknown"){
   try{
     if(audioRecoveryInFlight)return false;
@@ -280,7 +280,7 @@ async function resumeAudioIfNeeded(reason="unknown"){
   }
 }
 
-// [STABILITY PATCH] focus/visibility recovery hooks (throttled by resumeAudioIfNeeded)
+// [STABILITY FIX] focus/visibility recovery hooks (throttled by resumeAudioIfNeeded)
 document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&isRunning){await resumeAudioIfNeeded("visibilitychange");await requestWakeLock();}});
 window.addEventListener("pageshow",async()=>{if(isRunning){await resumeAudioIfNeeded("pageshow");}});
 window.addEventListener("focus",async()=>{if(isRunning){await resumeAudioIfNeeded("focus");}});
@@ -301,7 +301,7 @@ let isRunning=false;
 let playbackWatchdogId=null;
 let lastTransportSeconds=0;
 let lastTransportCheckAt=0;
-let silentRecoveryCount=0; // [STABILITY PATCH]
+let silentRecoveryCount=0; // [STABILITY FIX]
 let isRebuildingLoops=false;
 let masterReverb, masterComp, masterLimiter;
 let filter, airHighpass, airChorus;
@@ -341,7 +341,7 @@ melodyLoop=new Tone.Loop(safeLoopCallback("melody",(time)=>{if(!crystalLead)retu
 }
 function playButtonTone(env){const btn=document.getElementById("btnToggle"),label=document.getElementById("btnLabel"),sub=document.getElementById("btnSub");if(!btn||!label||!sub)return;const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:0;const u=clamp(uvRaw/11,0,1);if(!isRunning){btn.className="mt-7 w-full rounded-[30px] px-6 py-8 transition active:scale-[0.99] bg-slate-900 text-white hover:bg-slate-800 shadow-[0_18px_40px_rgba(15,23,42,0.18)] relative overflow-hidden";label.className="text-2xl font-semibold text-white";sub.className="text-xs text-white/80";btn.style.opacity="1";btn.style.boxShadow="0 18px 40px rgba(15,23,42,0.18), inset 0 0 0 0 rgba(255,255,255,0)";return;}const byTime={morning:"from-sky-50 to-cyan-100",day:"from-sky-100 to-blue-100",evening:"from-orange-100 to-amber-100",night:"from-slate-800 to-indigo-900",late:"from-slate-900 to-indigo-900"};let grad=byTime[env.time]||byTime.day;const darkBg=(env.time==="night"||env.time==="late");if(env.weatherCat==="rain")grad=darkBg?"from-slate-800 to-slate-700":"from-slate-100 to-slate-200";const txt=darkBg?"text-white":"text-slate-900";btn.className=`mt-7 w-full rounded-[30px] px-6 py-8 transition active:scale-[0.99] bg-gradient-to-br ${grad} ${txt} shadow-[0_14px_32px_rgba(15,23,42,0.10)] border border-slate-200 relative overflow-hidden`;label.className=`text-2xl font-semibold ${darkBg?"text-white":"text-slate-900"}`;sub.className=`text-xs ${darkBg?"text-white/80":"text-slate-700"}`;const alpha=(env.weatherCat==="rain")?(0.95+0.02*u):(0.96+0.03*u);btn.style.opacity=String(alpha);btn.style.boxShadow=darkBg?"0 14px 32px rgba(15,23,42,0.14), inset 0 1px 0 rgba(255,255,255,0.08)":"0 14px 32px rgba(15,23,42,0.10), inset 0 0 0 1px rgba(255,255,255,0.35)";}
 // STABILITY FIX: per-layer silence recovery without changing musical parameters
-function recoverLayerLoopIfSilent(layer){
+async function recoverLayerLoopIfSilent(layer){
   const now=Date.now();
   const lastAt=layerLastSoundAt[layer]||0;
   const lastRecovery=layerLastRecoveryAt[layer]||0;
@@ -353,17 +353,28 @@ function recoverLayerLoopIfSilent(layer){
   layerLastRecoveryAt[layer]=now;
   lastAnyLayerRecoveryAt=now;
 
+  await resumeAudioIfNeeded(`layer-${layer}`);
+
   const loopRef=({sparkle:sparkleLoop,bird:birdLoop,wind:windLoop,water:waterLoop,melody:melodyLoop,pad:padLoop})[layer];
   const currentEnv=applyParams();
 
   if(loopRef){
     try{
-      loopRef.stop(0);
-      loopRef.start(0);
+      const callback=loopRef.callback;
+      const interval=loopRef.interval;
+      try{loopRef.stop(0);}catch(e){}
+      try{loopRef.dispose();}catch(e){}
+      const recreated=new Tone.Loop(callback,interval).start(0);
+      if(layer==="sparkle")sparkleLoop=recreated;
+      if(layer==="bird")birdLoop=recreated;
+      if(layer==="wind")windLoop=recreated;
+      if(layer==="water")waterLoop=recreated;
+      if(layer==="melody")melodyLoop=recreated;
+      if(layer==="pad")padLoop=recreated;
       markLayerSound(layer);
       return true;
     }catch(e){
-      console.warn(`[${layer}] loop soft-restart failed`,e);
+      console.warn(`[${layer}] loop recreate failed`,e);
     }
   }
 
@@ -382,7 +393,7 @@ function recoverLayerLoopIfSilent(layer){
   return false;
 }
 
-// [STABILITY PATCH] watchdog: context + transport + silence detection with bounded recovery
+// [STABILITY FIX] watchdog: context + transport + silence detection with bounded recovery
 function startPlaybackWatchdog(){
   if(playbackWatchdogId)return;
   lastTransportSeconds=Tone.Transport.seconds||0;
@@ -407,13 +418,13 @@ function startPlaybackWatchdog(){
 
     // STABILITY FIX: detect per-layer silence while transport still runs
     if(!stalled){
-      const recoveredSparkle=recoverLayerLoopIfSilent("sparkle");
-      const recoveredBird=recoverLayerLoopIfSilent("bird");
-      const recoveredWind=recoverLayerLoopIfSilent("wind");
-      const recoveredWater=recoverLayerLoopIfSilent("water");
-      const recoveredMelody=recoverLayerLoopIfSilent("melody");
-      const recoveredPad=recoverLayerLoopIfSilent("pad");
-      const recoveredHarmony=recoverLayerLoopIfSilent("harmony");
+      const recoveredSparkle=await recoverLayerLoopIfSilent("sparkle");
+      const recoveredBird=await recoverLayerLoopIfSilent("bird");
+      const recoveredWind=await recoverLayerLoopIfSilent("wind");
+      const recoveredWater=await recoverLayerLoopIfSilent("water");
+      const recoveredMelody=await recoverLayerLoopIfSilent("melody");
+      const recoveredPad=await recoverLayerLoopIfSilent("pad");
+      const recoveredHarmony=await recoverLayerLoopIfSilent("harmony");
       if(recoveredSparkle||recoveredBird||recoveredWind||recoveredWater||recoveredMelody||recoveredPad||recoveredHarmony){
         await resumeAudioIfNeeded("layer-recovered");
       }
@@ -435,7 +446,7 @@ function startPlaybackWatchdog(){
       }
 
       if((nowMs-lastSoundAt)>45000&&nowMs-lastHardRecoveryAt>HARD_RECOVERY_COOLDOWN_MS){
-        // [STABILITY PATCH] final fallback: hard reset context graph only when recovery repeatedly fails
+        // [STABILITY FIX] final fallback: hard reset context graph only when recovery repeatedly fails
         lastHardRecoveryAt=nowMs;
         try{Tone.Transport.stop();}catch(e){}
         try{Tone.Transport.cancel(0);}catch(e){}
