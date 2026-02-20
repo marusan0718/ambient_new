@@ -43,39 +43,48 @@
       max-width: 52ch;
       margin-inline: auto;
       color: rgb(30 41 59);
-      font-size: clamp(13px, 1.28vw, 14px); /* UI TWEAK */
-      line-height: 2.05; /* UI TWEAK */
+      font-size: clamp(13px, 1.2vw, 14px); /* UI TWEAK */
+      line-height: 2.12; /* UI TWEAK */
       font-family: "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","HGS明朝E",serif;
       font-weight: 400;
       position: relative; /* UI TWEAK */
-      overflow: hidden; /* UI TWEAK */
       background: #fff; /* UI TWEAK */
+      padding: 18px 16px; /* UI TWEAK */
     }
     .guide-caption-title{
-      font-size: clamp(13px, 1.28vw, 14px); /* UI TWEAK */
+      font-size: clamp(13px, 1.2vw, 14px); /* UI TWEAK */
       letter-spacing: 0.04em;
       color: rgb(30 41 59);
       font-weight: 400;
-      margin-top: 8px;
-      margin-bottom: 4px;
+      margin-top: 4px;
+      margin-bottom: 2px;
     }
-    .guide-caption-subtitle-shadow{ /* UI TWEAK */
-      text-shadow: 0 2px 10px rgba(15,23,42,0.10);
-    }
-    .guide-caption::after{ /* UI TWEAK */
+    .rippleHint{position:relative;overflow:hidden;} /* UI TWEAK */
+    .rippleHint::before,
+    .rippleHint::after{ /* UI TWEAK */
       content:"";
       position:absolute;
-      right:-26px;
-      bottom:-26px;
-      width:180px;
-      height:180px;
       pointer-events:none;
+      right:-42px;
+      bottom:-44px;
+      width:220px;
+      height:220px;
+      border-radius:48% 52% 51% 49% / 53% 47% 52% 48%;
       z-index:0;
-      opacity:1;
       background:
-        radial-gradient(circle at 70% 70%, rgba(14,116,144,0.14) 0 12%, transparent 13% 26%, rgba(14,116,144,0.11) 27% 38%, transparent 39% 56%, rgba(14,116,144,0.09) 57% 68%, transparent 69% 100%);
+        radial-gradient(circle at 66% 64%, transparent 48%, rgba(15,23,42,0.09) 49%, transparent 50%),
+        radial-gradient(circle at 66% 64%, transparent 60%, rgba(15,23,42,0.08) 61%, transparent 62%),
+        radial-gradient(circle at 66% 64%, transparent 72%, rgba(15,23,42,0.07) 73%, transparent 74%);
     }
-    .guide-caption > *{position:relative;z-index:1;} /* UI TWEAK */
+    .rippleHint::after{ /* UI TWEAK */
+      right:-36px;
+      bottom:-38px;
+      width:198px;
+      height:198px;
+      opacity:0.82;
+      transform:rotate(-7deg) scale(1.03);
+    }
+    .rippleHint > *{position:relative;z-index:1;} /* UI TWEAK */
     .guide-block + .guide-block{
       margin-top: 30px;
     }
@@ -205,10 +214,9 @@
           </section>
 
           <section id="tabGuide" class="hidden">
-            <div class="guide-caption px-1 sm:px-2 py-2 sm:py-3 border border-slate-200 rounded-2xl shadow-[0_8px_24px_rgba(15,23,42,0.04)]"> <!-- UI TWEAK -->
-              <div class="guide-block guide-reveal guide-caption-title">音の設計思想</div> <!-- UI TWEAK -->
+            <div class="guide-caption rippleHint"> <!-- UI TWEAK -->
               <div class="guide-block guide-reveal whitespace-pre-line guide-caption-title">Ambient Music
-<span class="guide-caption-subtitle-shadow">― 自然と呼吸を合わせる音の設計 ―</span></div>
+― 自然と呼吸を合わせる音の設計 ―</div> <!-- UI TWEAK -->
 
               <div class="guide-block guide-reveal whitespace-pre-line">季節、時間、天候、風、UV。</div>
 
