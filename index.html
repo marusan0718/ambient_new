@@ -43,19 +43,39 @@
       max-width: 52ch;
       margin-inline: auto;
       color: rgb(30 41 59);
-      font-size: clamp(15px, 1.52vw, 16px);
-      line-height: 2.18;
+      font-size: clamp(13px, 1.28vw, 14px); /* UI TWEAK */
+      line-height: 2.05; /* UI TWEAK */
       font-family: "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","HGS明朝E",serif;
       font-weight: 400;
+      position: relative; /* UI TWEAK */
+      overflow: hidden; /* UI TWEAK */
+      background: #fff; /* UI TWEAK */
     }
     .guide-caption-title{
-      font-size: inherit;
+      font-size: clamp(13px, 1.28vw, 14px); /* UI TWEAK */
       letter-spacing: 0.04em;
       color: rgb(30 41 59);
       font-weight: 400;
       margin-top: 8px;
       margin-bottom: 4px;
     }
+    .guide-caption-subtitle-shadow{ /* UI TWEAK */
+      text-shadow: 0 2px 10px rgba(15,23,42,0.10);
+    }
+    .guide-caption::after{ /* UI TWEAK */
+      content:"";
+      position:absolute;
+      right:-26px;
+      bottom:-26px;
+      width:180px;
+      height:180px;
+      pointer-events:none;
+      z-index:0;
+      opacity:1;
+      background:
+        radial-gradient(circle at 70% 70%, rgba(14,116,144,0.14) 0 12%, transparent 13% 26%, rgba(14,116,144,0.11) 27% 38%, transparent 39% 56%, rgba(14,116,144,0.09) 57% 68%, transparent 69% 100%);
+    }
+    .guide-caption > *{position:relative;z-index:1;} /* UI TWEAK */
     .guide-block + .guide-block{
       margin-top: 30px;
     }
@@ -133,7 +153,7 @@
           </div>
           <div class="mt-3 flex gap-2">
             <button data-tab="tabSettings" class="tabBtn flex-1 px-3 py-2 rounded-2xl text-sm border border-slate-200 bg-sky-50/60 text-slate-700">手動調整</button>
-            <button data-tab="tabGuide" class="tabBtn flex-1 px-3 py-2 rounded-2xl text-sm border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">仕組み</button>
+            <button data-tab="tabGuide" class="tabBtn flex-1 px-3 py-2 rounded-2xl text-sm border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">音の設計思想</button>
           </div>
         </div>
 
@@ -185,9 +205,10 @@
           </section>
 
           <section id="tabGuide" class="hidden">
-            <div class="guide-caption px-1 sm:px-2 py-2 sm:py-3">
+            <div class="guide-caption px-1 sm:px-2 py-2 sm:py-3 border border-slate-200 rounded-2xl shadow-[0_8px_24px_rgba(15,23,42,0.04)]"> <!-- UI TWEAK -->
+              <div class="guide-block guide-reveal guide-caption-title">音の設計思想</div> <!-- UI TWEAK -->
               <div class="guide-block guide-reveal whitespace-pre-line guide-caption-title">Ambient Music
-― 自然と呼吸を合わせる音の設計 ―</div>
+<span class="guide-caption-subtitle-shadow">― 自然と呼吸を合わせる音の設計 ―</span></div>
 
               <div class="guide-block guide-reveal whitespace-pre-line">季節、時間、天候、風、UV。</div>
 
@@ -320,7 +341,51 @@ function sparkleScale(key,weatherCat,time){const major={"C":["C5","D5","E5","F5"
 function getEnv(){const seasonSel=document.getElementById("seasonSel").value,timeSel=document.getElementById("timeSel").value,weatherSel=document.getElementById("weatherSel").value;const season=(seasonSel==="auto")?autoSeason():seasonSel;const time=(timeSel==="auto")?autoTimeBlock():timeSel;const weatherCat=(weatherSel==="auto")?weatherCategoryFromCode(lastWeather.code):weatherSel;return {season,time,weatherCat};}
 function prettyTimeLabel(t){if(t==="morning")return"朝";if(t==="day")return"昼";if(t==="evening")return"夕";if(t==="night")return"夜";if(t==="late")return"深夜";if(t==="spring")return"春";if(t==="summer")return"夏";if(t==="autumn")return"秋";if(t==="winter")return"冬";return t;} function prettyWeatherLabel(w){if(w==="clear")return"晴れ";if(w==="rain")return"雨";if(w==="other")return"曇り";return w;}
 function isDayTimeBlock(time){return(time==="day"||time==="morning"||time==="evening");}
-function moodLine(env,windNorm){if(env.time==="late"||env.time==="night")return (env.weatherCat==="rain")?"夜のしっとりした余白、響きは静かに。":"夜の澄んだ空気、きらめき控えめ。";if(env.weatherCat==="clear")return (windNorm>0.55)?"光の粒がやわらかく広がる。":"やさしい光と透明感。";if(env.weatherCat==="rain")return "雨の陰影、余韻は穏やか。";return "中庸で落ち着いた空気感。";}
+function moodLine(env,windNorm){ // UI TWEAK
+  const wind=clamp(lastWeather.wind??0,0,30);
+  const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;
+  const dayUv=(uvRaw!==null&&(env.time==="morning"||env.time==="day"||env.time==="evening"))?uvRaw:0;
+  const windBand=(wind<1.2)?"calm":(wind<3.5)?"breeze":(wind<7)?"windy":"strong";
+
+  if(env.weatherCat==="rain"){
+    const rainPhrases={
+      calm:["雨の輪郭がやわらかく、余韻が静かに滲む。","しっとりした空気に、丸い余白がほどける。"],
+      breeze:["雨粒の気配に、淡い揺らぎが重なる。","湿った透明感と、やさしい残響が寄り添う。"],
+      windy:["雨脚の向こうで、余韻がゆっくりほどける。","輪郭はやわらかく、空気の層が静かに重なる。"],
+      strong:["雨の気配が深まり、滲む余韻が長く残る。","濡れた空気の中で、静かな揺れが続く。"]
+    };
+    return choose(rainPhrases[windBand]);
+  }
+
+  if(env.time==="night"||env.time==="late"){
+    const nightPhrases=(windBand==="strong")
+      ?["夜の静けさに、低い風のうねりが混じる。","深い空気の中で、細い光だけが残る。"]
+      :["夜の澄んだ空気、きらめきは控えめに整う。","静かな余白に、透明な響きが淡く漂う。","深夜の呼吸に合わせ、輪郭はやわらかくほどける。"];
+    return choose(nightPhrases);
+  }
+
+  if(env.weatherCat==="clear"){
+    if(dayUv>=7){
+      const uvHigh=["光の密度が高く、乾いた余韻がすっと伸びる。","明るい空気に、透明な反射が細く差し込む。"];
+      return choose(uvHigh);
+    }
+    const clearByWind={
+      calm:["澄んだ空気が静かに広がる。","やわらかな光が、穏やかに滞在する。"],
+      breeze:["そよぐ空気に、細いきらめきが重なる。","軽い風とともに、透明な余韻が揺れる。"],
+      windy:["風に合わせて、光の粒がゆるやかに巡る。","空気の流れに、明るい反射がふわりと混ざる。"],
+      strong:["風の輪郭をまとい、きらめきが端正に増える。","抜ける空気の中で、明るい層が静かに重なる。"]
+    };
+    return choose(clearByWind[windBand]);
+  }
+
+  const otherByWind={
+    calm:["落ち着いた空気感で、余白がゆっくり保たれる。","中庸な景色に、柔らかな奥行きが宿る。"],
+    breeze:["穏やかな流れの中で、響きが軽く揺れる。","静かな層に、淡い明るさが重なる。"],
+    windy:["風の動きに合わせて、空気の密度が移ろう。","輪郭は保ったまま、余韻がゆるやかに流れる。"],
+    strong:["空気の流れが強まり、響きの層が静かに入れ替わる。","透明なまま、風の気配だけが少し際立つ。"]
+  };
+  return choose(otherByWind[windBand]);
+}
 function applyParams(){const env=getEnv();const key=keyFromSeason(env.season);applyWhiteByTime(env.time);let bpm=66;if(env.time==="morning")bpm=74;if(env.time==="day")bpm=78;if(env.time==="evening")bpm=70;if(env.time==="night")bpm=60;if(env.time==="late")bpm=54;Tone.Transport.bpm.value=bpm;const seasonFx=SEASON_SOUND_PROFILE[env.season]||SEASON_SOUND_PROFILE.spring;const timeFx=TIME_SOUND_PROFILE[env.time]||TIME_SOUND_PROFILE.day;const weatherFx=WEATHER_SOUND_PROFILE[env.weatherCat]||WEATHER_SOUND_PROFILE.other;const windNorm=clamp((lastWeather.wind??0)/15,0,1);let cutoff=1950+980*weatherFx.brightness+560*seasonFx.brightness+460*timeFx.brightness;let wet=0.42+weatherFx.wet+0.04*timeFx.space;let decay=14.5+weatherFx.decay+4.0*timeFx.space+1.6*seasonFx.calm;const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;const showUv=(uvRaw!==null)&&isDayTimeBlock(env.time);const uvText=showUv?uvRaw.toFixed(1):"—";if(showUv){const u=clamp(uvRaw/11,0,1);cutoff+=560*u;wet-=0.06*u;decay-=1.2*u;}filter.frequency.value=clamp(cutoff,950,3600);masterReverb.wet.value=clamp(wet,0.28,0.70);masterReverb.decay=clamp(decay,9.0,20.0);if(birdFilter){birdFilter.frequency.value=clamp(2050+560*weatherFx.reflect+220*timeFx.brightness,1700,2950);}if(sparkleAutoPanner){let f=0.10;if(env.time==="day")f=0.13;if(env.time==="morning")f=0.12;if(env.time==="evening")f=0.11;if(env.time==="night")f=0.085;if(env.time==="late")f=0.070;sparkleAutoPanner.frequency.value=f;sparkleAutoPanner.depth=clamp(0.70+0.12*weatherFx.reflect+0.11*windNorm,0.62,0.92);}if(airHighpass){airHighpass.frequency.value=clamp(72+52*seasonFx.brightness+42*windNorm,60,155);}if(airChorus){airChorus.depth=clamp(0.10+0.16*seasonFx.shimmer+0.14*windNorm,0.08,0.22);airChorus.wet.value=clamp(0.12+0.08*timeFx.space+0.08*weatherFx.reflect,0.10,0.24);airChorus.frequency.value=clamp(0.15+0.28*windNorm,0.12,0.45);}if(sparkle){sparkle.harmonicity.value=clamp(1.7+0.7*seasonFx.shimmer+0.5*windNorm,1.4,3.1);sparkle.modulationIndex.value=clamp(2.1+1.2*weatherFx.reflect+0.9*windNorm,1.4,4.2);sparkle.volume.value=clamp(-13+2.4*weatherFx.reflect+1.6*timeFx.brightness,-15,-10);}if(crystalLead){crystalLead.harmonicity.value=clamp(2.15+0.5*seasonFx.shimmer+0.3*windNorm,1.8,3.2);crystalLead.modulationIndex.value=clamp(1.5+1.1*weatherFx.reflect+0.45*windNorm,1.1,3.2);crystalLead.volume.value=clamp(-19+2.8*weatherFx.reflect+1.2*timeFx.brightness,-21,-15);}if(stringPad){stringPad.volume.value=clamp(-20+2.1*timeFx.space+1.2*seasonFx.calm,-21,-16);}if(lowLead){lowLead.volume.value=clamp(-20+1.8*seasonFx.calm+1.0*timeFx.space,-21,-16);}if(lowDrone){lowDrone.volume.value=clamp(-22+2.2*seasonFx.calm+1.6*timeFx.space,-24,-17);}if(bellSynth){bellSynth.resonance=clamp(1150+380*weatherFx.reflect+240*windNorm,900,1800);bellSynth.modulationIndex=clamp(18+10*seasonFx.shimmer+8*weatherFx.reflect,12,34);bellSynth.volume.value=clamp(-23+3.0*weatherFx.reflect+1.2*timeFx.brightness,-25,-18);}if(chimeSynth){chimeSynth.harmonicity.value=clamp(2.4+0.9*seasonFx.shimmer+0.6*windNorm,2.0,4.0);chimeSynth.modulationIndex.value=clamp(2.0+1.5*weatherFx.reflect+0.6*windNorm,1.6,4.2);chimeSynth.volume.value=clamp(-24+2.6*weatherFx.reflect+0.8*timeFx.brightness,-25,-19);}if(stringEnsemble){stringEnsemble.volume.value=clamp(-22+2.2*timeFx.space+1.2*seasonFx.calm,-23,-17);}if(harmonySlots){const hAttack=clamp(2.2*seasonFx.padAttack*(1+0.28*timeFx.space),1.9,4.8);const hRelease=clamp(16.5+4.2*timeFx.space+2.0*seasonFx.calm,14.0,23.0);const hHarmonicity=clamp(1.35+0.45*seasonFx.shimmer+0.22*weatherFx.reflect,1.2,2.3);harmonySlots.forEach(slot=>{slot.synth.set({harmonicity:hHarmonicity,modulationIndex:clamp(1.2+0.4*weatherFx.reflect,1.0,2.0),envelope:{attack:hAttack,decay:0.7,sustain:0.8,release:hRelease},modulationEnvelope:{attack:0.4,decay:0.8,sustain:0.3,release:clamp(2.8+timeFx.space*1.6,2.8,4.4)}});});}if(windFilter){windFilter.frequency.value=clamp(340+120*weatherFx.reflect+90*windNorm,280,520);windFilter.Q.value=clamp(0.82+0.26*windNorm+(env.time==="late"?0.14:0),0.78,1.22);}if(waterFilter){waterFilter.frequency.value=clamp(780+210*weatherFx.reflect+80*timeFx.space,680,1080);}const windText=`${(lastWeather.wind??0).toFixed(1)} m/s`;setMediaSessionMetadata(`${env.season} / ${env.weatherCat} / wind ${windText} / UV ${uvText}`);const sub=`Key ${key}`;const mood=moodLine(env,windNorm);setStatusChip(describeWeather(lastWeather.code));playButtonTone(env);if(isRunning)setStatus(sub,mood);const mKey=document.getElementById("metricKey"),mTempo=document.getElementById("metricTempo"),mBright=document.getElementById("metricBrightness"),mSpark=document.getElementById("metricSparkle"),mRev=document.getElementById("metricReverb");if(mKey)mKey.textContent=key;if(mTempo)mTempo.textContent=`${Math.round(bpm)} BPM`;if(mBright)mBright.textContent=(cutoff>2500)?"High":(cutoff>1700?"Mid":"Soft");if(mSpark)mSpark.textContent=(windNorm>0.6||env.weatherCat==="clear")?"Fine+":"Quiet";if(mRev)mRev.textContent=(wet>0.5)?"Deep":(wet>0.38?"Airy":"Dry");const eSeason=document.getElementById("envSeason"),eTime=document.getElementById("envTime"),eWeather=document.getElementById("envWeather"),eWindUv=document.getElementById("envWindUv");if(eSeason)eSeason.textContent=prettyTimeLabel(env.season)||env.season;if(eTime)eTime.textContent=prettyTimeLabel(env.time);if(eWeather)eWeather.textContent=prettyWeatherLabel(env.weatherCat);if(eWindUv)eWindUv.textContent=`${(lastWeather.wind??0).toFixed(1)}m/s · UV ${uvText}`;return {...env,key,bpm,seasonFx,timeFx,weatherFx,windNorm};}
 function clearHarmonyScheduler(){if(chordEventId!==null){try{Tone.Transport.clear(chordEventId);}catch(e){} chordEventId=null;}}
 function harmonyGapSeconds(r){let g=randomBetween(0.55,2.1);const burstChance=(r.time==="day"||r.time==="morning")?0.30:(r.time==="evening")?0.24:(r.time==="night")?0.16:0.12;if(Math.random()<burstChance){g*=randomBetween(0.20,0.46);}if(r.time==="late")g*=1.12;if(r.time==="night")g*=1.04;if(r.weatherCat==="rain")g*=1.05;return clamp(g,0.22,3.3);} function octaveShifted(note,octShift){const f=Tone.Frequency(note);return f.transpose(12*octShift).toNote();}
