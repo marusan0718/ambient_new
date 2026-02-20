@@ -136,6 +136,13 @@
       box-sizing: border-box; /* DESIGN UPDATE */
       background: #fff; /* DESIGN UPDATE */
     }
+    .guide-page[data-slide="0"]{background: radial-gradient(200px 140px at 88% 86%, rgba(148,175,198,0.08), rgba(255,255,255,0));} /* DESIGN UPDATE */
+    .guide-page[data-slide="1"]{background: linear-gradient(160deg, rgba(226,232,240,0.08), rgba(255,255,255,0) 46%);} /* DESIGN UPDATE */
+    .guide-page[data-slide="2"]{background: radial-gradient(220px 150px at 14% 88%, rgba(205,186,175,0.08), rgba(255,255,255,0));} /* DESIGN UPDATE */
+    .guide-page[data-slide="3"]{background: radial-gradient(210px 150px at 86% 86%, rgba(180,169,177,0.08), rgba(255,255,255,0));} /* DESIGN UPDATE */
+    .guide-page[data-slide="4"]{background: linear-gradient(170deg, rgba(148,163,184,0.07), rgba(255,255,255,0) 44%);} /* DESIGN UPDATE */
+    .guide-page[data-slide="5"]{background: radial-gradient(220px 160px at 12% 86%, rgba(148,163,184,0.08), rgba(255,255,255,0));} /* DESIGN UPDATE */
+    .guide-page[data-slide="6"]{background: radial-gradient(200px 140px at 86% 88%, rgba(176,196,204,0.08), rgba(255,255,255,0));} /* DESIGN UPDATE */
     .guide-page-text{ /* DESIGN UPDATE */
       margin: 0; /* DESIGN UPDATE */
       line-height: 2.1; /* DESIGN UPDATE */
@@ -297,39 +304,39 @@
           <section id="tabGuide" class="hidden">
             <div class="guide-caption rippleHint museum-type"> <!-- DESIGN UPDATE -->
               <div id="guidePages" class="guide-pages"> <!-- DESIGN UPDATE -->
-                <article class="guide-page" data-page="1"> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="1" data-slide="0"> <!-- UI TWEAK -->
                   <p class="guide-page-text guide-caption-title">Ambient Music</p>
                   <p class="guide-page-text guide-caption-title">― 自然と呼吸を合わせる音の設計 ―</p>
                 </article>
 
-                <article class="guide-page" data-page="2"> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="2" data-slide="1"> <!-- UI TWEAK -->
                   <p class="guide-page-text">季節、時間、天候、風、UV。</p>
                   <p class="guide-page-text">このアプリは、自然の値をそのまま鳴らす設計ではありません。</p>
                 </article>
 
-                <article class="guide-page" data-page="3"> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="3" data-slide="2"> <!-- UI TWEAK -->
                   <p class="guide-page-text">受け取った気配は、いったん静かに整えられます。</p>
                   <p class="guide-page-text">そして調性、テンポ、明るさ、きらめき、余韻へと翻訳されます。</p>
                 </article>
 
-                <article class="guide-page" data-page="4"> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="4" data-slide="3"> <!-- UI TWEAK -->
                   <p class="guide-page-text">和音は同一キーの三和音のみ。</p>
                   <p class="guide-page-text">I / IV / V / vi を中心に、呼吸するように重なります。</p>
                   <p class="guide-page-text">不安定さを避け、空間に溶ける輪郭を保ちます。</p>
                 </article>
 
-                <article class="guide-page" data-page="5"> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="5" data-slide="4"> <!-- UI TWEAK -->
                   <p class="guide-page-text">晴れた昼は、わずかに明るく。</p>
                   <p class="guide-page-text">雨の夜は、余韻が静かに深く。</p>
                   <p class="guide-page-text">風が強い日は、きらめきが少しだけ揺れます。</p>
                 </article>
 
-                <article class="guide-page" data-page="6"> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="6" data-slide="5"> <!-- UI TWEAK -->
                   <p class="guide-page-text">変化は控えめです。</p>
                   <p class="guide-page-text">けれど確実に、いまの空気をまといます。</p>
                 </article>
 
-                <article class="guide-page" data-page="7"> <!-- DESIGN UPDATE -->
+                <article class="guide-page" data-page="7" data-slide="6"> <!-- DESIGN UPDATE -->
                   <p class="guide-page-text">同じ音は二度と鳴らない。</p>
                   <p class="guide-page-text">再生するたび、</p>
                   <p class="guide-page-text">この瞬間の自然が、音になります。</p>
@@ -663,7 +670,7 @@ function openSettings(){settingsOverlay.classList.remove("hidden");settingsDetai
 settingsDetails.addEventListener("toggle",()=>{if(settingsDetails.open)openSettings();}); btnCloseSettings.addEventListener("click",closeSettings); settingsBackdrop.addEventListener("click",closeSettings); document.addEventListener("keydown",(e)=>{if(e.key==="Escape")closeSettings();}); tabButtons.forEach(btn=>btn.addEventListener("click",()=>setTab(btn.dataset.tab)));
 document.getElementById("btnToggle").addEventListener("click",async()=>{if(!isRunning)await start();else stop();}); document.getElementById("btnRefresh").addEventListener("click",()=>refreshWeather()); ["seasonSel","timeSel","weatherSel"].forEach(id=>{document.getElementById(id).addEventListener("change",()=>{applyParams();if(isRunning&&!isRebuildingLoops)rebuildLoops();applyParams();});});
 function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}function bindUiNuance(){const ids=["nuanceSparkle","nuanceSpeed","nuanceBright","nuanceReverb"];ids.forEach(id=>{const el=document.getElementById(id);const chip=document.getElementById(id.replace("nuance","nuance")+"Mode");if(!el||!chip)return;el.addEventListener("input",()=>{const v=parseInt(el.value,10)||0;chip.textContent=(v===50)?"Auto":"Manual";chip.className="text-[10px] px-2 py-0.5 rounded-full border "+((v===50)?"border-slate-200 text-slate-500":"border-slate-900 text-slate-800 bg-slate-50");});});const btn=document.getElementById("btnAllAuto");if(btn){btn.addEventListener("click",()=>{["seasonSel","timeSel","weatherSel"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="auto";});ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value="50";const chip=document.getElementById(id+"Mode");if(chip){chip.textContent="Auto";chip.className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200";}});mixState.bird=50;mixState.wind=50;mixState.water=50;syncMixUI();saveMix();applyParams();if(isRunning)rebuildLoops();});}}
-function initGuideReveal(){const scroller=document.getElementById("guidePages");const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(!scroller||!dots.length)return;const pages=Array.from(scroller.querySelectorAll(".guide-page"));let returningTop=false;let activeIndex=0;let touchStartY=null;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;const isGuideOpen=()=>!tabGuide.classList.contains("hidden")&&!settingsOverlay.classList.contains("hidden");const isAtGuideEnd=()=>Math.abs((scroller.scrollTop+scroller.clientHeight)-scroller.scrollHeight)<2;const tryNextFromLast=()=>{if(returningTop||!isGuideOpen())return;if(activeIndex!==pages.length-1)return;if(!isAtGuideEnd())return;returningTop=true;scroller.scrollTo({top:0,behavior:reduced?"auto":"smooth"});const finalize=()=>{settingsOverlay.classList.remove("guide-overlay-fade");setTab("tabSettings");closeSettings();window.scrollTo({top:0,behavior:"smooth"});returningTop=false;};if(reduced){finalize();return;}settingsOverlay.classList.add("guide-overlay-fade");setTimeout(finalize,210);};const setActive=(idx)=>{activeIndex=idx;dots.forEach((d,i)=>d.classList.toggle("is-active",i===idx));};scroller.addEventListener("wheel",(e)=>{if(e.deltaY>0)tryNextFromLast();},{passive:true});scroller.addEventListener("touchstart",(e)=>{touchStartY=e.touches&&e.touches[0]?e.touches[0].clientY:null;},{passive:true});scroller.addEventListener("touchend",(e)=>{const endY=e.changedTouches&&e.changedTouches[0]?e.changedTouches[0].clientY:null;if(touchStartY!==null&&endY!==null&&(touchStartY-endY)>18)tryNextFromLast();touchStartY=null;},{passive:true});document.addEventListener("keydown",(e)=>{if(!isGuideOpen())return;if(["ArrowDown","PageDown","Space"].includes(e.code)||["ArrowDown","PageDown"," "].includes(e.key))tryNextFromLast();});const hasIO=("IntersectionObserver" in window);if(!hasIO){setActive(0);return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=pages.indexOf(entry.target);if(idx>=0)setActive(idx);}});},{root:scroller,threshold:0.65});pages.forEach(p=>io.observe(p));if(reduced){setActive(0);} } // DESIGN UPDATE
+function initGuideReveal(){const scroller=document.getElementById("guidePages");const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(!scroller||!dots.length)return;const pages=Array.from(scroller.querySelectorAll(".guide-page"));let returningTop=false;let activeIndex=0;let touchStartY=null;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;const isGuideOpen=()=>!tabGuide.classList.contains("hidden")&&!settingsOverlay.classList.contains("hidden");const isAtGuideEnd=()=>Math.abs((scroller.scrollTop+scroller.clientHeight)-scroller.scrollHeight)<2;const goTopFromGuide=()=>{if(returningTop||!isGuideOpen())return;returningTop=true;scroller.scrollTo({top:0,behavior:reduced?"auto":"smooth"});const finalize=()=>{settingsOverlay.classList.remove("guide-overlay-fade");setTab("tabSettings");closeSettings();window.scrollTo({top:0,behavior:"smooth"});returningTop=false;};if(reduced){finalize();return;}settingsOverlay.classList.add("guide-overlay-fade");setTimeout(finalize,210);};const handleGuideNext=()=>{if(returningTop||!isGuideOpen())return;if(activeIndex===pages.length-1){if(!isAtGuideEnd())return;goTopFromGuide();return;}const nextIdx=Math.min(activeIndex+1,pages.length-1);pages[nextIdx].scrollIntoView({behavior:reduced?"auto":"smooth",block:"start"});};const setActive=(idx)=>{activeIndex=idx;dots.forEach((d,i)=>d.classList.toggle("is-active",i===idx));};scroller.addEventListener("wheel",(e)=>{if(e.deltaY>0&&activeIndex===pages.length-1)handleGuideNext();},{passive:true});scroller.addEventListener("touchstart",(e)=>{touchStartY=e.touches&&e.touches[0]?e.touches[0].clientY:null;},{passive:true});scroller.addEventListener("touchend",(e)=>{const endY=e.changedTouches&&e.changedTouches[0]?e.changedTouches[0].clientY:null;if(touchStartY!==null&&endY!==null&&(touchStartY-endY)>18&&activeIndex===pages.length-1)handleGuideNext();touchStartY=null;},{passive:true});document.addEventListener("keydown",(e)=>{if(!isGuideOpen())return;if(["ArrowDown","PageDown","Space"].includes(e.code)||["ArrowDown","PageDown"," "].includes(e.key)){e.preventDefault();handleGuideNext();}});const hasIO=("IntersectionObserver" in window);if(!hasIO){setActive(0);return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=pages.indexOf(entry.target);if(idx>=0)setActive(idx);}});},{root:scroller,threshold:0.65});pages.forEach(p=>io.observe(p));if(reduced){setActive(0);} } // DESIGN UPDATE
   loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();bindUiNuance();initGuideReveal();
 </script>
 </body>
