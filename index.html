@@ -64,7 +64,7 @@
       margin-top: 4px;
       margin-bottom: 2px;
     }
-    .rippleHint{position:relative;overflow:hidden;} /* UI TWEAK */
+    .rippleHint{position:relative;overflow:visible;} /* UI TWEAK */
     .rippleHint::before,
     .rippleHint::after{ /* UI TWEAK */
       content:"";
@@ -131,17 +131,23 @@
     }
     .guide-page{ /* UI TWEAK */
       min-height: 62vh;
+      position: relative; /* UI TWEAK */
+      z-index: 1; /* UI TWEAK */
       scroll-snap-align: start;
       display: grid;
       align-content: start;
       justify-items: center; /* UI TWEAK */
       padding: 12vh 2px 8vh; /* UI TWEAK */
+      box-sizing: border-box; /* UI TWEAK */
     }
     .guide-page-text{ /* UI TWEAK */
       margin: 0; /* UI TWEAK */
       line-height: 2.12; /* UI TWEAK */
       width: min(100%, 548px); /* UI TWEAK */
-      transform: translateX(-30px); /* UI TWEAK */
+      box-sizing: border-box; /* UI TWEAK */
+      padding-left: 24px; /* UI TWEAK */
+      margin-left: -12px; /* UI TWEAK */
+      color: rgb(30 41 59); /* UI TWEAK */
     }
     .guide-page-text + .guide-page-text{margin-top: 27px;} /* UI TWEAK */
     .guide-indicator{ /* UI TWEAK */
