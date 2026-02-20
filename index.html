@@ -48,13 +48,13 @@
       max-width: 52ch;
       margin-inline: auto;
       color: rgb(30 41 59);
-      font-size: clamp(14px, 1.25vw, 14px); /* UI TWEAK */
-      line-height: 2.18; /* UI TWEAK */
+      font-size: clamp(13px, 1.2vw, 14px); /* DESIGN UPDATE */
+      line-height: 2.08; /* DESIGN UPDATE */
       font-family: "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","HGS明朝E",serif;
       font-weight: 400;
-      position: relative; /* UI TWEAK */
-      background: #fff; /* UI TWEAK */
-      padding: 18px 16px; /* UI TWEAK */
+      position: relative; /* DESIGN UPDATE */
+      background: #fff; /* DESIGN UPDATE */
+      padding: 18px 16px; /* DESIGN UPDATE */
     }
     .guide-caption-title{
       font-size: clamp(14px, 1.25vw, 14px); /* UI TWEAK */
@@ -129,27 +129,37 @@
       pointer-events:none;
       z-index:0;
     }
-    .guide-page{ /* UI TWEAK */
+    .guide-page{ /* DESIGN UPDATE */
       min-height: 62vh;
-      position: relative; /* UI TWEAK */
-      z-index: 1; /* UI TWEAK */
+      position: relative; /* DESIGN UPDATE */
+      z-index: 1; /* DESIGN UPDATE */
       scroll-snap-align: start;
       display: grid;
       align-content: start;
-      justify-items: center; /* UI TWEAK */
-      padding: 12vh 2px 8vh; /* UI TWEAK */
-      box-sizing: border-box; /* UI TWEAK */
+      justify-items: center; /* DESIGN UPDATE */
+      padding: 11.5vh 2px 8vh; /* DESIGN UPDATE */
+      box-sizing: border-box; /* DESIGN UPDATE */
+      background: #fff; /* DESIGN UPDATE */
     }
-    .guide-page-text{ /* UI TWEAK */
-      margin: 0; /* UI TWEAK */
-      line-height: 2.12; /* UI TWEAK */
-      width: min(100%, 548px); /* UI TWEAK */
-      box-sizing: border-box; /* UI TWEAK */
-      padding-left: 24px; /* UI TWEAK */
-      margin-left: -12px; /* UI TWEAK */
-      color: rgb(30 41 59); /* UI TWEAK */
+    .guide-page:nth-child(1){background: radial-gradient(180px 130px at 88% 88%, rgba(125,145,170,0.07), rgba(255,255,255,0));} /* DESIGN UPDATE */
+    .guide-page:nth-child(2){background: radial-gradient(220px 150px at 16% 90%, rgba(154,142,128,0.07), rgba(255,255,255,0));} /* DESIGN UPDATE */
+    .guide-page:nth-child(3){background: linear-gradient(160deg, rgba(148,163,184,0.05), rgba(255,255,255,0) 42%);} /* DESIGN UPDATE */
+    .guide-page:nth-child(4){background: radial-gradient(190px 140px at 86% 86%, rgba(100,116,139,0.06), rgba(255,255,255,0));} /* DESIGN UPDATE */
+    .guide-page:nth-child(5){background: radial-gradient(220px 180px at 12% 88%, rgba(134,169,171,0.07), rgba(255,255,255,0));} /* DESIGN UPDATE */
+    .guide-page:nth-child(6){background: linear-gradient(180deg, rgba(241,245,249,0.7), rgba(255,255,255,0));} /* DESIGN UPDATE */
+    .guide-page:nth-child(7){background: radial-gradient(210px 170px at 90% 86%, rgba(148,163,184,0.06), rgba(255,255,255,0));} /* DESIGN UPDATE */
+    .guide-page-text{ /* DESIGN UPDATE */
+      margin: 0; /* DESIGN UPDATE */
+      line-height: 2.1; /* DESIGN UPDATE */
+      width: min(100%, 548px); /* DESIGN UPDATE */
+      box-sizing: border-box; /* DESIGN UPDATE */
+      padding-left: 24px; /* DESIGN UPDATE */
+      margin-left: -12px; /* DESIGN UPDATE */
+      color: rgb(30 41 59); /* DESIGN UPDATE */
+      font-size: clamp(13px, 1.2vw, 14px); /* DESIGN UPDATE */
+      font-weight: 400; /* DESIGN UPDATE */
     }
-    .guide-page-text + .guide-page-text{margin-top: 27px;} /* UI TWEAK */
+    .guide-page-text + .guide-page-text{margin-top: 27px;} /* DESIGN UPDATE */
     .guide-indicator{ /* UI TWEAK */
       margin-top: 4px;
       display:flex;
@@ -169,6 +179,7 @@
       0%,100%{opacity:0.55;}
       50%{opacity:0.85;}
     }
+    .guide-overlay-fade{opacity:0;transition:opacity 200ms ease;} /* DESIGN UPDATE */
     @media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
         opacity: 1;
@@ -296,8 +307,8 @@
           </section>
 
           <section id="tabGuide" class="hidden">
-            <div class="guide-caption rippleHint museum-type"> <!-- UI TWEAK -->
-              <div id="guidePages" class="guide-pages"> <!-- UI TWEAK -->
+            <div class="guide-caption rippleHint museum-type"> <!-- DESIGN UPDATE -->
+              <div id="guidePages" class="guide-pages"> <!-- DESIGN UPDATE -->
                 <article class="guide-page" data-page="1"> <!-- UI TWEAK -->
                   <p class="guide-page-text guide-caption-title">Ambient Music</p>
                   <p class="guide-page-text guide-caption-title">― 自然と呼吸を合わせる音の設計 ―</p>
@@ -330,12 +341,7 @@
                   <p class="guide-page-text">けれど確実に、いまの空気をまといます。</p>
                 </article>
 
-                <article class="guide-page" data-page="7"> <!-- UI TWEAK -->
-                  <p class="guide-page-text">音源は保たれ、内部だけが静かに更新されます。</p>
-                  <p class="guide-page-text">だから、途切れません。</p>
-                </article>
-
-                <article class="guide-page" data-page="8"> <!-- UI TWEAK -->
+                <article class="guide-page" data-page="7"> <!-- DESIGN UPDATE -->
                   <p class="guide-page-text">同じ音は二度と鳴らない。</p>
                   <p class="guide-page-text">再生するたび、</p>
                   <p class="guide-page-text">この瞬間の自然が、音になります。</p>
@@ -344,7 +350,6 @@
 
               <div id="guideIndicator" class="guide-indicator" aria-hidden="true"> <!-- UI TWEAK -->
                 <span class="guide-dot is-active"></span>
-                <span class="guide-dot"></span>
                 <span class="guide-dot"></span>
                 <span class="guide-dot"></span>
                 <span class="guide-dot"></span>
@@ -670,7 +675,7 @@ function openSettings(){settingsOverlay.classList.remove("hidden");settingsDetai
 settingsDetails.addEventListener("toggle",()=>{if(settingsDetails.open)openSettings();}); btnCloseSettings.addEventListener("click",closeSettings); settingsBackdrop.addEventListener("click",closeSettings); document.addEventListener("keydown",(e)=>{if(e.key==="Escape")closeSettings();}); tabButtons.forEach(btn=>btn.addEventListener("click",()=>setTab(btn.dataset.tab)));
 document.getElementById("btnToggle").addEventListener("click",async()=>{if(!isRunning)await start();else stop();}); document.getElementById("btnRefresh").addEventListener("click",()=>refreshWeather()); ["seasonSel","timeSel","weatherSel"].forEach(id=>{document.getElementById(id).addEventListener("change",()=>{applyParams();if(isRunning&&!isRebuildingLoops)rebuildLoops();applyParams();});});
 function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}function bindUiNuance(){const ids=["nuanceSparkle","nuanceSpeed","nuanceBright","nuanceReverb"];ids.forEach(id=>{const el=document.getElementById(id);const chip=document.getElementById(id.replace("nuance","nuance")+"Mode");if(!el||!chip)return;el.addEventListener("input",()=>{const v=parseInt(el.value,10)||0;chip.textContent=(v===50)?"Auto":"Manual";chip.className="text-[10px] px-2 py-0.5 rounded-full border "+((v===50)?"border-slate-200 text-slate-500":"border-slate-900 text-slate-800 bg-slate-50");});});const btn=document.getElementById("btnAllAuto");if(btn){btn.addEventListener("click",()=>{["seasonSel","timeSel","weatherSel"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="auto";});ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value="50";const chip=document.getElementById(id+"Mode");if(chip){chip.textContent="Auto";chip.className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200";}});mixState.bird=50;mixState.wind=50;mixState.water=50;syncMixUI();saveMix();applyParams();if(isRunning)rebuildLoops();});}}
-function initGuideReveal(){const scroller=document.getElementById("guidePages");const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(!scroller||!dots.length)return;const pages=Array.from(scroller.querySelectorAll(".guide-page"));const setActive=(idx)=>{dots.forEach((d,i)=>d.classList.toggle("is-active",i===idx));};const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;const hasIO=("IntersectionObserver" in window);if(!hasIO){setActive(0);return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=pages.indexOf(entry.target);if(idx>=0)setActive(idx);}});},{root:scroller,threshold:0.65});pages.forEach(p=>io.observe(p));if(reduced){setActive(0);} } // UI TWEAK
+function initGuideReveal(){const scroller=document.getElementById("guidePages");const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(!scroller||!dots.length)return;const pages=Array.from(scroller.querySelectorAll(".guide-page"));let returningTop=false;let activeIndex=0;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;const finishGuide=()=>{if(returningTop)return;returningTop=true;const isGuideOpen=!tabGuide.classList.contains("hidden")&&!settingsOverlay.classList.contains("hidden");if(!isGuideOpen){returningTop=false;return;}scroller.scrollTo({top:0,behavior:reduced?"auto":"smooth"});const finalize=()=>{settingsOverlay.classList.remove("guide-overlay-fade");setTab("tabSettings");closeSettings();window.scrollTo({top:0,behavior:"smooth"});returningTop=false;};if(reduced){finalize();return;}settingsOverlay.classList.add("guide-overlay-fade");setTimeout(finalize,210);};const setActive=(idx)=>{activeIndex=idx;dots.forEach((d,i)=>d.classList.toggle("is-active",i===idx));if(idx===pages.length-1){setTimeout(()=>{if(activeIndex===pages.length-1)finishGuide();},180);}};const hasIO=("IntersectionObserver" in window);if(!hasIO){setActive(0);return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=pages.indexOf(entry.target);if(idx>=0)setActive(idx);}});},{root:scroller,threshold:0.65});pages.forEach(p=>io.observe(p));if(reduced){setActive(0);} } // DESIGN UPDATE
   loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();bindUiNuance();initGuideReveal();
 </script>
 </body>
