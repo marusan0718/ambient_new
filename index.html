@@ -62,12 +62,12 @@
       isolation: isolate; /* DESIGN UPDATE */
     }
     .guide-caption-title{
-      font-size: clamp(14px, 1.25vw, 14px); /* UI TWEAK */
-      letter-spacing: 0.04em;
+      font-size: clamp(13px, 1.2vw, 14px); /* DESIGN UPDATE */
+      letter-spacing: 0;
       color: rgb(30 41 59);
       font-weight: 400;
-      margin-top: 4px;
-      margin-bottom: 2px;
+      margin-top: 0;
+      margin-bottom: 0;
     }
     .rippleHint{position:relative;overflow:visible;background:#fff;} /* DESIGN UPDATE */
     .rippleHint::before,
@@ -141,7 +141,11 @@
       box-shadow:none; /* DESIGN UPDATE */
       outline:0; /* DESIGN UPDATE */
       overflow:hidden; /* DESIGN UPDATE */
+      opacity:.72; /* DESIGN UPDATE */
+      transform: translateY(8px); /* DESIGN UPDATE */
+      transition: opacity 1.2s cubic-bezier(0.16,1,0.3,1), transform 1.2s cubic-bezier(0.16,1,0.3,1); /* DESIGN UPDATE */
     }
+    .guide-page.is-current{opacity:1;transform:translateY(0);} /* DESIGN UPDATE */
 
     .guide-page::before,.guide-page::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background-repeat:no-repeat;filter:blur(0.35px);} /* DESIGN UPDATE */
     .guide-page[data-slide="0"],.guide-page[data-slide="1"],.guide-page[data-slide="2"],.guide-page[data-slide="3"],.guide-page[data-slide="4"],.guide-page[data-slide="5"]{background:#fff;} /* DESIGN UPDATE */
@@ -158,8 +162,8 @@
       radial-gradient(240px 170px at 84% 18%, rgba(167,205,223,0.44), rgba(255,255,255,0) 62%),
       radial-gradient(260px 180px at 16% 84%, rgba(231,203,206,0.42), rgba(255,255,255,0) 66%),
       radial-gradient(220px 160px at 78% 86%, rgba(226,217,176,0.38), rgba(255,255,255,0) 64%),
-      radial-gradient(220px 160px at 22% 22%, rgba(191,225,214,0.36), rgba(255,255,255,0) 64%), #fff;transition:opacity 1020ms cubic-bezier(0.16,1,0.3,1),transform 1020ms cubic-bezier(0.16,1,0.3,1),filter 1020ms cubic-bezier(0.16,1,0.3,1);} /* DESIGN UPDATE */
-    #guideTransitionLayer.is-active{opacity:1;transform:scale(1.04);filter:blur(12px);} /* DESIGN UPDATE */
+      radial-gradient(220px 160px at 22% 22%, rgba(191,225,214,0.36), rgba(255,255,255,0) 64%), #fff;transition:opacity 2200ms cubic-bezier(0.16,1,0.3,1),transform 2200ms cubic-bezier(0.16,1,0.3,1),filter 2200ms cubic-bezier(0.16,1,0.3,1);} /* DESIGN UPDATE */
+    #guideTransitionLayer.is-active{opacity:1;transform:scale(1.04);filter:blur(14px);} /* DESIGN UPDATE */
 .guide-page[data-slide="6"]{ /* DESIGN UPDATE */
       background:
         radial-gradient(210px 150px at 84% 18%, rgba(167,205,223,0.42), rgba(255,255,255,0) 62%),
@@ -172,7 +176,7 @@
       position: relative; /* DESIGN UPDATE */
       z-index: 1; /* DESIGN UPDATE */
       margin: 0; /* DESIGN UPDATE */
-      line-height: 2.1; /* DESIGN UPDATE */
+      line-height: 1.46; /* DESIGN UPDATE */
       width: min(100%, 548px); /* DESIGN UPDATE */
       box-sizing: border-box; /* DESIGN UPDATE */
       padding-left: 24px; /* DESIGN UPDATE */
@@ -181,7 +185,7 @@
       font-size: clamp(13px, 1.2vw, 14px); /* DESIGN UPDATE */
       font-weight: 400; /* DESIGN UPDATE */
     }
-    .guide-page-text + .guide-page-text{margin-top: 27px;} /* DESIGN UPDATE */
+    .guide-page-text + .guide-page-text{margin-top: 10px;} /* DESIGN UPDATE */
     .guide-indicator{ /* UI TWEAK */
       margin-top: 4px;
       display:flex;
@@ -201,7 +205,7 @@
       0%,100%{opacity:0.55;}
       50%{opacity:0.85;}
     }
-    .guide-overlay-fade{opacity:0;transform:translateY(6px);transition:opacity 560ms cubic-bezier(0.16, 1, 0.3, 1), transform 560ms cubic-bezier(0.16, 1, 0.3, 1);} /* DESIGN UPDATE */
+    .guide-overlay-fade{opacity:0;transform:translateY(8px);transition:opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1), transform 2200ms cubic-bezier(0.16, 1, 0.3, 1);} /* DESIGN UPDATE */
 
     #settingsOverlay{opacity:0;pointer-events:none;transition:opacity 560ms cubic-bezier(0.16, 1, 0.3, 1);} /* DESIGN UPDATE */
     #settingsOverlay.is-open{opacity:1;pointer-events:auto;} /* DESIGN UPDATE */
@@ -338,7 +342,7 @@
           <section id="tabGuide" class="hidden">
             <div class="guide-caption rippleHint museum-type"> <!-- DESIGN UPDATE -->
               <div id="guidePages" class="guide-pages"> <!-- DESIGN UPDATE -->
-                <article class="guide-page" data-page="1" data-slide="0"> <!-- UI TWEAK -->
+                <article class="guide-page is-current" data-page="1" data-slide="0"> <!-- UI TWEAK -->
                   <p class="guide-page-text guide-caption-title">Ambient Music</p>
                   <p class="guide-page-text guide-caption-title">― 自然と呼吸を合わせる音の設計 ―</p>
                 </article>
@@ -699,12 +703,12 @@ function stop(){isRunning=false;stopPlaybackWatchdog();Tone.Destination.mute=tru
 async function refreshWeather(){if(isRefreshingWeather)return;isRefreshingWeather=true;try{nextUpdateAt=Date.now()+AUTO_UPDATE_MS;setStatusChip("—");setStatus("取得中…","天気/風/UV");const pos=await getCurrentPosition();const lat=pos.coords.latitude,lon=pos.coords.longitude;const {code,wind,uv}=await fetchWeatherByCoords(lat,lon);lastWeather={code,wind,uv};applyParams();if(isRunning){applyParams();}else{const env=getEnv();const key=keyFromSeason(env.season);const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;const showUv=(uvRaw!==null)&&isDayTimeBlock(env.time);const uvText=showUv?uvRaw.toFixed(1):"—";const mood=moodLine(env,clamp((lastWeather.wind??0)/15,0,1));setStatusChip(describeWeather(lastWeather.code));setStatus(`Key ${key}`,mood);}}catch(e){console.error(e);nextUpdateAt=Date.now()+WEATHER_RETRY_MS;setStatusChip("—");setStatus("エラー",`${e.message}（${Math.floor(WEATHER_RETRY_MS/1000)}秒後に再試行）`);}finally{isRefreshingWeather=false;}}
 function tick(){const remain=Math.max(0,nextUpdateAt-Date.now());const mm=String(Math.floor(remain/60000)).padStart(2,"0"),ss=String(Math.floor((remain%60000)/1000)).padStart(2,"0");document.getElementById("countdown").textContent=`${mm}:${ss}`;if(remain<=0&&!isRefreshingWeather)refreshWeather();requestAnimationFrame(tick);} 
 const settingsDetails=document.getElementById("settingsDetails"),settingsOverlay=document.getElementById("settingsOverlay"),settingsBackdrop=document.getElementById("settingsBackdrop"),btnCloseSettings=document.getElementById("btnCloseSettings");
-const tabButtons=Array.from(document.querySelectorAll(".tabBtn")),tabSettings=document.getElementById("tabSettings"),tabGuide=document.getElementById("tabGuide");let settingsCloseTimer=null;const guideTransitionLayer=document.getElementById("guideTransitionLayer"); function resetGuideToStart(){const scroller=document.getElementById("guidePages");if(scroller)scroller.scrollTo({top:0,behavior:"auto"});const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(dots.length)dots.forEach((d,i)=>d.classList.toggle("is-active",i===0));} /* DESIGN UPDATE */ function setTab(id){const isSettings=(id==="tabSettings");tabSettings.classList.toggle("hidden",!isSettings);tabGuide.classList.toggle("hidden",isSettings);if(id==="tabGuide")resetGuideToStart();tabButtons.forEach(btn=>{const active=btn.dataset.tab===id;btn.className="tabBtn flex-1 px-3 py-2 rounded-2xl text-sm border "+(active?"border-slate-200 bg-sky-50/60 text-slate-700":"border-slate-200 bg-white text-slate-600 hover:bg-slate-50");});}
+const tabButtons=Array.from(document.querySelectorAll(".tabBtn")),tabSettings=document.getElementById("tabSettings"),tabGuide=document.getElementById("tabGuide");let settingsCloseTimer=null;const guideTransitionLayer=document.getElementById("guideTransitionLayer"); function resetGuideToStart(){const scroller=document.getElementById("guidePages");if(scroller)scroller.scrollTo({top:0,behavior:"auto"});const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(dots.length)dots.forEach((d,i)=>d.classList.toggle("is-active",i===0));const pages=Array.from(document.querySelectorAll("#guidePages .guide-page"));if(pages.length)pages.forEach((pg,i)=>pg.classList.toggle("is-current",i===0));} /* DESIGN UPDATE */ function setTab(id){const isSettings=(id==="tabSettings");tabSettings.classList.toggle("hidden",!isSettings);tabGuide.classList.toggle("hidden",isSettings);if(id==="tabGuide")resetGuideToStart();tabButtons.forEach(btn=>{const active=btn.dataset.tab===id;btn.className="tabBtn flex-1 px-3 py-2 rounded-2xl text-sm border "+(active?"border-slate-200 bg-sky-50/60 text-slate-700":"border-slate-200 bg-white text-slate-600 hover:bg-slate-50");});}
 function openSettings(){if(settingsCloseTimer){clearTimeout(settingsCloseTimer);settingsCloseTimer=null;}if(guideTransitionLayer)guideTransitionLayer.classList.remove("is-active");settingsOverlay.classList.remove("hidden");requestAnimationFrame(()=>settingsOverlay.classList.add("is-open"));settingsDetails.open=false;document.documentElement.classList.add("overflow-hidden");document.body.classList.add("overflow-hidden");setTab("tabSettings");} function closeSettings(afterClose,durationMs=560){settingsOverlay.classList.remove("is-open");const finalize=()=>{settingsOverlay.classList.add("hidden");document.documentElement.classList.remove("overflow-hidden");document.body.classList.remove("overflow-hidden");if(typeof afterClose==="function")afterClose();};settingsCloseTimer=setTimeout(finalize,durationMs);} /* DESIGN UPDATE */
 settingsDetails.addEventListener("toggle",()=>{if(settingsDetails.open)openSettings();}); btnCloseSettings.addEventListener("click",closeSettings); settingsBackdrop.addEventListener("click",closeSettings); document.addEventListener("keydown",(e)=>{if(e.key==="Escape")closeSettings();}); tabButtons.forEach(btn=>btn.addEventListener("click",()=>setTab(btn.dataset.tab)));
 document.getElementById("btnToggle").addEventListener("click",async()=>{if(!isRunning)await start();else stop();}); document.getElementById("btnRefresh").addEventListener("click",()=>refreshWeather()); ["seasonSel","timeSel","weatherSel"].forEach(id=>{document.getElementById(id).addEventListener("change",()=>{applyParams();if(isRunning&&!isRebuildingLoops)rebuildLoops();applyParams();});});
 function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}function bindUiNuance(){const ids=["nuanceSparkle","nuanceSpeed","nuanceBright","nuanceReverb"];ids.forEach(id=>{const el=document.getElementById(id);const chip=document.getElementById(id.replace("nuance","nuance")+"Mode");if(!el||!chip)return;el.addEventListener("input",()=>{const v=parseInt(el.value,10)||0;chip.textContent=(v===50)?"Auto":"Manual";chip.className="text-[10px] px-2 py-0.5 rounded-full border "+((v===50)?"border-slate-200 text-slate-500":"border-slate-900 text-slate-800 bg-slate-50");});});const btn=document.getElementById("btnAllAuto");if(btn){btn.addEventListener("click",()=>{["seasonSel","timeSel","weatherSel"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="auto";});ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value="50";const chip=document.getElementById(id+"Mode");if(chip){chip.textContent="Auto";chip.className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200";}});mixState.bird=50;mixState.wind=50;mixState.water=50;syncMixUI();saveMix();applyParams();if(isRunning)rebuildLoops();});}}
-function initGuideReveal(){const scroller=document.getElementById("guidePages");const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(!scroller||!dots.length)return;const pages=Array.from(scroller.querySelectorAll(".guide-page"));let returningTop=false;let activeIndex=0;let touchStartY=null;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;const isGuideOpen=()=>!tabGuide.classList.contains("hidden")&&!settingsOverlay.classList.contains("hidden");const isAtGuideEnd=()=>Math.abs((scroller.scrollTop+scroller.clientHeight)-scroller.scrollHeight)<2;const goTopFromGuide=()=>{if(returningTop||!isGuideOpen())return;returningTop=true;scroller.scrollTo({top:0,behavior:"auto"});const finalize=()=>{if(guideTransitionLayer)guideTransitionLayer.classList.remove("is-active");settingsOverlay.classList.remove("guide-overlay-fade");setTab("tabSettings");window.scrollTo({top:0,behavior:"smooth"});returningTop=false;};if(reduced){closeSettings(finalize,560);return;}settingsOverlay.classList.add("guide-overlay-fade");if(guideTransitionLayer){guideTransitionLayer.classList.add("is-active");setTimeout(()=>closeSettings(finalize,1180),20);}else{closeSettings(finalize,1180);}};const handleGuideNext=(action)=>{if(returningTop||!isGuideOpen())return;if(activeIndex===pages.length-1&&action==="next"){if(!isAtGuideEnd())return;goTopFromGuide();return;}const nextIdx=Math.min(activeIndex+1,pages.length-1);pages[nextIdx].scrollIntoView({behavior:reduced?"auto":"smooth",block:"start"});};const setActive=(idx)=>{activeIndex=idx;dots.forEach((d,i)=>d.classList.toggle("is-active",i===idx));};scroller.addEventListener("wheel",(e)=>{if(e.deltaY>0&&activeIndex===pages.length-1)handleGuideNext("next");},{passive:true});scroller.addEventListener("touchstart",(e)=>{touchStartY=e.touches&&e.touches[0]?e.touches[0].clientY:null;},{passive:true});scroller.addEventListener("touchend",(e)=>{const endY=e.changedTouches&&e.changedTouches[0]?e.changedTouches[0].clientY:null;if(touchStartY!==null&&endY!==null&&(touchStartY-endY)>18&&activeIndex===pages.length-1)handleGuideNext("next");touchStartY=null;},{passive:true});document.addEventListener("keydown",(e)=>{if(!isGuideOpen())return;if(["ArrowDown","PageDown","Space"].includes(e.code)||["ArrowDown","PageDown"," "].includes(e.key)){e.preventDefault();handleGuideNext("next");}});const hasIO=("IntersectionObserver" in window);if(!hasIO){setActive(0);return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=pages.indexOf(entry.target);if(idx>=0)setActive(idx);}});},{root:scroller,threshold:0.65});pages.forEach(p=>io.observe(p));if(reduced){setActive(0);} } // DESIGN UPDATE
+function initGuideReveal(){const scroller=document.getElementById("guidePages");const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(!scroller||!dots.length)return;const pages=Array.from(scroller.querySelectorAll(".guide-page"));let returningTop=false;let activeIndex=0;let touchStartY=null;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;const isGuideOpen=()=>!tabGuide.classList.contains("hidden")&&!settingsOverlay.classList.contains("hidden");const isAtGuideEnd=()=>Math.abs((scroller.scrollTop+scroller.clientHeight)-scroller.scrollHeight)<2;const goTopFromGuide=()=>{if(returningTop||!isGuideOpen())return;returningTop=true;scroller.scrollTo({top:0,behavior:"auto"});const finalize=()=>{if(guideTransitionLayer)guideTransitionLayer.classList.remove("is-active");settingsOverlay.classList.remove("guide-overlay-fade");setTab("tabSettings");window.scrollTo({top:0,behavior:"smooth"});returningTop=false;};if(reduced){closeSettings(finalize,560);return;}settingsOverlay.classList.add("guide-overlay-fade");if(guideTransitionLayer){guideTransitionLayer.classList.add("is-active");setTimeout(()=>closeSettings(finalize,2200),20);}else{closeSettings(finalize,2200);}};const handleGuideNext=(action)=>{if(returningTop||!isGuideOpen())return;if(activeIndex===pages.length-1&&action==="next"){if(!isAtGuideEnd())return;goTopFromGuide();return;}const nextIdx=Math.min(activeIndex+1,pages.length-1);pages[nextIdx].scrollIntoView({behavior:reduced?"auto":"smooth",block:"start"});};const setActive=(idx)=>{activeIndex=idx;dots.forEach((d,i)=>d.classList.toggle("is-active",i===idx));pages.forEach((p,i)=>p.classList.toggle("is-current",i===idx));};scroller.addEventListener("wheel",(e)=>{if(e.deltaY>0&&activeIndex===pages.length-1)handleGuideNext("next");},{passive:true});scroller.addEventListener("touchstart",(e)=>{touchStartY=e.touches&&e.touches[0]?e.touches[0].clientY:null;},{passive:true});scroller.addEventListener("touchend",(e)=>{const endY=e.changedTouches&&e.changedTouches[0]?e.changedTouches[0].clientY:null;if(touchStartY!==null&&endY!==null&&(touchStartY-endY)>18&&activeIndex===pages.length-1)handleGuideNext("next");touchStartY=null;},{passive:true});document.addEventListener("keydown",(e)=>{if(!isGuideOpen())return;if(["ArrowDown","PageDown","Space"].includes(e.code)||["ArrowDown","PageDown"," "].includes(e.key)){e.preventDefault();handleGuideNext("next");}});const hasIO=("IntersectionObserver" in window);if(!hasIO){setActive(0);return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=pages.indexOf(entry.target);if(idx>=0)setActive(idx);}});},{root:scroller,threshold:0.65});pages.forEach(p=>io.observe(p));if(reduced){setActive(0);} } // DESIGN UPDATE
   loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();bindUiNuance();initGuideReveal();
 </script>
 </body>
