@@ -596,7 +596,7 @@ async function recoverLayerLoopIfSilent(layer){
   const lastAt=layerLastSoundAt[layer]||0;
   const lastRecovery=layerLastRecoveryAt[layer]||0;
   const threshold=LAYER_SILENCE_MS[layer]||60000;
-  if(!isRunning||isRecovering)return false;
+  if(!isRunning)return false;
   if(now-lastAt<=threshold)return false;
   if(now-lastRecovery<=LAYER_RECOVERY_COOLDOWN_MS)return false;
   if(now-lastAnyLayerRecoveryAt<=GLOBAL_LAYER_RECOVERY_COOLDOWN_MS)return false;
@@ -605,38 +605,26 @@ async function recoverLayerLoopIfSilent(layer){
 
   await resumeAudioIfNeeded(`layer-${layer}`);
 
-  const loopRef=({sparkle:sparkleLoop,bird:birdLoop,wind:windLoop,water:waterLoop,melody:melodyLoop,pad:padLoop})[layer];
-  const currentEnv=applyParams();
-
-  if(loopRef){
-    try{
-      const callback=loopRef.callback;
-      const interval=loopRef.interval;
-      try{loopRef.stop(0);}catch(e){}
-      try{loopRef.dispose();}catch(e){}
-      const recreated=new Tone.Loop(callback,interval).start(0);
-      if(layer==="sparkle")sparkleLoop=recreated;
-      if(layer==="bird")birdLoop=recreated;
-      if(layer==="wind")windLoop=recreated;
-      if(layer==="water")waterLoop=recreated;
-      if(layer==="melody")melodyLoop=recreated;
-      if(layer==="pad")padLoop=recreated;
-      markLayerSound(layer);
-      return true;
-    }catch(e){
-      console.warn(`[${layer}] loop recreate failed`,e);
-    }
-  }
-
   if(layer==="harmony"){
     try{
       clearHarmonyScheduler();
       const startAt=Tone.Transport.seconds+0.12;
-      chordEventId=Tone.Transport.scheduleOnce((t)=>{try{playOneHarmony(t,currentEnv);}catch(e){console.warn("[harmony] reschedule failed",e);}},startAt);
+      chordEventId=Tone.Transport.scheduleOnce((t)=>{try{playOneHarmony(t,applyParams());}catch(e){console.warn("[harmony] reschedule failed",e);}},startAt);
       markLayerSound("harmony");
       return true;
     }catch(e){
       console.warn("[harmony] recovery failed",e);
+      return false;
+    }
+  }
+
+  if(!isRebuildingLoops){
+    try{
+      rebuildLoops();
+      markLayerSound(layer);
+      return true;
+    }catch(e){
+      console.warn(`[${layer}] rebuild recovery failed`,e);
     }
   }
 
@@ -658,7 +646,7 @@ function startPlaybackWatchdog(){
     const nowMs=Date.now();
     const nowSec=Tone.Transport.seconds||0;
     const stalled=(Math.abs(nowSec-lastTransportSeconds)<0.0001)&&(nowMs-lastTransportCheckAt>15000);
-    const silent=(nowMs-lastSoundAt)>15000;
+    const silent=(nowMs-lastSoundAt)>30000;
     lastTransportSeconds=nowSec;
     lastTransportCheckAt=nowMs;
 
@@ -686,7 +674,7 @@ function startPlaybackWatchdog(){
         try{rebuildLoops();silentRecoveryCount=Math.min(silentRecoveryCount+1,4);}catch(e){}
       }
 
-      if((nowMs-lastSoundAt)>30000&&silentRecoveryCount>=1&&nowMs-lastHardRecoveryAt>HARD_RECOVERY_COOLDOWN_MS){
+      if((nowMs-lastSoundAt)>90000&&silentRecoveryCount>=1&&nowMs-lastHardRecoveryAt>HARD_RECOVERY_COOLDOWN_MS){
         lastHardRecoveryAt=nowMs;
         try{Tone.Transport.stop();}catch(e){}
         try{Tone.Transport.start();}catch(e){}
@@ -695,7 +683,7 @@ function startPlaybackWatchdog(){
         }
       }
 
-      if((nowMs-lastSoundAt)>45000&&nowMs-lastHardRecoveryAt>HARD_RECOVERY_COOLDOWN_MS){
+      if((nowMs-lastSoundAt)>150000&&nowMs-lastHardRecoveryAt>HARD_RECOVERY_COOLDOWN_MS){
         // [STABILITY FIX] final fallback: hard reset context graph only when recovery repeatedly fails
         lastHardRecoveryAt=nowMs;
         try{Tone.Transport.stop();}catch(e){}
