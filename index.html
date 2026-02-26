@@ -607,7 +607,7 @@ function harmonyGapSeconds(r){let g=randomBetween(0.55,2.1);const burstChance=(r
 function pickOverlapMode(r){let base=0.52;if(r.time==="day"||r.time==="morning")base=0.60;if(r.time==="evening")base=0.54;if(r.time==="night")base=0.44;if(r.time==="late")base=0.32;if(r.weatherCat==="rain")base*=0.92;if(Math.random()>=base)return"none";let earlyWeight=0.78;if(r.time==="late")earlyWeight=0.62;if(r.time==="night")earlyWeight=0.70;if(r.weatherCat==="rain")earlyWeight*=0.95;return(Math.random()<earlyWeight)?"early":"tail";}
 function playOneHarmony(startTime,r){if(!harmonySlots)return;const choices=chordChoicesForKey(r.key);let root=choices[Math.floor(Math.random()*choices.length)];if(root===lastRoot)root=choices[Math.floor(Math.random()*choices.length)];lastRoot=root;const playDur=randomBetween(26.0,52.0);const gapDur=harmonyGapSeconds(r);let oct=choose([-1,0,0,0,+1,+1]);if(Math.random()<0.10)oct=choose([-2,+2]);const shiftedRoot=octaveShifted(root,oct);const slot=harmonySlots[harmonySlotIndex%harmonySlots.length];harmonySlotIndex++;const chordGain=slot.gain;const chordPad=slot.synth;let peak=0.15+Math.random()*0.17;if(r.time==="night"||r.time==="late")peak*=0.78;if(r.weatherCat==="rain")peak*=0.86;peak*=(1+(r.timeFx?.density??0)*0.22);peak*=(1+(r.seasonFx?.shimmer??0)*0.12);const t0=startTime,tPeak=startTime+playDur*(0.35+Math.random()*0.35),tEnd=startTime+playDur;chordGain.gain.cancelScheduledValues(t0);chordGain.gain.setValueAtTime(Math.max(0.000001,chordGain.gain.value),t0);chordGain.gain.exponentialRampToValueAtTime(Math.max(0.00018,peak),tPeak);chordGain.gain.exponentialRampToValueAtTime(0.00012,tEnd);markLayerSound("harmony");trackedTriggerAttackRelease(chordPad,triad(shiftedRoot),playDur,startTime,0.72);const mode=pickOverlapMode(r);let nextTime=startTime+playDur+gapDur;if(mode==="tail"){nextTime=tEnd+randomBetween(-10.0,6.0);nextTime=Math.max(nextTime,startTime+7.0);}else if(mode==="early"){const frac=randomBetween(0.30,0.70);nextTime=startTime+playDur*frac;}const nowSec=Tone.Transport.seconds||0;nextTime=Math.max(nextTime,nowSec+2.0);chordEventId=Tone.Transport.scheduleOnce((t)=>{try{playOneHarmony(t,r);}catch(e){console.warn("[harmony] scheduleOnce error",e);}},nextTime);}
 function buildMultiTapDelay(){if(sparkleMulti){sparkleMulti.tapNodes.forEach(n=>{try{n.dispose();}catch(e){}});try{sparkleMulti.input.dispose();}catch(e){}try{sparkleMulti.merger.dispose();}catch(e){} sparkleMulti=null;}lastSparkleDelayRebuildAt=0;const taps=randInt(4,7);const merger=new Tone.Gain(1).connect(sparkleAutoPanner);const wetBase=randomBetween(0.40,0.62);const tapNodes=[];for(let i=0;i<taps;i++){const dt=randomBetween(0.03,0.23),fb=randomBetween(0.18,0.44)*(1-i*0.08),wt=clamp(wetBase*(0.85-i*0.06),0.18,0.65);const d=new Tone.FeedbackDelay({delayTime:dt,feedback:fb,wet:wt});d.connect(merger);tapNodes.push(d);}const input=new Tone.Gain(1);tapNodes.forEach(d=>input.connect(d));sparkleMulti={input,tapNodes,merger};return sparkleMulti;}
-function pickSparkleDelayRefreshChance(r){if(r.time==="day")return 0.004;if(r.time==="morning")return 0.0035;if(r.time==="evening")return 0.003;if(r.time==="night")return 0.0025;return 0.002;} function rebuildSparkleDelayIfNeeded(r){if(!sparkleMulti){buildMultiTapDelay();sparkle.disconnect();sparkle.connect(sparkleMulti.input);lastSparkleDelayRebuildAt=Date.now();return;}const nowMs=Date.now();const minIntervalMs=180000;if(nowMs-lastSparkleDelayRebuildAt<minIntervalMs)return;if(Math.random()<pickSparkleDelayRefreshChance(r)){buildMultiTapDelay();sparkle.disconnect();sparkle.connect(sparkleMulti.input);lastSparkleDelayRebuildAt=nowMs;}}
+function pickSparkleDelayRefreshChance(r){return 0;} function rebuildSparkleDelayIfNeeded(r){if(!sparkleMulti){buildMultiTapDelay();sparkle.disconnect();sparkle.connect(sparkleMulti.input);lastSparkleDelayRebuildAt=Date.now();return;}}
 function randomRhythmDuration(r){const dayish=(r.time==="morning"||r.time==="day"),nightish=(r.time==="night"||r.time==="late");const short=["32n","16n","16t"],mid=["24n","8t","12n"],long=["8n","4n","6n"];let pool=[...short,...mid];if(dayish)pool=[...short,...short,...mid,"16n"];if(nightish)pool=[...mid,...long,...mid];if(r.weatherCat==="rain")pool=[...pool,...long];const d=choose(pool),sec=Tone.Time(d).toSeconds();return clamp(sec,0.05,0.60);} function applyHitPan(time,r){if(!sparkleHitPanner)return;let width=0.85;if(r.weatherCat==="rain")width=0.70;if(r.time==="night")width=0.62;if(r.time==="late")width=0.52;if(r.time==="day")width=0.92;const target=(Math.random()*2-1)*width;sparkleHitPanner.pan.cancelScheduledValues(time);sparkleHitPanner.pan.setValueAtTime(sparkleHitPanner.pan.value,time);sparkleHitPanner.pan.linearRampToValueAtTime(target,time+0.06);}
 function windBaseLevel(r){const mix=getMix();const w=clamp(lastWeather.wind??0,0,15);let base=0.00006+0.00010*(w/15);if(r.time==="night")base*=0.78;if(r.time==="late")base*=0.65;if(r.weatherCat==="rain")base*=0.90;base*=mix.windMul;return clamp(base,0.000001,0.00035);} function waterBaseLevel(r){const mix=getMix();let base=0.00004;if(r.weatherCat==="rain")base=0.00008;if(r.time==="night")base*=0.85;if(r.time==="late")base*=0.70;base*=mix.waterMul;return clamp(base,0.000001,0.00030);} function triggerWindGust(time,r){if(!windGain)return;markLayerSound("wind");const base=windBaseLevel(r),peak=clamp(base*randomBetween(2.0,4.8),0.00001,0.00090),dur=randomBetween(2.4,6.8);windGain.gain.cancelScheduledValues(time);windGain.gain.setValueAtTime(Math.max(0.000001,windGain.gain.value),time);windGain.gain.exponentialRampToValueAtTime(Math.max(0.000001,peak),time+0.7);windGain.gain.exponentialRampToValueAtTime(Math.max(0.000001,base),time+dur);} function triggerWaterRipple(time,r){if(!waterGain)return;markLayerSound("water");const base=waterBaseLevel(r),peak=clamp(base*randomBetween(1.6,3.2),0.00001,0.00085),dur=randomBetween(1.4,4.6);waterGain.gain.cancelScheduledValues(time);waterGain.gain.setValueAtTime(Math.max(0.000001,waterGain.gain.value),time);waterGain.gain.exponentialRampToValueAtTime(Math.max(0.000001,peak),time+0.25);waterGain.gain.exponentialRampToValueAtTime(Math.max(0.000001,base),time+dur);}
 function rebuildLoops(){if(isRebuildingLoops)return;isRebuildingLoops=true;try{if(sparkleLoop){try{sparkleLoop.stop(0);}catch(e){}sparkleLoop.dispose();sparkleLoop=null;}if(birdLoop){try{birdLoop.stop(0);}catch(e){}birdLoop.dispose();birdLoop=null;}if(windLoop){try{windLoop.stop(0);}catch(e){}windLoop.dispose();windLoop=null;}if(waterLoop){try{waterLoop.stop(0);}catch(e){}waterLoop.dispose();waterLoop=null;}if(melodyLoop){try{melodyLoop.stop(0);}catch(e){}melodyLoop.dispose();melodyLoop=null;}if(lowMelodyLoop){try{lowMelodyLoop.stop(0);}catch(e){}lowMelodyLoop.dispose();lowMelodyLoop=null;}if(padLoop){try{padLoop.stop(0);}catch(e){}padLoop.dispose();padLoop=null;}if(crystalHarmonyLoop){try{crystalHarmonyLoop.stop(0);}catch(e){}crystalHarmonyLoop.dispose();crystalHarmonyLoop=null;}if(stringHarmonyLoop){try{stringHarmonyLoop.stop(0);}catch(e){}stringHarmonyLoop.dispose();stringHarmonyLoop=null;}if(lowResonanceLoop){try{lowResonanceLoop.stop(0);}catch(e){}lowResonanceLoop.dispose();lowResonanceLoop=null;}if(bellLoop){try{bellLoop.stop(0);}catch(e){}bellLoop.dispose();bellLoop=null;}if(chimeLoop){try{chimeLoop.stop(0);}catch(e){}chimeLoop.dispose();chimeLoop=null;}clearHarmonyScheduler();const r=applyParams();const now=Tone.now();if(windGain)windGain.gain.setValueAtTime(Math.max(0.000001,windBaseLevel(r)),now);if(waterGain)waterGain.gain.setValueAtTime(Math.max(0.000001,waterBaseLevel(r)),now);const startAt=Tone.Transport.seconds+0.1;chordEventId=Tone.Transport.scheduleOnce((t)=>{try{playOneHarmony(t,r);}catch(e){console.warn("[harmony] start schedule error",e);}},startAt);rebuildSparkleDelayIfNeeded(r);const sparkleInterval=0.52;sparkleLoop=new Tone.Loop(safeLoopCallback("sparkle",(time)=>{rebuildSparkleDelayIfNeeded(r);const scale=sparkleScale(r.key,r.weatherCat,r.time);let p=0.60;if(r.weatherCat==="rain")p=0.50;if(r.time==="late")p=0.36;if(r.time==="night")p=Math.min(p,0.44);if(r.weatherCat==="clear"&&(r.time==="day"||r.time==="morning"))p=0.70;p+=(r.seasonFx?.shimmer??0)*0.07;p+=(r.timeFx?.density??0)*0.18;p+=(r.weatherFx?.reflect??0)*0.08;const windBoost=clamp(((lastWeather.wind??0)-2)/10,0,0.14);p+=windBoost;const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;if(uvRaw!==null&&(r.time==="day"||r.time==="morning")){const u=clamp(uvRaw/11,0,1);p+=0.12*u;}p=clamp(p,0.14,0.82);if(Math.random()<p){applyHitPan(time,r);const note=scale[Math.floor(Math.random()*scale.length)];const durSec=clamp(randomRhythmDuration(r)*(1+(r.timeFx?.space??0)*0.25),0.05,0.66);const amp=0.36+Math.random()*0.11;if(Math.random()<0.16){const note2=scale[Math.floor(Math.random()*scale.length)],dur2=clamp(durSec*randomBetween(0.75,1.15),0.05,0.55);trackedTriggerAttackReleaseLayer("sparkle",sparkle,note,durSec,time,amp);trackedTriggerAttackReleaseLayer("sparkle",sparkle,note2,dur2,time+0.02,amp*0.82);}else trackedTriggerAttackReleaseLayer("sparkle",sparkle,note,durSec,time,amp);}}),sparkleInterval).start(0);
@@ -645,16 +645,6 @@ async function recoverLayerLoopIfSilent(layer){
     }catch(e){
       console.warn("[harmony] recovery failed",e);
       return false;
-    }
-  }
-
-  if((Date.now()-lastSoundAt)>60000&&!isRebuildingLoops){
-    try{
-      rebuildLoops();
-      markLayerSound(layer);
-      return true;
-    }catch(e){
-      console.warn(`[${layer}] rebuild recovery failed`,e);
     }
   }
 
@@ -711,39 +701,10 @@ function startPlaybackWatchdog(){
     }
 
     if(silent){
-      if(nowMs-lastRebuildAttemptAt>REBUILD_COOLDOWN_MS&&!isRebuildingLoops){
-        lastRebuildAttemptAt=nowMs;
-        try{rebuildLoops();silentRecoveryCount=Math.min(silentRecoveryCount+1,4);}catch(e){}
-      }
-
-      if((nowMs-lastSoundAt)>300000&&silentRecoveryCount>=1&&nowMs-lastHardRecoveryAt>HARD_RECOVERY_COOLDOWN_MS){
-        lastHardRecoveryAt=nowMs;
-        try{Tone.Transport.stop();}catch(e){}
-        try{Tone.Transport.start();}catch(e){}
-        if(!isRebuildingLoops){
-          try{rebuildLoops();silentRecoveryCount=Math.min(silentRecoveryCount+1,4);}catch(e){}
-        }
-      }
-
-      if((nowMs-lastSoundAt)>480000&&nowMs-lastHardRecoveryAt>HARD_RECOVERY_COOLDOWN_MS){
-        // [STABILITY FIX] final fallback: hard reset context graph only when recovery repeatedly fails
-        lastHardRecoveryAt=nowMs;
-        try{Tone.Transport.stop();}catch(e){}
-        try{Tone.Transport.cancel(0);}catch(e){}
-        try{disposeAudioGraphForRecovery();}catch(e){console.warn("[watchdog] graph dispose failed",e);}
-        try{const ctx=Tone.getContext?.().rawContext||Tone.context?.rawContext||Tone.context;if(ctx&&ctx.state!=="closed")await ctx.close();}catch(e){console.warn("[watchdog] context close failed",e);}
-        try{await Tone.start();}catch(e){console.warn("[watchdog] context restart failed",e);}
-        try{bindAudioContextStateWatcher();}catch(e){}
-        try{bindUserGestureResume();}catch(e){}
-        try{configureToneRuntime();}catch(e){}
-        try{await ensureAudioGraph();}catch(e){console.warn("[watchdog] graph rebuild failed",e);}
-        if(isRunning&&!isRebuildingLoops){
-          try{Tone.Transport.start();}catch(e){console.warn("[watchdog] transport restart failed",e);}
-          try{await resumeAudioIfNeeded("hard-recovery",true);}catch(e){}
-          try{rebuildLoops();}catch(e){console.warn("[watchdog] loop rebuild failed",e);}
-          try{applyParams();}catch(e){console.warn("[watchdog] params apply failed",e);}
-        }
-      }
+      // Stability-first unattended mode: avoid graph/loop teardown churn during long runs.
+      try{await resumeAudioIfNeeded("silent-force",true);}catch(e){}
+      try{if(Tone.Transport.state!=="started")Tone.Transport.start();}catch(e){}
+      ensureHarmonySchedulerAlive();
     }else{
       silentRecoveryCount=0;
     }
