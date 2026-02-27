@@ -216,7 +216,45 @@
     #settingsOverlay.is-open{opacity:1;pointer-events:auto;} /* DESIGN UPDATE */
     #settingsOverlay .settings-shell{opacity:0;transform:translateY(6px);transition:opacity 560ms cubic-bezier(0.16, 1, 0.3, 1), transform 560ms cubic-bezier(0.16, 1, 0.3, 1);} /* DESIGN UPDATE */
     #settingsOverlay.is-open .settings-shell{opacity:1;transform:translateY(0);} /* DESIGN UPDATE */
-    @media (prefers-reduced-motion: reduce){
+    
+    .secret-season-overlay{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:60;
+      overflow:hidden;
+      opacity:0;
+      transition:opacity 380ms ease;
+    }
+    .secret-season-overlay.is-active{opacity:1;}
+    .season-particle{
+      position:absolute;
+      will-change:transform,opacity;
+      opacity:0;
+      animation:seasonFall linear forwards;
+      filter: drop-shadow(0 1px 1px rgba(15,23,42,0.08));
+    }
+    .season-particle::before{content:"";display:block;width:100%;height:100%;border-radius:999px;transform:rotate(var(--rot,0deg));}
+    .season-particle.spring::before{background:radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9), rgba(251,191,208,0.9) 48%, rgba(244,114,182,0.78) 100%);border-radius:62% 38% 60% 40%/44% 54% 46% 56%;}
+    .season-particle.autumn::before{background:linear-gradient(145deg, rgba(251,191,36,0.94), rgba(249,115,22,0.88) 56%, rgba(180,83,9,0.9));border-radius:22% 78% 36% 64%/36% 34% 66% 64%;}
+    .season-particle.winter::before{background:radial-gradient(circle at 45% 42%, rgba(255,255,255,0.96), rgba(186,230,253,0.86));}
+    .season-particle.firework{
+      width:6px;height:6px;border-radius:999px;
+      background:radial-gradient(circle, rgba(255,255,255,0.98), var(--fw,rgba(251,191,36,0.95)));
+      animation:fireworkBurst 1180ms cubic-bezier(0.16,1,0.3,1) forwards;
+      box-shadow:0 0 14px var(--fw,rgba(251,191,36,0.95));
+    }
+    @keyframes seasonFall{
+      0%{opacity:0;transform:translate3d(var(--x,0),-8vh,0) rotate(0deg) scale(0.9);}
+      12%{opacity:0.92;}
+      100%{opacity:0;transform:translate3d(calc(var(--x,0) + var(--drift,20px)),112vh,0) rotate(var(--spin,420deg)) scale(1.03);}
+    }
+    @keyframes fireworkBurst{
+      0%{opacity:0;transform:translate3d(0,0,0) scale(0.7);}
+      16%{opacity:1;}
+      100%{opacity:0;transform:translate3d(var(--tx),var(--ty),0) scale(1);}
+    }
+@media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
         opacity: 1;
         transform: none;
@@ -235,7 +273,7 @@
       <div class="rounded-[32px] border border-slate-200/70 bg-white backdrop-blur-md shadow-[0_16px_46px_rgba(15,23,42,0.07)] overflow-hidden">
         <div class="px-5 sm:px-8 pt-7 pb-6">
           <div class="flex items-start justify-between gap-3">
-            <h1 class="museum-type text-xl sm:text-2xl font-semibold tracking-tight">Ambient Music</h1> <!-- UI TWEAK -->
+            <h1 id="secretSeasonTrigger" class="museum-type text-xl sm:text-2xl font-semibold tracking-tight select-none">Ambient Music</h1> <!-- UI TWEAK -->
             <div class="text-right whitespace-nowrap shrink-0">
               <div class="text-xs tabular-nums text-slate-500">次回更新 <span id="countdown" class="font-semibold text-slate-800">—</span></div>
             </div>
@@ -403,6 +441,8 @@
     </div>
   </div>
 
+
+  <div id="seasonSecretOverlay" class="secret-season-overlay" aria-hidden="true"></div>
 
 <script>
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
@@ -759,10 +799,84 @@ function openSettings(){if(settingsCloseTimer){clearTimeout(settingsCloseTimer);
 settingsDetails.addEventListener("toggle",()=>{if(settingsDetails.open)openSettings();}); btnCloseSettings.addEventListener("click",closeSettings); settingsBackdrop.addEventListener("click",closeSettings); document.addEventListener("keydown",(e)=>{if(e.key==="Escape")closeSettings();}); tabButtons.forEach(btn=>btn.addEventListener("click",()=>setTab(btn.dataset.tab)));
 document.getElementById("btnToggle").addEventListener("click",async()=>{if(!isRunning)await start();else stop();}); document.getElementById("btnRefresh").addEventListener("click",()=>refreshWeather()); ["seasonSel","timeSel","weatherSel"].forEach(id=>{document.getElementById(id).addEventListener("change",()=>{applyParams();if(isRunning&&!isRebuildingLoops)rebuildLoops();applyParams();});});
 function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}function bindUiNuance(){const ids=["nuanceSparkle","nuanceSpeed","nuanceBright","nuanceReverb"];ids.forEach(id=>{const el=document.getElementById(id);const chip=document.getElementById(id.replace("nuance","nuance")+"Mode");if(!el||!chip)return;el.addEventListener("input",()=>{const v=parseInt(el.value,10)||0;chip.textContent=(v===50)?"Auto":"Manual";chip.className="text-[10px] px-2 py-0.5 rounded-full border "+((v===50)?"border-slate-200 text-slate-500":"border-slate-900 text-slate-800 bg-slate-50");});});const btn=document.getElementById("btnAllAuto");if(btn){btn.addEventListener("click",()=>{["seasonSel","timeSel","weatherSel"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="auto";});ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value="50";const chip=document.getElementById(id+"Mode");if(chip){chip.textContent="Auto";chip.className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200";}});mixState.bird=50;mixState.wind=50;mixState.water=50;syncMixUI();saveMix();applyParams();if(isRunning)rebuildLoops();});}}
+
+function bindSeasonSecret(){
+  const trigger=document.getElementById("secretSeasonTrigger");
+  const overlay=document.getElementById("seasonSecretOverlay");
+  if(!trigger||!overlay)return;
+  let tapCount=0;
+  let lastTapAt=0;
+  let clearTimer=null;
+  const reset=()=>{tapCount=0;};
+
+  function spawnFallingParticle(type){
+    const p=document.createElement("span");
+    p.className=`season-particle ${type}`;
+    const size=(type==="winter")?(6+Math.random()*6):(10+Math.random()*10);
+    p.style.width=`${size}px`;
+    p.style.height=`${size}px`;
+    p.style.left=`${Math.random()*100}%`;
+    p.style.setProperty("--x",`${(Math.random()*36)-18}px`);
+    p.style.setProperty("--drift",`${(Math.random()*160)-80}px`);
+    p.style.setProperty("--spin",`${(Math.random()*720)-360}deg`);
+    p.style.setProperty("--rot",`${(Math.random()*180)-90}deg`);
+    p.style.animationDuration=`${6.2+Math.random()*3.1}s`;
+    overlay.appendChild(p);
+    p.addEventListener("animationend",()=>p.remove(),{once:true});
+  }
+
+  function spawnFireworkBurst(){
+    const cx=16+Math.random()*68;
+    const cy=18+Math.random()*44;
+    const colors=["rgba(251,191,36,0.95)","rgba(244,114,182,0.92)","rgba(96,165,250,0.9)","rgba(251,146,60,0.92)"];
+    const count=22+Math.floor(Math.random()*10);
+    for(let i=0;i<count;i++){
+      const dot=document.createElement("span");
+      dot.className="season-particle firework";
+      const angle=(Math.PI*2*i)/count;
+      const radius=48+Math.random()*64;
+      dot.style.left=`${cx}%`;
+      dot.style.top=`${cy}%`;
+      dot.style.setProperty("--tx",`${Math.cos(angle)*radius}px`);
+      dot.style.setProperty("--ty",`${Math.sin(angle)*radius}px`);
+      dot.style.setProperty("--fw",colors[Math.floor(Math.random()*colors.length)]);
+      overlay.appendChild(dot);
+      dot.addEventListener("animationend",()=>dot.remove(),{once:true});
+    }
+  }
+
+  function playSeasonSecret(){
+    const season=getEnv().season;
+    overlay.classList.add("is-active");
+    const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(reduced){setTimeout(()=>overlay.classList.remove("is-active"),700);return;}
+    if(season==="summer"){
+      let bursts=0;
+      const iv=setInterval(()=>{spawnFireworkBurst();bursts++;if(bursts>=4){clearInterval(iv);}},360);
+      setTimeout(()=>{clearInterval(iv);overlay.classList.remove("is-active");},2200);
+      return;
+    }
+    const type=(season==="spring")?"spring":(season==="autumn")?"autumn":"winter";
+    let spawned=0;
+    const iv=setInterval(()=>{for(let i=0;i<3;i++)spawnFallingParticle(type);spawned+=3;if(spawned>=72)clearInterval(iv);},120);
+    setTimeout(()=>{clearInterval(iv);overlay.classList.remove("is-active");},4200);
+  }
+
+  trigger.addEventListener("pointerdown",()=>{
+    const now=Date.now();
+    if(now-lastTapAt>1200)tapCount=0;
+    lastTapAt=now;
+    tapCount+=1;
+    if(clearTimer)clearTimeout(clearTimer);
+    clearTimer=setTimeout(reset,1300);
+    if(tapCount>=3){tapCount=0;playSeasonSecret();}
+  });
+}
+
 function initGuideReveal(){const scroller=document.getElementById("guidePages");const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(!scroller||!dots.length)return;const pages=Array.from(scroller.querySelectorAll(".guide-page"));let returningTop=false;let activeIndex=0;let touchStartY=null;let lastSlideEnteredAt=0;let lastUserNextAttemptAt=0;const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;const isGuideOpen=()=>!tabGuide.classList.contains("hidden")&&!settingsOverlay.classList.contains("hidden");const isAtGuideEnd=()=>Math.abs((scroller.scrollTop+scroller.clientHeight)-scroller.scrollHeight)<2;const goTopFromGuide=()=>{if(returningTop||!isGuideOpen())return;returningTop=true;scroller.scrollTo({top:0,behavior:"auto"});const finalize=()=>{if(guideTransitionLayer)guideTransitionLayer.classList.remove("is-active");settingsOverlay.classList.remove("guide-overlay-fade");setTab("tabSettings");window.scrollTo({top:0,behavior:"smooth"});returningTop=false;};if(reduced){closeSettings(finalize,560);return;}settingsOverlay.classList.add("guide-overlay-fade");if(guideTransitionLayer){guideTransitionLayer.classList.add("is-active");setTimeout(()=>closeSettings(finalize,2200),20);}else{closeSettings(finalize,2200);}};const handleGuideNext=(action,source="user")=>{if(source!=="user")return;if(returningTop||!isGuideOpen())return;if(activeIndex===pages.length-1&&action==="next"){if(!isAtGuideEnd())return;const now=Date.now();if(now-lastSlideEnteredAt<550)return; // DESIGN UPDATE: avoid momentum-triggered pseudo-auto return
 if(now-lastUserNextAttemptAt<220)return; // DESIGN UPDATE: debounce burst events
 lastUserNextAttemptAt=now;goTopFromGuide();return;}const nextIdx=Math.min(activeIndex+1,pages.length-1);pages[nextIdx].scrollIntoView({behavior:reduced?"auto":"smooth",block:"start"});};const setActive=(idx)=>{activeIndex=idx;if(idx===pages.length-1)lastSlideEnteredAt=Date.now();dots.forEach((d,i)=>d.classList.toggle("is-active",i===idx));pages.forEach((p,i)=>p.classList.toggle("is-current",i===idx));};scroller.addEventListener("wheel",(e)=>{if(e.deltaY>0&&activeIndex===pages.length-1)handleGuideNext("next","user");},{passive:true});scroller.addEventListener("touchstart",(e)=>{touchStartY=e.touches&&e.touches[0]?e.touches[0].clientY:null;},{passive:true});scroller.addEventListener("touchend",(e)=>{const endY=e.changedTouches&&e.changedTouches[0]?e.changedTouches[0].clientY:null;if(touchStartY!==null&&endY!==null&&(touchStartY-endY)>18&&activeIndex===pages.length-1)handleGuideNext("next","user");touchStartY=null;},{passive:true});document.addEventListener("keydown",(e)=>{if(!isGuideOpen())return;if(["ArrowDown","PageDown","Space"].includes(e.code)||["ArrowDown","PageDown"," "].includes(e.key)){e.preventDefault();handleGuideNext("next","user");}});const hasIO=("IntersectionObserver" in window);if(!hasIO){setActive(0);return;}const io=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=pages.indexOf(entry.target);if(idx>=0)setActive(idx);}});},{root:scroller,threshold:0.65});pages.forEach(p=>io.observe(p));if(reduced){setActive(0);} } // DESIGN UPDATE
-  loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();bindUiNuance();initGuideReveal();
+  loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();bindUiNuance();bindSeasonSecret();initGuideReveal();
 </script>
 </body>
 </html>
