@@ -511,6 +511,8 @@ function setMediaSessionMetadata(text){if(!("mediaSession" in navigator))return;
 function updatePlaybackState(){if(!("mediaSession" in navigator))return;try{navigator.mediaSession.playbackState=isRunning?"playing":"paused";}catch(e){}}
 let isRunning=false;
 let playbackWatchdogId=null;
+let playbackKeepAliveId=null;
+let lastKeepAliveRebuildAt=0;
 let lastTransportSeconds=0;
 let lastTransportCheckAt=0;
 let silentRecoveryCount=0; // [STABILITY FIX]
@@ -661,6 +663,29 @@ function ensureHarmonySchedulerAlive(){
   }catch(e){console.warn("[harmony] watchdog ensure failed",e);}
 }
 
+function startPlaybackKeepAlive(){
+  if(playbackKeepAliveId)return;
+  playbackKeepAliveId=setInterval(async()=>{
+    if(!isRunning)return;
+    try{await resumeAudioIfNeeded("keepalive",true);}catch(e){}
+    try{if(Tone.Transport.state!=="started")Tone.Transport.start();}catch(e){}
+    ensureHarmonySchedulerAlive();
+
+    const coreLoopsAlive=Boolean(sparkleLoop||melodyLoop||padLoop||birdLoop||windLoop||waterLoop||chordEventId!==null);
+    const now=Date.now();
+    if(!coreLoopsAlive&&!isRebuildingLoops&&(now-lastKeepAliveRebuildAt>120000)){
+      lastKeepAliveRebuildAt=now;
+      try{rebuildLoops();}catch(e){console.warn("[keepalive] rebuild failed",e);}
+    }
+  },5000);
+}
+
+function stopPlaybackKeepAlive(){
+  if(!playbackKeepAliveId)return;
+  clearInterval(playbackKeepAliveId);
+  playbackKeepAliveId=null;
+}
+
 // [STABILITY FIX] watchdog: context + transport + silence detection with bounded recovery
 function startPlaybackWatchdog(){
   if(playbackWatchdogId)return;
@@ -715,8 +740,8 @@ function startPlaybackWatchdog(){
 }
 function stopPlaybackWatchdog(){if(!playbackWatchdogId)return;clearInterval(playbackWatchdogId);playbackWatchdogId=null;silentRecoveryCount=0;}
 function setButtonState(){const label=document.getElementById("btnLabel"),sub=document.getElementById("btnSub"),iconSvg=document.getElementById("iconSvg");if(isRunning){label.textContent="Stop";sub.textContent="タップで停止";sub.className="text-xs text-sky-100";iconSvg.innerHTML='<path d="M6 6h5v12H6zM13 6h5v12h-5z"></path>';}else{label.textContent="Start";sub.textContent="タップで再生";sub.className="text-xs text-white/80";iconSvg.innerHTML='<path d="M8 5v14l11-7z"></path>';setStatusChip("—");setStatus("待機中","夜の澄んだ空気、きらめき控えめ。");}playButtonTone(getEnv());updatePlaybackState();}
-async function start(){configureToneRuntime();await ensureAudioGraph();Tone.Destination.mute=false;await Tone.start();bindAudioContextStateWatcher();bindUserGestureResume();await resumeAudioIfNeeded("start",true);await requestWakeLock();Tone.Transport.start();rebuildLoops();isRunning=true;lastSoundAt=Date.now();Object.keys(layerLastSoundAt).forEach(k=>layerLastSoundAt[k]=Date.now());startPlaybackWatchdog();setButtonState();applyParams();}
-function stop(){isRunning=false;stopPlaybackWatchdog();Tone.Destination.mute=true;audioRecoveryInFlight=false;isRecovering=false;clearHarmonyScheduler();if(sparkleLoop){sparkleLoop.stop();sparkleLoop.dispose();sparkleLoop=null;}if(birdLoop){birdLoop.stop();birdLoop.dispose();birdLoop=null;}if(windLoop){windLoop.stop();windLoop.dispose();windLoop=null;}if(waterLoop){waterLoop.stop();waterLoop.dispose();waterLoop=null;}if(melodyLoop){melodyLoop.stop();melodyLoop.dispose();melodyLoop=null;}if(lowMelodyLoop){lowMelodyLoop.stop();lowMelodyLoop.dispose();lowMelodyLoop=null;}if(padLoop){padLoop.stop();padLoop.dispose();padLoop=null;}if(crystalHarmonyLoop){crystalHarmonyLoop.stop();crystalHarmonyLoop.dispose();crystalHarmonyLoop=null;}if(stringHarmonyLoop){stringHarmonyLoop.stop();stringHarmonyLoop.dispose();stringHarmonyLoop=null;}if(lowResonanceLoop){lowResonanceLoop.stop();lowResonanceLoop.dispose();lowResonanceLoop=null;}if(bellLoop){bellLoop.stop();bellLoop.dispose();bellLoop=null;}if(chimeLoop){chimeLoop.stop();chimeLoop.dispose();chimeLoop=null;}Tone.Transport.stop();Tone.Transport.cancel(0);if(sparkleMulti){sparkleMulti.tapNodes.forEach(n=>{try{n.dispose();}catch(e){}});try{sparkleMulti.input.dispose();}catch(e){}try{sparkleMulti.merger.dispose();}catch(e){} sparkleMulti=null;}lastSparkleDelayRebuildAt=0;const now=Tone.now();try{if(windGain)windGain.gain.setValueAtTime(0.000001,now);if(waterGain)waterGain.gain.setValueAtTime(0.000001,now);if(harmonySlots){harmonySlots.forEach(s=>{try{s.gain.gain.cancelScheduledValues(now);}catch(e){}try{s.gain.gain.setValueAtTime(0.000001,now);}catch(e){}});}if(padGain){padGain.gain.setValueAtTime(0.000001,now);}if(sparkle){sparkle.volume.value=-12;}}catch(e){} setStatusChip(describeWeather(lastWeather.code));setStatus("待機中","再生ボタンで開始");setButtonState();releaseWakeLock();}
+async function start(){configureToneRuntime();await ensureAudioGraph();Tone.Destination.mute=false;await Tone.start();bindAudioContextStateWatcher();bindUserGestureResume();await resumeAudioIfNeeded("start",true);await requestWakeLock();Tone.Transport.start();rebuildLoops();isRunning=true;lastSoundAt=Date.now();Object.keys(layerLastSoundAt).forEach(k=>layerLastSoundAt[k]=Date.now());startPlaybackWatchdog();startPlaybackKeepAlive();setButtonState();applyParams();}
+function stop(){isRunning=false;stopPlaybackWatchdog();stopPlaybackKeepAlive();lastKeepAliveRebuildAt=0;Tone.Destination.mute=true;audioRecoveryInFlight=false;isRecovering=false;clearHarmonyScheduler();if(sparkleLoop){sparkleLoop.stop();sparkleLoop.dispose();sparkleLoop=null;}if(birdLoop){birdLoop.stop();birdLoop.dispose();birdLoop=null;}if(windLoop){windLoop.stop();windLoop.dispose();windLoop=null;}if(waterLoop){waterLoop.stop();waterLoop.dispose();waterLoop=null;}if(melodyLoop){melodyLoop.stop();melodyLoop.dispose();melodyLoop=null;}if(lowMelodyLoop){lowMelodyLoop.stop();lowMelodyLoop.dispose();lowMelodyLoop=null;}if(padLoop){padLoop.stop();padLoop.dispose();padLoop=null;}if(crystalHarmonyLoop){crystalHarmonyLoop.stop();crystalHarmonyLoop.dispose();crystalHarmonyLoop=null;}if(stringHarmonyLoop){stringHarmonyLoop.stop();stringHarmonyLoop.dispose();stringHarmonyLoop=null;}if(lowResonanceLoop){lowResonanceLoop.stop();lowResonanceLoop.dispose();lowResonanceLoop=null;}if(bellLoop){bellLoop.stop();bellLoop.dispose();bellLoop=null;}if(chimeLoop){chimeLoop.stop();chimeLoop.dispose();chimeLoop=null;}Tone.Transport.stop();Tone.Transport.cancel(0);if(sparkleMulti){sparkleMulti.tapNodes.forEach(n=>{try{n.dispose();}catch(e){}});try{sparkleMulti.input.dispose();}catch(e){}try{sparkleMulti.merger.dispose();}catch(e){} sparkleMulti=null;}lastSparkleDelayRebuildAt=0;const now=Tone.now();try{if(windGain)windGain.gain.setValueAtTime(0.000001,now);if(waterGain)waterGain.gain.setValueAtTime(0.000001,now);if(harmonySlots){harmonySlots.forEach(s=>{try{s.gain.gain.cancelScheduledValues(now);}catch(e){}try{s.gain.gain.setValueAtTime(0.000001,now);}catch(e){}});}if(padGain){padGain.gain.setValueAtTime(0.000001,now);}if(sparkle){sparkle.volume.value=-12;}}catch(e){} setStatusChip(describeWeather(lastWeather.code));setStatus("待機中","再生ボタンで開始");setButtonState();releaseWakeLock();}
 async function refreshWeather(){if(isRefreshingWeather)return;isRefreshingWeather=true;try{nextUpdateAt=Date.now()+AUTO_UPDATE_MS;setStatusChip("—");setStatus("取得中…","天気/風/UV");const pos=await getCurrentPosition();const lat=pos.coords.latitude,lon=pos.coords.longitude;const {code,wind,uv}=await fetchWeatherByCoords(lat,lon);lastWeather={code,wind,uv};applyParams();if(isRunning){applyParams();}else{const env=getEnv();const key=keyFromSeason(env.season);const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;const showUv=(uvRaw!==null)&&isDayTimeBlock(env.time);const uvText=showUv?uvRaw.toFixed(1):"—";const mood=moodLine(env,clamp((lastWeather.wind??0)/15,0,1));setStatusChip(describeWeather(lastWeather.code));setStatus(`Key ${key}`,mood);}}catch(e){console.error(e);nextUpdateAt=Date.now()+WEATHER_RETRY_MS;setStatusChip("—");setStatus("エラー",`${e.message}（${Math.floor(WEATHER_RETRY_MS/1000)}秒後に再試行）`);}finally{isRefreshingWeather=false;}}
 function tick(){const remain=Math.max(0,nextUpdateAt-Date.now());const mm=String(Math.floor(remain/60000)).padStart(2,"0"),ss=String(Math.floor((remain%60000)/1000)).padStart(2,"0");document.getElementById("countdown").textContent=`${mm}:${ss}`;if(remain<=0&&!isRefreshingWeather)refreshWeather();requestAnimationFrame(tick);} 
 const settingsDetails=document.getElementById("settingsDetails"),settingsOverlay=document.getElementById("settingsOverlay"),settingsBackdrop=document.getElementById("settingsBackdrop"),btnCloseSettings=document.getElementById("btnCloseSettings");
