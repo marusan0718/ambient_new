@@ -224,35 +224,71 @@
       z-index:60;
       overflow:hidden;
       opacity:0;
-      transition:opacity 380ms ease;
+      transition:opacity 900ms ease;
     }
     .secret-season-overlay.is-active{opacity:1;}
     .season-particle{
       position:absolute;
       will-change:transform,opacity;
       opacity:0;
-      animation:seasonFall linear forwards;
-      filter: drop-shadow(0 1px 1px rgba(15,23,42,0.08));
+      filter: drop-shadow(0 2px 2px rgba(15,23,42,0.12));
+      animation:seasonDrift linear forwards;
     }
-    .season-particle::before{content:"";display:block;width:100%;height:100%;border-radius:999px;transform:rotate(var(--rot,0deg));}
-    .season-particle.spring::before{background:radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9), rgba(251,191,208,0.9) 48%, rgba(244,114,182,0.78) 100%);border-radius:62% 38% 60% 40%/44% 54% 46% 56%;}
-    .season-particle.autumn::before{background:linear-gradient(145deg, rgba(251,191,36,0.94), rgba(249,115,22,0.88) 56%, rgba(180,83,9,0.9));border-radius:22% 78% 36% 64%/36% 34% 66% 64%;}
-    .season-particle.winter::before{background:radial-gradient(circle at 45% 42%, rgba(255,255,255,0.96), rgba(186,230,253,0.86));}
+    .season-particle::before{content:"";display:block;width:100%;height:100%;transform:rotate(var(--rot,0deg));}
+
+    /* spring: pale sakura petals */
+    .season-particle.spring::before{
+      background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.92), rgba(254,226,236,0.88) 52%, rgba(251,207,232,0.82) 100%);
+      border-radius: 68% 32% 64% 36% / 42% 58% 38% 62%;
+      clip-path: path("M50 0 C64 10 72 26 67 41 C80 43 89 52 90 66 C79 70 66 68 55 62 C50 76 41 88 26 92 C20 80 24 67 33 56 C19 53 8 44 10 29 C23 26 35 30 44 39 C46 24 47 11 50 0 Z");
+    }
+
+    /* autumn: maple/leaf-like */
+    .season-particle.autumn::before{
+      background: linear-gradient(160deg, rgba(254,215,170,0.95), rgba(251,146,60,0.92) 52%, rgba(180,83,9,0.9));
+      clip-path: polygon(50% 0%,56% 14%,70% 10%,66% 24%,82% 28%,70% 40%,84% 52%,64% 56%,66% 74%,52% 66%,50% 100%,48% 66%,34% 74%,36% 56%,16% 52%,30% 40%,18% 28%,34% 24%,30% 10%,44% 14%);
+      border-radius: 8% 8% 22% 22%;
+    }
+
+    /* winter: snow crystals */
+    .season-particle.winter{filter: drop-shadow(0 1px 1px rgba(148,163,184,0.22));}
+    .season-particle.winter::before{
+      background: conic-gradient(from 0deg, rgba(255,255,255,0.95), rgba(224,242,254,0.9), rgba(255,255,255,0.95));
+      clip-path: polygon(48% 0,52% 0,53% 28%,72% 9%,75% 12%,57% 32%,86% 31%,86% 35%,58% 36%,76% 56%,73% 59%,54% 40%,54% 100%,46% 100%,46% 40%,27% 59%,24% 56%,42% 36%,14% 35%,14% 31%,43% 32%,25% 12%,28% 9%,47% 28%);
+    }
+
     .season-particle.firework{
-      width:6px;height:6px;border-radius:999px;
-      background:radial-gradient(circle, rgba(255,255,255,0.98), var(--fw,rgba(251,191,36,0.95)));
-      animation:fireworkBurst 1180ms cubic-bezier(0.16,1,0.3,1) forwards;
-      box-shadow:0 0 14px var(--fw,rgba(251,191,36,0.95));
+      width:4px;height:4px;border-radius:999px;
+      background: radial-gradient(circle, rgba(255,255,255,0.98), var(--fw, rgba(251,191,36,0.95)) 70%);
+      box-shadow: 0 0 16px var(--fw, rgba(251,191,36,0.95));
+      animation:fireworkTrail 1600ms cubic-bezier(0.2,1,0.3,1) forwards;
     }
-    @keyframes seasonFall{
-      0%{opacity:0;transform:translate3d(var(--x,0),-8vh,0) rotate(0deg) scale(0.9);}
-      12%{opacity:0.92;}
-      100%{opacity:0;transform:translate3d(calc(var(--x,0) + var(--drift,20px)),112vh,0) rotate(var(--spin,420deg)) scale(1.03);}
+    .season-firework-core{
+      position:absolute;
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(251,191,36,0.8));
+      box-shadow: 0 0 30px rgba(251,191,36,0.6);
+      animation:fireworkCore 1400ms ease-out forwards;
+      pointer-events:none;
     }
-    @keyframes fireworkBurst{
-      0%{opacity:0;transform:translate3d(0,0,0) scale(0.7);}
-      16%{opacity:1;}
-      100%{opacity:0;transform:translate3d(var(--tx),var(--ty),0) scale(1);}
+
+    @keyframes seasonDrift{
+      0%{opacity:0;transform:translate3d(var(--xStart,0),-10vh,0) rotate(0deg) scale(var(--s,1));}
+      10%{opacity:0.95;}
+      55%{opacity:0.92;}
+      100%{opacity:0;transform:translate3d(calc(var(--xStart,0) + var(--drift,40px)),112vh,0) rotate(var(--spin,540deg)) scale(var(--s,1));}
+    }
+    @keyframes fireworkTrail{
+      0%{opacity:0;transform:translate3d(0,0,0) scale(0.6);}
+      12%{opacity:1;}
+      100%{opacity:0;transform:translate3d(var(--tx),var(--ty),0) scale(1.1);}
+    }
+    @keyframes fireworkCore{
+      0%{opacity:0;transform:scale(0.4);}
+      20%{opacity:1;}
+      100%{opacity:0;transform:scale(1.2);}
     }
 @media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
@@ -807,68 +843,94 @@ function bindSeasonSecret(){
   let tapCount=0;
   let lastTapAt=0;
   let clearTimer=null;
+  let effectTimer=null;
+  let spawnTimer=null;
   const reset=()=>{tapCount=0;};
+  const stopEffect=()=>{
+    if(spawnTimer)clearInterval(spawnTimer);
+    spawnTimer=null;
+    if(effectTimer)clearTimeout(effectTimer);
+    effectTimer=null;
+    overlay.classList.remove("is-active");
+  };
 
   function spawnFallingParticle(type){
     const p=document.createElement("span");
     p.className=`season-particle ${type}`;
-    const size=(type==="winter")?(6+Math.random()*6):(10+Math.random()*10);
+    const size=(type==="winter")?(10+Math.random()*14):(14+Math.random()*16);
     p.style.width=`${size}px`;
     p.style.height=`${size}px`;
     p.style.left=`${Math.random()*100}%`;
-    p.style.setProperty("--x",`${(Math.random()*36)-18}px`);
-    p.style.setProperty("--drift",`${(Math.random()*160)-80}px`);
-    p.style.setProperty("--spin",`${(Math.random()*720)-360}deg`);
-    p.style.setProperty("--rot",`${(Math.random()*180)-90}deg`);
-    p.style.animationDuration=`${6.2+Math.random()*3.1}s`;
+    p.style.setProperty("--xStart",`${(Math.random()*24)-12}px`);
+    p.style.setProperty("--drift",`${(Math.random()*280)-140}px`);
+    p.style.setProperty("--spin",`${(Math.random()*960)-480}deg`);
+    p.style.setProperty("--rot",`${(Math.random()*200)-100}deg`);
+    p.style.setProperty("--s",`${0.82+Math.random()*0.45}`);
+    const baseDur=(type==="winter")?15.5:11.5;
+    p.style.animationDuration=`${baseDur+Math.random()*8.5}s`;
     overlay.appendChild(p);
     p.addEventListener("animationend",()=>p.remove(),{once:true});
   }
 
   function spawnFireworkBurst(){
-    const cx=16+Math.random()*68;
-    const cy=18+Math.random()*44;
-    const colors=["rgba(251,191,36,0.95)","rgba(244,114,182,0.92)","rgba(96,165,250,0.9)","rgba(251,146,60,0.92)"];
-    const count=22+Math.floor(Math.random()*10);
-    for(let i=0;i<count;i++){
-      const dot=document.createElement("span");
-      dot.className="season-particle firework";
-      const angle=(Math.PI*2*i)/count;
-      const radius=48+Math.random()*64;
-      dot.style.left=`${cx}%`;
-      dot.style.top=`${cy}%`;
-      dot.style.setProperty("--tx",`${Math.cos(angle)*radius}px`);
-      dot.style.setProperty("--ty",`${Math.sin(angle)*radius}px`);
-      dot.style.setProperty("--fw",colors[Math.floor(Math.random()*colors.length)]);
-      overlay.appendChild(dot);
-      dot.addEventListener("animationend",()=>dot.remove(),{once:true});
-    }
+    const cx=12+Math.random()*76;
+    const cy=12+Math.random()*46;
+    const colors=["rgba(251,191,36,0.96)","rgba(248,113,113,0.9)","rgba(96,165,250,0.9)","rgba(244,114,182,0.92)","rgba(253,224,71,0.94)"];
+    const core=document.createElement("span");
+    core.className="season-firework-core";
+    core.style.left=`${cx}%`;
+    core.style.top=`${cy}%`;
+    overlay.appendChild(core);
+    core.addEventListener("animationend",()=>core.remove(),{once:true});
+
+    const rings=[28,52,76];
+    rings.forEach((radius,ringIdx)=>{
+      const count=18+ringIdx*10;
+      for(let i=0;i<count;i++){
+        const dot=document.createElement("span");
+        dot.className="season-particle firework";
+        const angle=(Math.PI*2*i)/count + (Math.random()*0.16);
+        const r=radius + Math.random()*18;
+        dot.style.left=`${cx}%`;
+        dot.style.top=`${cy}%`;
+        dot.style.setProperty("--tx",`${Math.cos(angle)*r}px`);
+        dot.style.setProperty("--ty",`${Math.sin(angle)*r}px`);
+        dot.style.setProperty("--fw",colors[Math.floor(Math.random()*colors.length)]);
+        dot.style.animationDelay=`${ringIdx*120}ms`;
+        overlay.appendChild(dot);
+        dot.addEventListener("animationend",()=>dot.remove(),{once:true});
+      }
+    });
   }
 
   function playSeasonSecret(){
+    stopEffect();
     const season=getEnv().season;
     overlay.classList.add("is-active");
     const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if(reduced){setTimeout(()=>overlay.classList.remove("is-active"),700);return;}
-    if(season==="summer"){
-      let bursts=0;
-      const iv=setInterval(()=>{spawnFireworkBurst();bursts++;if(bursts>=4){clearInterval(iv);}},360);
-      setTimeout(()=>{clearInterval(iv);overlay.classList.remove("is-active");},2200);
+    const durationMs=60000;
+    if(reduced){
+      spawnTimer=setInterval(()=>{if(season==="summer")spawnFireworkBurst();else{const t=(season==="spring")?"spring":(season==="autumn")?"autumn":"winter";spawnFallingParticle(t);}},1500);
+      effectTimer=setTimeout(stopEffect,durationMs);
       return;
     }
-    const type=(season==="spring")?"spring":(season==="autumn")?"autumn":"winter";
-    let spawned=0;
-    const iv=setInterval(()=>{for(let i=0;i<3;i++)spawnFallingParticle(type);spawned+=3;if(spawned>=72)clearInterval(iv);},120);
-    setTimeout(()=>{clearInterval(iv);overlay.classList.remove("is-active");},4200);
+
+    if(season==="summer"){
+      spawnTimer=setInterval(()=>spawnFireworkBurst(),2800);
+    }else{
+      const type=(season==="spring")?"spring":(season==="autumn")?"autumn":"winter";
+      spawnTimer=setInterval(()=>{for(let i=0;i<(type==="winter"?2:3);i++)spawnFallingParticle(type);},680);
+    }
+    effectTimer=setTimeout(stopEffect,durationMs);
   }
 
   trigger.addEventListener("pointerdown",()=>{
     const now=Date.now();
-    if(now-lastTapAt>1200)tapCount=0;
+    if(now-lastTapAt>1300)tapCount=0;
     lastTapAt=now;
     tapCount+=1;
     if(clearTimer)clearTimeout(clearTimer);
-    clearTimer=setTimeout(reset,1300);
+    clearTimer=setTimeout(reset,1400);
     if(tapCount>=3){tapCount=0;playSeasonSecret();}
   });
 }
