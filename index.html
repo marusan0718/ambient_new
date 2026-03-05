@@ -217,6 +217,27 @@
     #settingsOverlay .settings-shell{opacity:0;transform:translateY(6px);transition:opacity 560ms cubic-bezier(0.16, 1, 0.3, 1), transform 560ms cubic-bezier(0.16, 1, 0.3, 1);} /* DESIGN UPDATE */
     #settingsOverlay.is-open .settings-shell{opacity:1;transform:translateY(0);} /* DESIGN UPDATE */
     
+
+    .play-ring{
+      width:min(56vw, 360px);
+      aspect-ratio:1/1;
+      border-radius:9999px;
+      border:0;
+      padding:10px;
+      position:relative;
+      background:conic-gradient(from 12deg, var(--ring-a, rgba(79,132,193,0.9)), var(--ring-b, rgba(186,219,244,0.9)), var(--ring-c, rgba(232,218,174,0.72)), var(--ring-a, rgba(79,132,193,0.9)));
+      box-shadow:0 4px 16px rgba(15,23,42,0.08);
+      transition:transform 220ms ease, filter 420ms ease, box-shadow 420ms ease;
+    }
+    .play-ring::before{
+      content:"";
+      position:absolute;
+      inset:10px;
+      border-radius:9999px;
+      background:#ececec;
+    }
+    .play-ring.is-running{filter:saturate(1.08);box-shadow:0 8px 22px rgba(15,23,42,0.12);}
+    .play-ring:active{transform:scale(0.992);}
     .secret-season-overlay{
       position:fixed;
       inset:0;
@@ -266,53 +287,23 @@
 </head>
 
 <body class="min-h-screen text-slate-900">
-  <main class="min-h-screen flex items-center justify-center p-4 sm:p-8">
-    <section class="w-full max-w-xl">
-      <div class="rounded-[32px] border border-slate-200/70 bg-white backdrop-blur-md shadow-[0_16px_46px_rgba(15,23,42,0.07)] overflow-hidden">
-        <div class="px-5 sm:px-8 pt-7 pb-6">
-          <div class="flex items-start justify-between gap-3">
-            <h1 id="secretSeasonTrigger" class="museum-type text-xl sm:text-2xl font-semibold tracking-tight select-none">Ambient Music</h1> <!-- UI TWEAK -->
-            <div class="text-right whitespace-nowrap shrink-0">
-              <div class="text-xs tabular-nums text-slate-500">次回更新 <span id="countdown" class="font-semibold text-slate-800">—</span></div>
-            </div>
-          </div>
-          <p class="subtitle-fit mt-2 text-slate-500">季節、天気、風のゆらぎ。
-この瞬間の自然と呼吸を合わせ、音は静かに生まれていく。</p>
-
-          <button id="btnToggle" class="mt-7 w-full rounded-[30px] px-6 py-8 transition active:scale-[0.99] bg-slate-900 text-white hover:bg-slate-800 shadow-[0_18px_40px_rgba(15,23,42,0.20)] relative overflow-hidden">
-            <div class="flex items-center justify-center gap-4">
-              <div class="grid place-items-center size-14 rounded-2xl bg-white/10 border border-white/20">
-                <svg id="iconSvg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="opacity-95"><path d="M8 5v14l11-7z"></path></svg>
-              </div>
-              <div class="text-left">
-                <div id="btnLabel" class="text-2xl font-semibold">Start</div>
-                <div id="btnSub" class="text-xs text-white/80">タップで再生</div>
-              </div>
-            </div>
-          </button>
-
-          <div class="mt-5 rounded-2xl border border-slate-200/50 bg-white px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.02)]">
-            <div class="text-xs text-slate-500">現在の状態</div>
-            <div id="statusMain" class="mt-1 text-base font-medium text-slate-800">夜の澄んだ空気、きらめき控えめ。</div>
-            <div id="statusSub" class="hidden">—</div>
-            <div id="statusChip" class="hidden">—</div>
-            
-          </div>
-        </div>
-
-        <div class="border-t border-slate-200/70 bg-[#fbfbfa]">
-          <div class="px-6 sm:px-8 py-4 flex items-center justify-between gap-2">
-            <button id="btnRefresh" class="px-4 py-2 rounded-2xl text-sm bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-[0.99]">更新</button>
-            <details id="settingsDetails" class="group">
-              <summary class="list-none cursor-pointer select-none px-4 py-2 rounded-2xl text-sm bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 inline-flex items-center gap-2">
-                詳細
-                <span class="text-slate-400 group-open:rotate-180 transition">▾</span>
-              </summary>
-            </details>
-          </div>
-        </div>
-      </div>
+  <main class="min-h-screen grid place-items-center bg-[#ececec]">
+    <section class="grid place-items-center">
+      <button id="btnToggle" class="play-ring" aria-label="Toggle playback">
+        <span id="btnLabel" class="sr-only">Start</span>
+        <span id="btnSub" class="sr-only">タップで再生</span>
+        <svg id="iconSvg" width="1" height="1" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M8 5v14l11-7z"></path></svg>
+      </button>
     </section>
+
+    <div class="hidden" aria-hidden="true">
+      <span id="countdown">—</span>
+      <span id="statusMain">待機中</span>
+      <span id="statusSub">—</span>
+      <span id="statusChip">—</span>
+      <button id="btnRefresh" type="button">更新</button>
+      <details id="settingsDetails"><summary>詳細</summary></details>
+    </div>
   </main>
 
   <div id="settingsOverlay" class="fixed inset-0 z-50 hidden">
@@ -668,8 +659,22 @@ padLoop=new Tone.Loop(safeLoopCallback("pad",(time)=>{if(!stringPad||!padGain)re
 melodyLoop=new Tone.Loop(safeLoopCallback("melody",(time)=>{if(!crystalLead)return;const mScale=melodyScaleForKey(r.key);const melodyOnlyChance=(r.time==="night"||r.time==="late")?0.42:0.22;const useMelodyOnly=Math.random()<melodyOnlyChance;const phraseLen=useMelodyOnly?(Math.random()<0.6?3:4):(Math.random()<0.5?2:3);for(let i=0;i<phraseLen;i++){const n=choose(mScale);const t=time+i*randomBetween(0.45,0.95);const d=melodyDuration(r)*(useMelodyOnly?1.18:0.82);const v=useMelodyOnly?0.36:0.28;trackedTriggerAttackReleaseLayer("melody",crystalLead,n,d,t,v);}if(useMelodyOnly&&sparkle&&Math.random()<0.7){sparkle.volume.value=-24;}else if(sparkle){sparkle.volume.value=-12;}}),randomBetween(3.4,6.2)).start(0);lowMelodyLoop=new Tone.Loop(safeLoopCallback("lowMelody",(time)=>{if(!lowLead)return;const lowScale=lowMelodyScaleForKey(r.key);const n=choose(lowScale);const d=clamp(melodyDuration(r)*1.22,2.2,7.2);trackedTriggerAttackReleaseLayer("melody",lowLead,n,d,time,0.34);if(Math.random()<0.35){const n2=choose(lowScale);trackedTriggerAttackReleaseLayer("melody",lowLead,n2,d*0.78,time+randomBetween(0.7,1.4),0.26);}}),randomBetween(5.2,8.4)).start(0);crystalHarmonyLoop=new Tone.Loop(safeLoopCallback("crystalHarmony",(time)=>{if(!crystalLead)return;const root=choose(chordChoicesForKey(r.key));const chord=triad(octaveShifted(root,1));const pick=[chord[0],chord[1],chord[2]];trackedTriggerAttackReleaseLayer("melody",crystalLead,choose(pick),randomBetween(2.4,4.8),time,0.24);if(Math.random()<0.66){trackedTriggerAttackReleaseLayer("melody",crystalLead,choose(pick),randomBetween(2.0,4.2),time+randomBetween(0.25,0.7),0.20);}}),randomBetween(4.8,8.0)).start(0);stringHarmonyLoop=new Tone.Loop(safeLoopCallback("stringHarmony",(time)=>{if(!stringPad)return;const root=choose(chordChoicesForKey(r.key));const chord=triad(octaveShifted(root,0));const seasonalChance=(r.season==="winter"||r.season==="autumn")?0.82:0.64;if(Math.random()<seasonalChance){trackedTriggerAttackRelease(stringPad,[chord[1],chord[2]],randomBetween(4.8,8.4),time,0.22);}if(Math.random()<0.42){trackedTriggerAttackRelease(stringPad,[chord[0]],randomBetween(3.8,6.5),time+randomBetween(0.3,0.9),0.18);}}),randomBetween(6.2,10.0)).start(0);lowResonanceLoop=new Tone.Loop(safeLoopCallback("lowResonance",(time)=>{if(!lowDrone)return;const lowScale=lowMelodyScaleForKey(r.key);const note=choose(lowScale.slice(0,4));const dur=randomBetween(7.0,13.5);const amp=(r.time==="night"||r.time==="late")?0.33:0.27;trackedTriggerAttackReleaseLayer("melody",lowDrone,note,dur,time,amp);if(Math.random()<0.34){trackedTriggerAttackReleaseLayer("melody",lowDrone,note,dur*0.62,time+randomBetween(1.1,2.2),amp*0.78);}}),randomBetween(9.0,14.0)).start(0);bellLoop=new Tone.Loop(safeLoopCallback("bell",(time)=>{if(!bellSynth)return;const brightChance=clamp(0.08+0.20*(r.weatherFx?.reflect??0)+0.16*(r.seasonFx?.shimmer??0)+0.10*(r.windNorm??0),0.03,0.34);if(Math.random()<brightChance){bellSynth.frequency=choose([320,360,420,480,540,620]);markSoundActivity();bellSynth.triggerAttack(time,0.22);}if(Math.random()<brightChance*0.45){bellSynth.frequency=choose([520,620,760]);markSoundActivity();bellSynth.triggerAttack(time+randomBetween(0.08,0.3),0.15);}}),randomBetween(2.8,5.6)).start(0);chimeLoop=new Tone.Loop(safeLoopCallback("chime",(time)=>{if(!chimeSynth)return;const scale=melodyScaleForKey(r.key);const p=(r.weatherCat==="clear"?0.30:(r.weatherCat==="rain"?0.14:0.22))*(r.time==="late"?0.65:1.0);if(Math.random()<p){const n=choose(scale);trackedTriggerAttackReleaseLayer("melody",chimeSynth,n,randomBetween(1.2,2.8),time,0.22);}if(Math.random()<p*0.42){trackedTriggerAttackReleaseLayer("melody",chimeSynth,choose(scale),randomBetween(0.9,2.2),time+randomBetween(0.15,0.5),0.18);}}),randomBetween(3.0,6.8)).start(0);
 }finally{isRebuildingLoops=false;} // STABILITY FIX: always release rebuild guard
 }
-function playButtonTone(env){const btn=document.getElementById("btnToggle"),label=document.getElementById("btnLabel"),sub=document.getElementById("btnSub");if(!btn||!label||!sub)return;const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:0;const u=clamp(uvRaw/11,0,1);if(!isRunning){btn.className="mt-7 w-full rounded-[30px] px-6 py-8 transition active:scale-[0.99] bg-slate-900 text-white hover:bg-slate-800 shadow-[0_18px_40px_rgba(15,23,42,0.18)] relative overflow-hidden";label.className="text-2xl font-semibold text-white";sub.className="text-xs text-white/80";btn.style.opacity="1";btn.style.boxShadow="0 18px 40px rgba(15,23,42,0.18), inset 0 0 0 0 rgba(255,255,255,0)";return;}const byTime={morning:"from-sky-50 to-cyan-100",day:"from-sky-100 to-blue-100",evening:"from-rose-100 to-stone-200",night:"from-slate-800 to-indigo-900",late:"from-slate-900 to-indigo-900"};let grad=byTime[env.time]||byTime.day;const darkBg=(env.time==="night"||env.time==="late");if(env.weatherCat==="rain")grad=darkBg?"from-slate-800 to-slate-700":"from-slate-100 to-slate-200";const txt=darkBg?"text-white":"text-slate-900";btn.className=`mt-7 w-full rounded-[30px] px-6 py-8 transition active:scale-[0.99] bg-gradient-to-br ${grad} ${txt} shadow-[0_14px_32px_rgba(15,23,42,0.10)] border border-slate-200 relative overflow-hidden`;label.className=`text-2xl font-semibold ${darkBg?"text-white":"text-slate-900"}`;sub.className=`text-xs ${darkBg?"text-white/80":"text-slate-700"}`;const alpha=(env.weatherCat==="rain")?(0.95+0.02*u):(0.96+0.03*u);btn.style.opacity=String(alpha);btn.style.boxShadow=darkBg?"0 14px 32px rgba(15,23,42,0.14), inset 0 1px 0 rgba(255,255,255,0.08)":"0 14px 32px rgba(15,23,42,0.10), inset 0 0 0 1px rgba(255,255,255,0.35)";}
-// STABILITY FIX: per-layer silence recovery without changing musical parameters
+function playButtonTone(env){
+  const btn=document.getElementById("btnToggle");
+  if(!btn)return;
+  const byTime={
+    morning:["rgba(74,129,190,0.90)","rgba(170,210,239,0.88)","rgba(232,218,174,0.72)"],
+    day:["rgba(72,124,186,0.92)","rgba(168,208,238,0.9)","rgba(231,215,170,0.70)"],
+    evening:["rgba(93,118,171,0.9)","rgba(174,185,209,0.86)","rgba(233,198,153,0.72)"],
+    night:["rgba(64,108,164,0.88)","rgba(148,186,219,0.84)","rgba(210,205,188,0.62)"],
+    late:["rgba(64,108,164,0.86)","rgba(146,182,214,0.82)","rgba(206,200,184,0.60)"]
+  };
+  const palette=byTime[env?.time]||byTime.day;
+  btn.style.setProperty("--ring-a",palette[0]);
+  btn.style.setProperty("--ring-b",palette[1]);
+  btn.style.setProperty("--ring-c",palette[2]);
+}
+
 async function recoverLayerLoopIfSilent(layer){
   const now=Date.now();
   const lastAt=layerLastSoundAt[layer]||0;
@@ -786,7 +791,26 @@ function startPlaybackWatchdog(){
   },10000);
 }
 function stopPlaybackWatchdog(){if(!playbackWatchdogId)return;clearInterval(playbackWatchdogId);playbackWatchdogId=null;silentRecoveryCount=0;}
-function setButtonState(){const label=document.getElementById("btnLabel"),sub=document.getElementById("btnSub"),iconSvg=document.getElementById("iconSvg");if(isRunning){label.textContent="Stop";sub.textContent="タップで停止";sub.className="text-xs text-sky-100";iconSvg.innerHTML='<path d="M6 6h5v12H6zM13 6h5v12h-5z"></path>';}else{label.textContent="Start";sub.textContent="タップで再生";sub.className="text-xs text-white/80";iconSvg.innerHTML='<path d="M8 5v14l11-7z"></path>';setStatusChip("—");setStatus("待機中","夜の澄んだ空気、きらめき控えめ。");}playButtonTone(getEnv());updatePlaybackState();}
+function setButtonState(){
+  const btn=document.getElementById("btnToggle"),label=document.getElementById("btnLabel"),sub=document.getElementById("btnSub"),iconSvg=document.getElementById("iconSvg");
+  if(!btn||!label||!sub||!iconSvg)return;
+  if(isRunning){
+    label.textContent="Stop";
+    sub.textContent="タップで停止";
+    iconSvg.innerHTML='<path d="M6 6h5v12H6zM13 6h5v12h-5z"></path>';
+    btn.classList.add("is-running");
+  }else{
+    label.textContent="Start";
+    sub.textContent="タップで再生";
+    iconSvg.innerHTML='<path d="M8 5v14l11-7z"></path>';
+    btn.classList.remove("is-running");
+    setStatusChip("—");
+    setStatus("待機中","夜の澄んだ空気、きらめき控えめ。");
+  }
+  playButtonTone(getEnv());
+  updatePlaybackState();
+}
+
 async function start(){configureToneRuntime();ensureTransportKeepAliveTone();await ensureAudioGraph();Tone.Destination.mute=false;await Tone.start();bindAudioContextStateWatcher();bindUserGestureResume();await resumeAudioIfNeeded("start",true);await requestWakeLock();Tone.Transport.start();rebuildLoops();isRunning=true;lastSoundAt=Date.now();Object.keys(layerLastSoundAt).forEach(k=>layerLastSoundAt[k]=Date.now());startPlaybackWatchdog();startPlaybackKeepAlive();setButtonState();applyParams();}
 function stop(){isRunning=false;stopPlaybackWatchdog();stopPlaybackKeepAlive();lastKeepAliveRebuildAt=0;Tone.Destination.mute=true;audioRecoveryInFlight=false;isRecovering=false;clearHarmonyScheduler();if(sparkleLoop){sparkleLoop.stop();sparkleLoop.dispose();sparkleLoop=null;}if(birdLoop){birdLoop.stop();birdLoop.dispose();birdLoop=null;}if(windLoop){windLoop.stop();windLoop.dispose();windLoop=null;}if(waterLoop){waterLoop.stop();waterLoop.dispose();waterLoop=null;}if(melodyLoop){melodyLoop.stop();melodyLoop.dispose();melodyLoop=null;}if(lowMelodyLoop){lowMelodyLoop.stop();lowMelodyLoop.dispose();lowMelodyLoop=null;}if(padLoop){padLoop.stop();padLoop.dispose();padLoop=null;}if(crystalHarmonyLoop){crystalHarmonyLoop.stop();crystalHarmonyLoop.dispose();crystalHarmonyLoop=null;}if(stringHarmonyLoop){stringHarmonyLoop.stop();stringHarmonyLoop.dispose();stringHarmonyLoop=null;}if(lowResonanceLoop){lowResonanceLoop.stop();lowResonanceLoop.dispose();lowResonanceLoop=null;}if(bellLoop){bellLoop.stop();bellLoop.dispose();bellLoop=null;}if(chimeLoop){chimeLoop.stop();chimeLoop.dispose();chimeLoop=null;}Tone.Transport.stop();Tone.Transport.cancel(0);if(sparkleMulti){sparkleMulti.tapNodes.forEach(n=>{try{n.dispose();}catch(e){}});try{sparkleMulti.input.dispose();}catch(e){}try{sparkleMulti.merger.dispose();}catch(e){} sparkleMulti=null;}lastSparkleDelayRebuildAt=0;try{if(transportKeepAliveSource)transportKeepAliveSource.dispose();}catch(e){}try{if(transportKeepAliveGain)transportKeepAliveGain.dispose();}catch(e){}transportKeepAliveSource=null;transportKeepAliveGain=null;const now=Tone.now();try{if(windGain)windGain.gain.setValueAtTime(0.000001,now);if(waterGain)waterGain.gain.setValueAtTime(0.000001,now);if(harmonySlots){harmonySlots.forEach(s=>{try{s.gain.gain.cancelScheduledValues(now);}catch(e){}try{s.gain.gain.setValueAtTime(0.000001,now);}catch(e){}});}if(padGain){padGain.gain.setValueAtTime(0.000001,now);}if(sparkle){sparkle.volume.value=-12;}}catch(e){} setStatusChip(describeWeather(lastWeather.code));setStatus("待機中","再生ボタンで開始");setButtonState();releaseWakeLock();}
 async function refreshWeather(){if(isRefreshingWeather)return;isRefreshingWeather=true;try{nextUpdateAt=Date.now()+AUTO_UPDATE_MS;setStatusChip("—");setStatus("取得中…","天気/風/UV");const pos=await getCurrentPosition();const lat=pos.coords.latitude,lon=pos.coords.longitude;const {code,wind,uv}=await fetchWeatherByCoords(lat,lon);lastWeather={code,wind,uv};applyParams();if(isRunning){applyParams();}else{const env=getEnv();const key=keyFromSeason(env.season);const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;const showUv=(uvRaw!==null)&&isDayTimeBlock(env.time);const uvText=showUv?uvRaw.toFixed(1):"—";const mood=moodLine(env,clamp((lastWeather.wind??0)/15,0,1));setStatusChip(describeWeather(lastWeather.code));setStatus(`Key ${key}`,mood);}}catch(e){console.error(e);nextUpdateAt=Date.now()+WEATHER_RETRY_MS;setStatusChip("—");setStatus("エラー",`${e.message}（${Math.floor(WEATHER_RETRY_MS/1000)}秒後に再試行）`);}finally{isRefreshingWeather=false;}}
@@ -799,7 +823,7 @@ document.getElementById("btnToggle").addEventListener("click",async()=>{if(!isRu
 function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}function bindUiNuance(){const ids=["nuanceSparkle","nuanceSpeed","nuanceBright","nuanceReverb"];ids.forEach(id=>{const el=document.getElementById(id);const chip=document.getElementById(id.replace("nuance","nuance")+"Mode");if(!el||!chip)return;el.addEventListener("input",()=>{const v=parseInt(el.value,10)||0;chip.textContent=(v===50)?"Auto":"Manual";chip.className="text-[10px] px-2 py-0.5 rounded-full border "+((v===50)?"border-slate-200 text-slate-500":"border-slate-900 text-slate-800 bg-slate-50");});});const btn=document.getElementById("btnAllAuto");if(btn){btn.addEventListener("click",()=>{["seasonSel","timeSel","weatherSel"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="auto";});ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value="50";const chip=document.getElementById(id+"Mode");if(chip){chip.textContent="Auto";chip.className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200";}});mixState.bird=50;mixState.wind=50;mixState.water=50;syncMixUI();saveMix();applyParams();if(isRunning)rebuildLoops();});}}
 
 function bindSeasonSecret(){
-  const trigger=document.getElementById("secretSeasonTrigger");
+  const trigger=document.getElementById("btnToggle");
   const overlay=document.getElementById("seasonSecretOverlay");
   if(!trigger||!overlay)return;
   let tapCount=0;
