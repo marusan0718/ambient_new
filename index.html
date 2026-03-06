@@ -284,7 +284,9 @@
     }
     .ring-intro.is-visible{opacity:1;transform:translateY(0);}
     .ring-intro.is-fading{opacity:0;transform:translateY(-4px);}
+    .ring-intro.is-idle{opacity:1;transform:translateY(0);animation:ringIdleFloat 3.8s ease-in-out infinite;}
     .ring-intro-line{white-space:nowrap;}
+    @keyframes ringIdleFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
 
     #settingsOverlay .settings-shell > div{
       background:linear-gradient(160deg, rgba(255,255,255,0.62), rgba(255,255,255,0.44));
@@ -893,6 +895,8 @@ function setButtonState(){
     iconSvg.innerHTML='<path d="M6 6h5v12H6zM13 6h5v12h-5z"></path>';
     btn.classList.add("is-running");
     if(ringIntro){
+      ringIntro.innerHTML='<div class="ring-intro-line">季節、天気、風のゆらぎ。</div><div class="ring-intro-line">この瞬間の自然と呼吸を合わせ、音は静かに生まれていく。</div>';
+      ringIntro.classList.remove("is-idle");
       ringIntro.classList.remove("is-fading");
       ringIntroShowTimer=setTimeout(()=>{ringIntro.classList.add("is-visible");},60);
       ringIntroHideTimer=setTimeout(()=>{ringIntro.classList.add("is-fading");ringIntro.classList.remove("is-visible");},20000);
@@ -902,7 +906,11 @@ function setButtonState(){
     sub.textContent="タップで再生";
     iconSvg.innerHTML='<path d="M8 5v14l11-7z"></path>';
     btn.classList.remove("is-running");
-    if(ringIntro)ringIntro.classList.remove("is-visible","is-fading");
+    if(ringIntro){
+      ringIntro.innerHTML='<div class="ring-intro-line">タップして再生</div>';
+      ringIntro.classList.remove("is-visible","is-fading");
+      ringIntro.classList.add("is-idle");
+    }
     setStatusChip("—");
     setStatus("待機中","夜の澄んだ空気、きらめき控えめ。");
   }
