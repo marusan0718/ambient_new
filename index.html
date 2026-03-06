@@ -263,17 +263,26 @@
     }
     .home-settings-btn:hover{opacity:0.82;background:rgba(255,255,255,0.66);}
 
-    .idle-hint{
-      margin-top:22px;
-      color:rgba(30,41,59,0.52);
+    .ring-intro{
+      position:absolute;
+      inset:20px;
+      z-index:2;
+      display:grid;
+      place-content:center;
+      text-align:center;
+      padding:0 20px;
+      color:rgba(30,41,59,0.82);
       font-size:13px;
-      letter-spacing:0.04em;
+      line-height:1.9;
+      letter-spacing:0.02em;
       font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
-      transition:opacity 340ms ease, transform 340ms ease;
-      animation:hintFloat 3.8s ease-in-out infinite;
+      opacity:0;
+      transform:translateY(6px);
+      pointer-events:none;
+      transition:opacity 900ms ease, transform 900ms ease;
     }
-    .idle-hint.is-hidden{opacity:0;transform:translateY(4px);pointer-events:none;animation:none;}
-    @keyframes hintFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
+    .ring-intro.is-visible{opacity:1;transform:translateY(0);}
+    .ring-intro.is-fading{opacity:0;transform:translateY(-4px);}
 
     #settingsOverlay .settings-shell > div{
       background:linear-gradient(160deg, rgba(255,255,255,0.62), rgba(255,255,255,0.44));
@@ -380,6 +389,9 @@
     .manual-ui .summary-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
     .manual-ui .summary-label{font-size:10px;color:rgb(100 116 139);}
     .manual-ui .summary-value{margin-top:3px;font-size:12px;font-weight:600;color:rgb(30 41 59);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .manual-group{height:100%;}
+    .manual-group .group-title{font-size:12px;letter-spacing:0.08em;color:rgb(100 116 139);margin-bottom:8px;}
+    .manual-group .inner-stack{display:grid;gap:10px;}
 @media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
         opacity: 1;
@@ -400,9 +412,12 @@
       <button id="btnToggle" class="play-ring" aria-label="Toggle playback">
         <span id="btnLabel" class="sr-only">Start</span>
         <span id="btnSub" class="sr-only">タップで再生</span>
+        <div id="ringIntro" class="ring-intro">
+          <div>季節、天気、風のゆらぎ。</div>
+          <div>この瞬間の自然と呼吸を合わせ、音は静かに生まれていく。</div>
+        </div>
         <svg id="iconSvg" width="1" height="1" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M8 5v14l11-7z"></path></svg>
       </button>
-            <div id="idleHint" class="idle-hint">タップして再生</div>
     </section>
 
     <div class="hidden" aria-hidden="true">
@@ -437,55 +452,56 @@
         <div class="px-5 sm:px-6 py-4 max-h-[74vh] overflow-y-auto ios-scroll">
           <section id="tabSettings" class="space-y-4 manual-ui">
             <div class="manual-layout">
-              <div class="space-y-3">
-                <div class="manual-soft-card p-3 text-xs">
-                  <div class="summary-strip">
+              <div class="manual-soft-card p-4 manual-group">
+                <div class="group-title">ENVIRONMENT + CURRENT</div>
+                <div class="inner-stack">
+                  <div class="summary-strip text-xs">
                     <div class="manual-chip px-3 py-2"><div class="summary-label">季節</div><div id="envSeason" class="summary-value">Auto</div></div>
                     <div class="manual-chip px-3 py-2"><div class="summary-label">時間</div><div id="envTime" class="summary-value">Auto</div></div>
                     <div class="manual-chip px-3 py-2"><div class="summary-label">天気</div><div id="envWeather" class="summary-value">Auto</div></div>
                     <div class="manual-chip px-3 py-2"><div class="summary-label">風 / UV</div><div id="envWindUv" class="summary-value">—</div></div>
                   </div>
-                </div>
-
-                <div class="manual-soft-card p-4">
-                  <div class="text-sm font-semibold text-slate-800">環境を選択</div>
-                  <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <div><div class="text-xs text-slate-500 mb-1">季節</div><select id="seasonSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="spring">春</option><option value="summer">夏</option><option value="autumn">秋</option><option value="winter">冬</option></select></div>
-                    <div><div class="text-xs text-slate-500 mb-1">時間</div><select id="timeSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="morning">朝</option><option value="day">昼</option><option value="evening">夕</option><option value="night">夜</option><option value="late">深夜</option></select></div>
-                    <div><div class="text-xs text-slate-500 mb-1">天気</div><select id="weatherSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="clear">晴れ</option><option value="other">曇り</option><option value="rain">雨</option></select></div>
+                  <div>
+                    <div class="text-xs text-slate-500 mb-1">季節 / 時間 / 天気</div>
+                    <div class="grid grid-cols-3 gap-2">
+                      <select id="seasonSel" class="w-full rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm"><option value="auto">Auto</option><option value="spring">春</option><option value="summer">夏</option><option value="autumn">秋</option><option value="winter">冬</option></select>
+                      <select id="timeSel" class="w-full rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm"><option value="auto">Auto</option><option value="morning">朝</option><option value="day">昼</option><option value="evening">夕</option><option value="night">夜</option><option value="late">深夜</option></select>
+                      <select id="weatherSel" class="w-full rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm"><option value="auto">Auto</option><option value="clear">晴れ</option><option value="other">曇り</option><option value="rain">雨</option></select>
+                    </div>
                   </div>
-                </div>
-
-                <div class="manual-soft-card p-4">
-                  <div class="text-sm font-semibold text-slate-800">現在の音楽</div>
-                  <div class="mt-3 grid grid-cols-3 gap-2">
-                    <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Key</div><div id="metricKey" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
-                    <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Tempo</div><div id="metricTempo" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
-                    <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Brightness</div><div id="metricBrightness" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
-                    <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Sparkle</div><div id="metricSparkle" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
-                    <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Reverb</div><div id="metricReverb" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
+                  <div>
+                    <div class="text-xs text-slate-500 mb-1">現在の音楽</div>
+                    <div class="grid grid-cols-3 gap-2">
+                      <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Key</div><div id="metricKey" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
+                      <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Tempo</div><div id="metricTempo" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
+                      <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Brightness</div><div id="metricBrightness" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
+                      <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Sparkle</div><div id="metricSparkle" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
+                      <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Reverb</div><div id="metricReverb" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
+                      <div id="envModeBadge" class="hidden" aria-hidden="true"></div>
+                    </div>
                   </div>
-                  <div id="envModeBadge" class="hidden" aria-hidden="true"></div>
                 </div>
               </div>
 
-              <div class="space-y-3">
-                <div class="manual-soft-card p-4">
-                  <div class="text-sm font-semibold text-slate-800">自然音</div>
-                  <div class="mt-3 space-y-4">
-                    <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">鳥</div><div id="birdVal" class="text-xs font-medium text-slate-700">50</div></div><input id="birdMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
-                    <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">風</div><div id="windVal" class="text-xs font-medium text-slate-700">50</div></div><input id="windMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
-                    <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">水</div><div id="waterVal" class="text-xs font-medium text-slate-700">50</div></div><input id="waterMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
+              <div class="manual-soft-card p-4 manual-group">
+                <div class="group-title">NATURE + NUANCE</div>
+                <div class="inner-stack">
+                  <div>
+                    <div class="text-xs text-slate-500 mb-1">自然音</div>
+                    <div class="space-y-3">
+                      <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">鳥</div><div id="birdVal" class="text-xs font-medium text-slate-700">50</div></div><input id="birdMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
+                      <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">風</div><div id="windVal" class="text-xs font-medium text-slate-700">50</div></div><input id="windMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
+                      <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">水</div><div id="waterVal" class="text-xs font-medium text-slate-700">50</div></div><input id="waterMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
+                    </div>
                   </div>
-                </div>
-
-                <div class="manual-soft-card p-4">
-                  <div class="text-sm font-semibold text-slate-800">音楽ニュアンス</div>
-                  <div class="mt-3 grid grid-cols-1 gap-4">
-                    <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">きらめき</div><span id="nuanceSparkleMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSparkle" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
-                    <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">スピード</div><span id="nuanceSpeedMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSpeed" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
-                    <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">明るさ</div><span id="nuanceBrightMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceBright" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
-                    <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">余韻</div><span id="nuanceReverbMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceReverb" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                  <div>
+                    <div class="text-xs text-slate-500 mb-1">音楽のニュアンス</div>
+                    <div class="space-y-3">
+                      <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">きらめき</div><span id="nuanceSparkleMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSparkle" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                      <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">スピード</div><span id="nuanceSpeedMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSpeed" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                      <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">明るさ</div><span id="nuanceBrightMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceBright" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                      <div><div class="flex items-center justify-between"><div class="text-xs text-slate-500">余韻</div><span id="nuanceReverbMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceReverb" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -495,7 +511,7 @@
           <section id="tabGuide" class="hidden">
             <article class="guide-single">
               <h3>音の設計思想</h3>
-              <p>このアプリは季節・時間・天候・風・UVを直接鳴らすのではなく、調性・テンポ・明るさ・きらめき・余韻へ丁寧に翻訳し、同一キーの三和音（I / IV / V / vi）を軸にした安定した推移で聴き疲れしない連続音楽を生成し、晴れた昼は軽く、雨の夜は深くというように変化を抑えながら、再生ごとに今の空気だけを静かに反映する設計です。</p>
+              <p>このアプリは、季節や時間、天候、風、UVをそのまま音にするのではなく、調性やテンポ、音の明るさ、きらめき、余韻といった音楽の要素へと変換します。音楽は同じキーの三和音（I / IV / V / vi）を軸に、聴き疲れしない穏やかな流れで続いていきます。晴れた昼は軽やかに、雨の夜は静かに深く。大きく変わりすぎないまま、再生するたびにその瞬間の空気だけをそっと映すように設計されています。</p>
             </article>
           </section>
         </div>
@@ -622,6 +638,8 @@ let lastTransportSeconds=0;
 let lastTransportCheckAt=0;
 let silentRecoveryCount=0; // [STABILITY FIX]
 let isRebuildingLoops=false;
+let ringIntroShowTimer=null;
+let ringIntroHideTimer=null;
 let masterReverb, masterComp, masterLimiter;
 let filter, airHighpass, airChorus;
 let sparkle, crystalLead, lowLead, lowDrone, bellSynth, chimeSynth, stringEnsemble, stringPad, padGain; let bird,birdFilter,birdTremolo; let windNoise,windFilter,windGain; let waterNoise,waterFilter,waterGain;
@@ -863,20 +881,26 @@ function startPlaybackWatchdog(){
 }
 function stopPlaybackWatchdog(){if(!playbackWatchdogId)return;clearInterval(playbackWatchdogId);playbackWatchdogId=null;silentRecoveryCount=0;}
 function setButtonState(){
-  const btn=document.getElementById("btnToggle"),label=document.getElementById("btnLabel"),sub=document.getElementById("btnSub"),iconSvg=document.getElementById("iconSvg"),hint=document.getElementById("idleHint");
+  const btn=document.getElementById("btnToggle"),label=document.getElementById("btnLabel"),sub=document.getElementById("btnSub"),iconSvg=document.getElementById("iconSvg"),ringIntro=document.getElementById("ringIntro");
   if(!btn||!label||!sub||!iconSvg)return;
+  if(ringIntroShowTimer){clearTimeout(ringIntroShowTimer);ringIntroShowTimer=null;}
+  if(ringIntroHideTimer){clearTimeout(ringIntroHideTimer);ringIntroHideTimer=null;}
   if(isRunning){
     label.textContent="Stop";
     sub.textContent="タップで停止";
     iconSvg.innerHTML='<path d="M6 6h5v12H6zM13 6h5v12h-5z"></path>';
     btn.classList.add("is-running");
-    if(hint)hint.classList.add("is-hidden");
+    if(ringIntro){
+      ringIntro.classList.remove("is-fading");
+      ringIntroShowTimer=setTimeout(()=>{ringIntro.classList.add("is-visible");},60);
+      ringIntroHideTimer=setTimeout(()=>{ringIntro.classList.add("is-fading");ringIntro.classList.remove("is-visible");},20000);
+    }
   }else{
     label.textContent="Start";
     sub.textContent="タップで再生";
     iconSvg.innerHTML='<path d="M8 5v14l11-7z"></path>';
     btn.classList.remove("is-running");
-    if(hint)hint.classList.remove("is-hidden");
+    if(ringIntro)ringIntro.classList.remove("is-visible","is-fading");
     setStatusChip("—");
     setStatus("待機中","夜の澄んだ空気、きらめき控えめ。");
   }
