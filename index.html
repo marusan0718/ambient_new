@@ -263,17 +263,18 @@
     }
     .home-settings-btn:hover{opacity:0.82;background:rgba(255,255,255,0.66);}
 
+    .ring-holder{position:relative;display:grid;place-items:center;}
     .ring-intro{
       position:absolute;
-      inset:20px;
+      inset:28px;
       z-index:2;
       display:grid;
       place-content:center;
       text-align:center;
-      padding:0 20px;
+      padding:0 18px;
       color:rgba(30,41,59,0.82);
-      font-size:13px;
-      line-height:1.9;
+      font-size:11px;
+      line-height:1.75;
       letter-spacing:0.02em;
       font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
       opacity:0;
@@ -283,6 +284,7 @@
     }
     .ring-intro.is-visible{opacity:1;transform:translateY(0);}
     .ring-intro.is-fading{opacity:0;transform:translateY(-4px);}
+    .ring-intro-line{white-space:nowrap;}
 
     #settingsOverlay .settings-shell > div{
       background:linear-gradient(160deg, rgba(255,255,255,0.62), rgba(255,255,255,0.44));
@@ -408,16 +410,16 @@
 <body class="min-h-screen text-slate-900">
   <main class="min-h-screen grid place-items-center bg-[#ececec]">
     <button id="btnOpenSettings" class="home-settings-btn" aria-label="Open settings">···</button>
-    <section class="grid place-items-center">
+    <section class="ring-holder">
       <button id="btnToggle" class="play-ring" aria-label="Toggle playback">
         <span id="btnLabel" class="sr-only">Start</span>
         <span id="btnSub" class="sr-only">タップで再生</span>
-        <div id="ringIntro" class="ring-intro">
-          <div>季節、天気、風のゆらぎ。</div>
-          <div>この瞬間の自然と呼吸を合わせ、音は静かに生まれていく。</div>
-        </div>
         <svg id="iconSvg" width="1" height="1" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M8 5v14l11-7z"></path></svg>
       </button>
+      <div id="ringIntro" class="ring-intro">
+        <div class="ring-intro-line">季節、天気、風のゆらぎ。</div>
+        <div class="ring-intro-line">この瞬間の自然と呼吸を合わせ、音は静かに生まれていく。</div>
+      </div>
     </section>
 
     <div class="hidden" aria-hidden="true">
