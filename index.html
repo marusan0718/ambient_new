@@ -276,63 +276,70 @@
     @keyframes hintFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
 
     #settingsOverlay .settings-shell > div{
-      background:#ececec;
-      border-color:rgba(15,23,42,0.08);
-      box-shadow:0 12px 36px rgba(15,23,42,0.10);
+      background:linear-gradient(160deg, rgba(255,255,255,0.62), rgba(255,255,255,0.44));
+      border-color:rgba(255,255,255,0.58);
+      box-shadow:0 18px 44px rgba(15,23,42,0.12), inset 0 1px 0 rgba(255,255,255,0.64);
+      backdrop-filter: blur(18px) saturate(1.12);
+      -webkit-backdrop-filter: blur(18px) saturate(1.12);
     }
     #settingsOverlay .settings-shell .tabBtn{
       border-radius:999px !important;
-      border-color:rgba(15,23,42,0.12) !important;
-      background:rgba(255,255,255,0.58) !important;
+      border-color:rgba(255,255,255,0.78) !important;
+      background:rgba(255,255,255,0.44) !important;
       color:rgba(15,23,42,0.72) !important;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.62);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75), 0 1px 8px rgba(15,23,42,0.05);
     }
     #settingsOverlay .settings-shell .tabBtn.is-tab-active{
-      background:rgba(255,255,255,0.88) !important;
+      background:rgba(255,255,255,0.76) !important;
       color:rgba(15,23,42,0.88) !important;
-      border-color:rgba(15,23,42,0.18) !important;
-      box-shadow:0 6px 14px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.72);
+      border-color:rgba(255,255,255,0.92) !important;
+      box-shadow:0 8px 14px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
     }
     .guide-single{
       border:none;
       border-radius:0;
       background:transparent;
-      padding:8px 4px 2px;
+      padding:10px 2px 2px;
       color:rgb(30 41 59);
-      line-height:2.02;
-      font-size:14px;
+      line-height:1.86;
+      font-size:13px;
       font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+      letter-spacing:0.02em;
+      text-align:justify;
+      text-justify:inter-character;
+      font-variant-east-asian: full-width;
       position:relative;
       overflow:hidden;
     }
     .guide-single::before{display:none;}
-    .guide-single h3{font-size:15px;margin:0 0 12px;font-weight:500;letter-spacing:0.05em;}
-    .guide-single p{margin:0 0 12px;}
+    .guide-single h3{font-size:14px;margin:0 0 10px;font-weight:500;letter-spacing:0.07em;}
+    .guide-single p{margin:0 0 10px;}
     .guide-single p:last-child{margin-bottom:0;}
 
     .manual-ui .manual-soft-card{
-      border:1px solid rgba(15,23,42,0.08);
-      background:linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.62));
-      border-radius:22px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.66), 0 7px 18px rgba(15,23,42,0.06);
-      backdrop-filter: blur(1.5px);
+      border:1px solid rgba(255,255,255,0.66);
+      background:linear-gradient(165deg, rgba(255,255,255,0.58), rgba(255,255,255,0.34));
+      border-radius:20px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 10px 20px rgba(15,23,42,0.07);
+      backdrop-filter: blur(14px) saturate(1.07);
+      -webkit-backdrop-filter: blur(14px) saturate(1.07);
     }
     .manual-ui .manual-chip{
-      border:1px solid rgba(15,23,42,0.08);
+      border:1px solid rgba(255,255,255,0.72);
       border-radius:16px;
-      background:rgba(255,255,255,0.66);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+      background:linear-gradient(165deg, rgba(255,255,255,0.64), rgba(255,255,255,0.34));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.84), 0 2px 10px rgba(15,23,42,0.05);
     }
     .manual-ui .manual-metric{
-      border:1px solid rgba(15,23,42,0.08);
-      background:rgba(255,255,255,0.52);
+      border:1px solid rgba(255,255,255,0.74);
+      background:rgba(255,255,255,0.38);
       border-radius:13px;
     }
     .manual-ui select{
       border-radius:14px !important;
-      border-color:rgba(15,23,42,0.14) !important;
-      background:rgba(255,255,255,0.76) !important;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.66);
+      border-color:rgba(255,255,255,0.84) !important;
+      background:rgba(255,255,255,0.48) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
       color:rgb(30 41 59);
     }
     .manual-ui .ring-slider{
@@ -365,11 +372,14 @@
     .manual-layout{
       display:grid;
       grid-template-columns:1fr;
-      gap:12px;
+      gap:10px;
     }
     @media (min-width: 900px){
-      .manual-layout{grid-template-columns:0.95fr 1.05fr;align-items:start;}
+      .manual-layout{grid-template-columns:1.08fr 0.92fr;align-items:start;}
     }
+    .manual-ui .summary-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+    .manual-ui .summary-label{font-size:10px;color:rgb(100 116 139);}
+    .manual-ui .summary-value{margin-top:3px;font-size:12px;font-weight:600;color:rgb(30 41 59);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 @media (prefers-reduced-motion: reduce){
       .guide-reveal, .guide-reveal.is-visible{
         opacity: 1;
@@ -414,7 +424,7 @@
           <div class="flex items-center justify-between gap-3">
             <div class="text-sm font-semibold text-slate-800">詳細</div>
             <div class="flex items-center gap-2">
-              <button id="btnAllAuto" class="hidden px-3 py-1.5 rounded-xl text-xs border border-slate-200 bg-white hover:bg-slate-50">All Auto</button> <!-- UI TWEAK -->
+              <button id="btnAllAuto" class="px-3 py-1.5 rounded-xl text-xs border border-white/80 bg-white/55 hover:bg-white/70">All Auto</button> <!-- UI TWEAK -->
               <button id="btnCloseSettings" class="px-3 py-1.5 rounded-xl text-sm bg-slate-900 text-white hover:bg-slate-800">閉じる</button>
             </div>
           </div>
@@ -428,16 +438,18 @@
           <section id="tabSettings" class="space-y-4 manual-ui">
             <div class="manual-layout">
               <div class="space-y-3">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div class="manual-chip px-4 py-3"><div class="text-slate-500">季節</div><div id="envSeason" class="mt-1 text-sm font-medium text-slate-800">Auto</div></div>
-                  <div class="manual-chip px-4 py-3"><div class="text-slate-500">時間</div><div id="envTime" class="mt-1 text-sm font-medium text-slate-800">Auto</div></div>
-                  <div class="manual-chip px-4 py-3"><div class="text-slate-500">天気</div><div id="envWeather" class="mt-1 text-sm font-medium text-slate-800">Auto</div></div>
-                  <div class="manual-chip px-4 py-3"><div class="text-slate-500">風 / UV</div><div id="envWindUv" class="mt-1 text-sm font-medium text-slate-800">—</div></div>
+                <div class="manual-soft-card p-3 text-xs">
+                  <div class="summary-strip">
+                    <div class="manual-chip px-3 py-2"><div class="summary-label">季節</div><div id="envSeason" class="summary-value">Auto</div></div>
+                    <div class="manual-chip px-3 py-2"><div class="summary-label">時間</div><div id="envTime" class="summary-value">Auto</div></div>
+                    <div class="manual-chip px-3 py-2"><div class="summary-label">天気</div><div id="envWeather" class="summary-value">Auto</div></div>
+                    <div class="manual-chip px-3 py-2"><div class="summary-label">風 / UV</div><div id="envWindUv" class="summary-value">—</div></div>
+                  </div>
                 </div>
 
                 <div class="manual-soft-card p-4">
                   <div class="text-sm font-semibold text-slate-800">環境を選択</div>
-                  <div class="mt-3 grid grid-cols-1 gap-3">
+                  <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div><div class="text-xs text-slate-500 mb-1">季節</div><select id="seasonSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="spring">春</option><option value="summer">夏</option><option value="autumn">秋</option><option value="winter">冬</option></select></div>
                     <div><div class="text-xs text-slate-500 mb-1">時間</div><select id="timeSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="morning">朝</option><option value="day">昼</option><option value="evening">夕</option><option value="night">夜</option><option value="late">深夜</option></select></div>
                     <div><div class="text-xs text-slate-500 mb-1">天気</div><select id="weatherSel" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="auto">Auto</option><option value="clear">晴れ</option><option value="other">曇り</option><option value="rain">雨</option></select></div>
@@ -446,12 +458,12 @@
 
                 <div class="manual-soft-card p-4">
                   <div class="text-sm font-semibold text-slate-800">現在の音楽</div>
-                  <div class="mt-3 grid grid-cols-2 gap-2">
+                  <div class="mt-3 grid grid-cols-3 gap-2">
                     <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Key</div><div id="metricKey" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
                     <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Tempo</div><div id="metricTempo" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
                     <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Brightness</div><div id="metricBrightness" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
                     <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Sparkle</div><div id="metricSparkle" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
-                    <div class="manual-metric p-2 col-span-2"><div class="text-[10px] text-slate-500">Reverb</div><div id="metricReverb" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
+                    <div class="manual-metric p-2"><div class="text-[10px] text-slate-500">Reverb</div><div id="metricReverb" class="text-sm font-medium text-slate-800 mt-1">—</div></div>
                   </div>
                   <div id="envModeBadge" class="hidden" aria-hidden="true"></div>
                 </div>
@@ -483,10 +495,7 @@
           <section id="tabGuide" class="hidden">
             <article class="guide-single">
               <h3>音の設計思想</h3>
-              <p>このアプリは、季節・時間・天候・風・UVをそのまま鳴らすのではなく、聴き疲れしない音楽に翻訳する設計です。</p>
-              <p>環境データは、まず調性・テンポ・明るさ・きらめき・余韻といった指標に変換され、穏やかな変化として重ねられます。</p>
-              <p>和音は同一キーの三和音を中心に、I / IV / V / vi の流れで安定さを保ちながら、呼吸するように遷移します。</p>
-              <p>晴れた昼はわずかに明るく、雨の夜は余韻を深く。変化は控えめですが、再生ごとに今この瞬間の空気をまといます。</p>
+              <p>このアプリは季節・時間・天候・風・UVを直接鳴らすのではなく、調性・テンポ・明るさ・きらめき・余韻へ丁寧に翻訳し、同一キーの三和音（I / IV / V / vi）を軸にした安定した推移で聴き疲れしない連続音楽を生成し、晴れた昼は軽く、雨の夜は深くというように変化を抑えながら、再生ごとに今の空気だけを静かに反映する設計です。</p>
             </article>
           </section>
         </div>
