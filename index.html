@@ -225,9 +225,10 @@
       border:0;
       padding:10px;
       position:relative;
-      background:conic-gradient(from 12deg, var(--ring-a, rgba(79,132,193,0.9)), var(--ring-b, rgba(186,219,244,0.9)), var(--ring-c, rgba(232,218,174,0.72)), var(--ring-a, rgba(79,132,193,0.9)));
-      box-shadow:0 4px 16px rgba(15,23,42,0.08);
-      transition:transform 220ms ease, filter 420ms ease, box-shadow 420ms ease;
+      background:conic-gradient(from var(--ring-angle, 12deg), var(--ring-a, rgba(79,132,193,0.9)), var(--ring-b, rgba(186,219,244,0.9)), var(--ring-c, rgba(232,218,174,0.72)), color-mix(in oklab, var(--ring-a, rgba(79,132,193,0.9)) 76%, white 24%), var(--ring-a, rgba(79,132,193,0.9)));
+      box-shadow:0 3px 12px rgba(15,23,42,0.07);
+      transition:transform 300ms ease, filter 1600ms ease, box-shadow 1200ms ease, background 1800ms ease;
+      will-change:transform,filter;
     }
     .play-ring::before{
       content:"";
@@ -235,13 +236,26 @@
       inset:10px;
       border-radius:9999px;
       background:#ececec;
+      filter:blur(var(--ring-inner-blur, 0px));
+      opacity:0.98;
     }
-    .play-ring.is-running{filter:saturate(1.08);box-shadow:0 8px 22px rgba(15,23,42,0.12);}
+    .play-ring::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:9999px;
+      background:radial-gradient(circle at 22% 28%, rgba(255,255,255,var(--ring-glow,0.24)), rgba(255,255,255,0) 58%);
+      mix-blend-mode:screen;
+      pointer-events:none;
+    }
+    .play-ring.is-running{
+      filter:saturate(var(--ring-sat,1.08)) contrast(var(--ring-contrast,1.02)) brightness(var(--ring-bright,1));
+      box-shadow:0 5px 20px rgba(15,23,42,0.1);
+      animation:ringBreath var(--ring-breath,10s) ease-in-out infinite, ringDrift var(--ring-drift,32s) linear infinite;
+    }
     .play-ring:active{transform:scale(0.992);}
-    
-    .play-ring.is-running{filter:saturate(1.12);box-shadow:0 10px 28px rgba(15,23,42,0.14);animation:ringSpin 28s linear infinite;}
-    .play-ring:active{transform:scale(0.992);}
-    @keyframes ringSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+    @keyframes ringBreath{0%,100%{transform:scale(1);}50%{transform:scale(1.01);}}
+    @keyframes ringDrift{0%{filter:hue-rotate(0deg);}50%{filter:hue-rotate(var(--ring-hue-shift,3deg));}100%{filter:hue-rotate(0deg);}}
 
     .home-settings-btn{
       position:fixed;
@@ -263,7 +277,7 @@
     }
     .home-settings-btn:hover{opacity:0.82;background:rgba(255,255,255,0.66);}
 
-    .ring-holder{position:relative;display:grid;place-items:center;}
+    .ring-holder{position:relative;display:grid;place-items:center;gap:12px;}
     .ring-intro{
       position:absolute;
       inset:28px;
@@ -287,6 +301,16 @@
     .ring-intro.is-idle{opacity:1;transform:translateY(0);animation:ringIdleFloat 3.8s ease-in-out infinite;}
     .ring-intro-line{white-space:nowrap;}
     @keyframes ringIdleFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
+    .ambient-caption{
+      text-align:center;
+      font-size:10px;
+      opacity:0.3;
+      letter-spacing:0.14em;
+      color:rgb(71 85 105);
+      margin-top:4px;
+      min-height:1em;
+      user-select:none;
+    }
 
     #settingsOverlay .settings-shell > div{
       background:linear-gradient(160deg, rgba(255,255,255,0.62), rgba(255,255,255,0.44));
@@ -434,6 +458,7 @@
         <div class="ring-intro-line">季節、天気、風のゆらぎ。</div>
         <div class="ring-intro-line">この瞬間の自然と呼吸を合わせ、音は静かに生まれていく。</div>
       </div>
+      <div id="ambientCaption" class="ambient-caption">夜・静けさ・微風</div>
     </section>
 
     <div class="hidden" aria-hidden="true">
@@ -645,7 +670,7 @@ function saveMix(){try{localStorage.setItem(MIX_KEY,JSON.stringify(mixState));}c
 function mixMultiplierFromPercent(p){const x=clamp(p,0,100)/50;return clamp(x,0,2.0);} function getMix(){return {birdMul:mixMultiplierFromPercent(mixState.bird),windMul:mixMultiplierFromPercent(mixState.wind),waterMul:mixMultiplierFromPercent(mixState.water),birdPct:mixState.bird,windPct:mixState.wind,waterPct:mixState.water};}
 function syncMixUI(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix"),bv=document.getElementById("birdVal"),wv=document.getElementById("windVal"),wav=document.getElementById("waterVal");if(!b||!w||!wa||!bv||!wv||!wav)return;b.value=String(mixState.bird);w.value=String(mixState.wind);wa.value=String(mixState.water);bv.textContent=String(mixState.bird);wv.textContent=String(mixState.wind);wav.textContent=String(mixState.water);} function onMixChange(){syncMixUI();saveMix();if(isRunning){const r=lastRuntimeParams||applyParams();const now=Tone.now();if(windGain)windGain.gain.setValueAtTime(Math.max(0.000001,windBaseLevel(r)),now);if(waterGain)waterGain.gain.setValueAtTime(Math.max(0.000001,waterBaseLevel(r)),now);}}
 function autoTimeBlock(){const h=new Date().getHours();if(h>=5&&h<10)return"morning";if(h>=10&&h<16)return"day";if(h>=16&&h<19)return"evening";if(h>=19&&h<24)return"night";return"late";} function autoSeason(){const m=new Date().getMonth()+1;if(m>=3&&m<=5)return"spring";if(m>=6&&m<=8)return"summer";if(m>=9&&m<=11)return"autumn";return"winter";}
-function setStatus(main,sub="—"){const a=document.getElementById("statusMain"),b=document.getElementById("statusSub");if(!a||!b)return;a.textContent=(sub&&sub!=="—")?sub:main;b.textContent="";} function setStatusChip(text="—"){const el=document.getElementById("statusChip");if(el)el.textContent=text;}
+function setStatus(main,sub="—"){const a=document.getElementById("statusMain"),b=document.getElementById("statusSub");if(!a||!b)return;a.textContent=(sub&&sub!=="—")?sub:main;b.textContent="";} function setStatusChip(text="—"){const el=document.getElementById("statusChip");if(el)el.textContent=text;} function setAmbientCaption(text=""){const el=document.getElementById("ambientCaption");if(!el)return;el.textContent=text||" ";} function ambientPoemLine(env){const wind=(lastWeather.wind??0);const shortWind=Math.round(wind*10)/10;const weatherWord=(env.weatherCat==="clear")?"ひかり":(env.weatherCat==="rain")?"しずく":(env.weatherCat==="snow")?"しろい気配":"くもり空";const timeWord=(env.time==="morning")?"朝":(env.time==="day")?"昼":(env.time==="evening")?"夕":(env.time==="night")?"夜":"深夜";const windWord=(wind<1.5)?"微風":`風${shortWind.toFixed(1)}`;let text=`${timeWord}・${weatherWord}・${windWord}`;if(text.length>20)text=`${timeWord}・${weatherWord}・風`;return text;}
 function applyWhiteByTime(time){const map={morning:["from-sky-50","via-white","to-slate-100"],day:["from-white","via-white","to-slate-100"],evening:["from-rose-50","via-stone-50","to-zinc-100"],night:["from-slate-100","via-slate-50","to-slate-200"],late:["from-slate-100","via-slate-50","to-slate-200"]};const [a,b,c]=map[time]||map.day;const cat=weatherCategoryFromCode(lastWeather.code);const uv=(typeof lastWeather.uv==="number")?clamp(lastWeather.uv/11,0,1):0;const rainTint=(cat==="rain")?" saturate-[0.96] brightness-[0.985]":"";const uvTint=(uv>0.55)?" saturate-[1.02]":"";document.body.className=`min-h-screen text-slate-900 bg-gradient-to-b ${a} ${b} ${c}${rainTint}${uvTint}`;}
 function setMediaSessionMetadata(text){if(!("mediaSession" in navigator))return;try{navigator.mediaSession.metadata=new MediaMetadata({title:"Ambient Music",artist:text,album:"Nature Sync"});navigator.mediaSession.setActionHandler("play",async()=>{if(!isRunning)await start();});navigator.mediaSession.setActionHandler("pause",()=>{if(isRunning)stop();});}catch(e){}}
 function updatePlaybackState(){if(!("mediaSession" in navigator))return;try{navigator.mediaSession.playbackState=isRunning?"playing":"paused";}catch(e){}}
@@ -749,7 +774,7 @@ function moodLine(env,windNorm){ // UI TWEAK
   };
   return choose(lateByWeather[env.weatherCat]||lateByWeather.other);
 }
-function applyParams(){const env=getEnv();const key=keyFromSeason(env.season);applyWhiteByTime(env.time);const tempRaw=(typeof lastWeather.temp==="number")?lastWeather.temp:null;const coldNorm=(tempRaw===null)?0.28:clamp((12-tempRaw)/24,0,1);let bpm=66;if(env.time==="morning")bpm=74;if(env.time==="day")bpm=78;if(env.time==="evening")bpm=70;if(env.time==="night")bpm=60;if(env.time==="late")bpm=54;bpm*=1-0.12*coldNorm;Tone.Transport.bpm.value=clamp(bpm,46,80);const seasonFx=SEASON_SOUND_PROFILE[env.season]||SEASON_SOUND_PROFILE.spring;const timeFx=TIME_SOUND_PROFILE[env.time]||TIME_SOUND_PROFILE.day;const weatherFx=WEATHER_SOUND_PROFILE[env.weatherCat]||WEATHER_SOUND_PROFILE.other;const windNorm=clamp((lastWeather.wind??0)/15,0,1);let cutoff=1920+940*weatherFx.brightness+520*seasonFx.brightness+440*timeFx.brightness-230*coldNorm;let wet=0.45+weatherFx.wet+0.05*timeFx.space+0.03*coldNorm;const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;const showUv=(uvRaw!==null)&&isDayTimeBlock(env.time);const uvText=showUv?uvRaw.toFixed(1):"—";const uvNorm=showUv?clamp(uvRaw/11,0,1):0;if(showUv){cutoff+=420*uvNorm;wet-=0.05*uvNorm;}filter.frequency.value=clamp(cutoff,900,3200);masterReverb.wet.value=clamp(wet,0.30,0.74);if(birdFilter){birdFilter.frequency.value=clamp(1960+420*weatherFx.reflect+190*timeFx.brightness,1650,2750);}if(sparkleAutoPanner){let f=0.10;if(env.time==="day")f=0.12;if(env.time==="morning")f=0.11;if(env.time==="evening")f=0.095;if(env.time==="night")f=0.075;if(env.time==="late")f=0.062;sparkleAutoPanner.frequency.value=f*(1+0.18*windNorm);sparkleAutoPanner.depth=clamp(0.62+0.08*weatherFx.reflect+0.16*windNorm,0.50,0.88);}if(airHighpass){airHighpass.frequency.value=clamp(70+44*seasonFx.brightness+36*windNorm,58,142);}if(airChorus){airChorus.depth=clamp(0.08+0.14*seasonFx.shimmer+0.12*windNorm,0.07,0.20);airChorus.wet.value=clamp(0.10+0.09*timeFx.space+0.07*weatherFx.reflect,0.08,0.22);airChorus.frequency.value=clamp(0.14+0.24*windNorm,0.11,0.40);}if(sparkle){sparkle.harmonicity.value=clamp(1.65+0.55*seasonFx.shimmer+0.38*windNorm+0.20*uvNorm,1.3,2.8);sparkle.modulationIndex.value=clamp(1.8+0.8*weatherFx.reflect+0.7*windNorm+0.7*uvNorm,1.1,3.4);sparkle.volume.value=clamp(-17.5+1.7*weatherFx.reflect+0.8*timeFx.brightness+1.4*uvNorm,-20,-12.5);}if(sparkleGlass){sparkleGlass.harmonicity.value=clamp(2.2+0.5*seasonFx.shimmer+0.2*windNorm+0.4*uvNorm,1.9,3.4);sparkleGlass.modulationIndex.value=clamp(0.9+0.9*weatherFx.reflect+0.5*windNorm,0.7,2.8);sparkleGlass.volume.value=clamp(-31+2.1*uvNorm+0.8*windNorm,-33,-24);}if(sparkleDust){sparkleDust.volume.value=clamp(-38+2.5*windNorm+1.4*uvNorm,-39,-30);}if(crystalLead){crystalLead.harmonicity.value=clamp(2.05+0.4*seasonFx.shimmer+0.2*windNorm,1.7,2.8);crystalLead.modulationIndex.value=clamp(1.3+0.9*weatherFx.reflect+0.25*windNorm,1.0,2.6);crystalLead.volume.value=clamp(-21+2.0*weatherFx.reflect+0.7*timeFx.brightness,-23,-16);}if(stringPad){stringPad.volume.value=clamp(-20+2.0*timeFx.space+1.2*seasonFx.calm-1.1*coldNorm,-22,-16);}if(lowLead){lowLead.volume.value=clamp(-21+1.5*seasonFx.calm+0.8*timeFx.space-0.6*coldNorm,-22,-17);}if(lowDrone){lowDrone.volume.value=clamp(-24+2.3*seasonFx.calm+2.4*timeFx.space+1.5*(env.time==="night"||env.time==="late"?1:0),-26,-18);}if(lowDroneHP){lowDroneHP.frequency.value=clamp(27+6*windNorm,24,36);}if(bellSynth){bellSynth.resonance=clamp(980+320*weatherFx.reflect+210*windNorm,860,1600);bellSynth.modulationIndex=clamp(14+7*seasonFx.shimmer+6*weatherFx.reflect,10,28);bellSynth.volume.value=clamp(-26+2.2*weatherFx.reflect+0.8*timeFx.brightness,-27,-20);}if(chimeSynth){chimeSynth.harmonicity.value=clamp(2.2+0.8*seasonFx.shimmer+0.5*windNorm,1.9,3.6);chimeSynth.modulationIndex.value=clamp(1.8+1.1*weatherFx.reflect+0.6*windNorm,1.4,3.5);chimeSynth.volume.value=clamp(-26+2.0*weatherFx.reflect+0.6*timeFx.brightness,-28,-20);}if(stringEnsemble){stringEnsemble.volume.value=clamp(-22+2.0*timeFx.space+1.0*seasonFx.calm,-23,-18);}if(harmonySlots){const hAttack=clamp(2.4*seasonFx.padAttack*(1+0.34*timeFx.space+0.25*coldNorm),2.0,5.3);const hRelease=clamp(17.5+4.8*timeFx.space+2.4*seasonFx.calm+2.0*coldNorm,14.8,25.0);const hHarmonicity=clamp(1.30+0.42*seasonFx.shimmer+0.18*weatherFx.reflect,1.15,2.2);harmonySlots.forEach(slot=>{slot.synth.set({harmonicity:hHarmonicity,modulationIndex:clamp(1.1+0.35*weatherFx.reflect,1.0,1.9),envelope:{attack:hAttack,decay:0.8,sustain:0.82,release:hRelease},modulationEnvelope:{attack:0.45,decay:0.9,sustain:0.26,release:clamp(3.0+timeFx.space*1.6,3.0,4.8)}});});}if(windFilter){windFilter.frequency.value=clamp(320+110*weatherFx.reflect+110*windNorm,260,520);windFilter.Q.value=clamp(0.80+0.22*windNorm+(env.time==="late"?0.10:0),0.76,1.18);}if(waterFilter){waterFilter.frequency.value=clamp(740+180*weatherFx.reflect+70*timeFx.space-80*coldNorm,620,1020);}const windText=`${(lastWeather.wind??0).toFixed(1)} m/s`;const tempText=(tempRaw===null)?"—":`${tempRaw.toFixed(1)}°C`;setMediaSessionMetadata(`${env.season} / ${env.weatherCat} / wind ${windText} / temp ${tempText} / UV ${uvText}`);const sub=`Key ${key}`;const mood=moodLine(env,windNorm);setStatusChip(describeWeather(lastWeather.code));playButtonTone(env);if(isRunning)setStatus(sub,mood);const mKey=document.getElementById("metricKey"),mTempo=document.getElementById("metricTempo"),mBright=document.getElementById("metricBrightness"),mKeyCore=document.getElementById("metricKeyCore"),mTempoCore=document.getElementById("metricTempoCore"),mBrightCore=document.getElementById("metricBrightnessCore"),mSpark=document.getElementById("metricSparkle"),mRev=document.getElementById("metricReverb"),mTail=document.getElementById("metricTail");const tempoText=`${Math.round(Tone.Transport.bpm.value)} BPM`;const brightText=(cutoff>2400)?"High":(cutoff>1650?"Mid":"Soft");if(mKey)mKey.textContent=key;if(mTempo)mTempo.textContent=tempoText;if(mBright)mBright.textContent=brightText;if(mKeyCore)mKeyCore.textContent=key;if(mTempoCore)mTempoCore.textContent=tempoText;if(mBrightCore)mBrightCore.textContent=brightText;if(mSpark)mSpark.textContent=(uvNorm>0.5||windNorm>0.6)?"Fine+":"Quiet";if(mRev)mRev.textContent=(wet>0.54)?"Deep":(wet>0.40?"Airy":"Dry");if(mTail)mTail.textContent=(wet>0.58)?"Long":(wet>0.44?"Mid":"Short");const eSeason=document.getElementById("envSeason"),eTime=document.getElementById("envTime"),eWeather=document.getElementById("envWeather"),eWindUv=document.getElementById("envWindUv");if(eSeason)eSeason.textContent=prettyTimeLabel(env.season)||env.season;if(eTime)eTime.textContent=prettyTimeLabel(env.time);if(eWeather)eWeather.textContent=prettyWeatherLabel(env.weatherCat);if(eWindUv)eWindUv.textContent=`${(lastWeather.wind??0).toFixed(1)}m/s · ${tempText} · UV ${uvText}`;lastRuntimeParams={...env,key,bpm:Tone.Transport.bpm.value,seasonFx,timeFx,weatherFx,windNorm,uvNorm,coldNorm,tempRaw};return lastRuntimeParams;}
+function applyParams(){const env=getEnv();const key=keyFromSeason(env.season);applyWhiteByTime(env.time);const tempRaw=(typeof lastWeather.temp==="number")?lastWeather.temp:null;const coldNorm=(tempRaw===null)?0.28:clamp((12-tempRaw)/24,0,1);let bpm=66;if(env.time==="morning")bpm=74;if(env.time==="day")bpm=78;if(env.time==="evening")bpm=70;if(env.time==="night")bpm=60;if(env.time==="late")bpm=54;bpm*=1-0.12*coldNorm;Tone.Transport.bpm.value=clamp(bpm,46,80);const seasonFx=SEASON_SOUND_PROFILE[env.season]||SEASON_SOUND_PROFILE.spring;const timeFx=TIME_SOUND_PROFILE[env.time]||TIME_SOUND_PROFILE.day;const weatherFx=WEATHER_SOUND_PROFILE[env.weatherCat]||WEATHER_SOUND_PROFILE.other;const windNorm=clamp((lastWeather.wind??0)/15,0,1);let cutoff=1920+940*weatherFx.brightness+520*seasonFx.brightness+440*timeFx.brightness-230*coldNorm;let wet=0.45+weatherFx.wet+0.05*timeFx.space+0.03*coldNorm;const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;const showUv=(uvRaw!==null)&&isDayTimeBlock(env.time);const uvText=showUv?uvRaw.toFixed(1):"—";const uvNorm=showUv?clamp(uvRaw/11,0,1):0;if(showUv){cutoff+=420*uvNorm;wet-=0.05*uvNorm;}filter.frequency.value=clamp(cutoff,900,3200);masterReverb.wet.value=clamp(wet,0.30,0.74);if(birdFilter){birdFilter.frequency.value=clamp(1960+420*weatherFx.reflect+190*timeFx.brightness,1650,2750);}if(sparkleAutoPanner){let f=0.10;if(env.time==="day")f=0.12;if(env.time==="morning")f=0.11;if(env.time==="evening")f=0.095;if(env.time==="night")f=0.075;if(env.time==="late")f=0.062;sparkleAutoPanner.frequency.value=f*(1+0.18*windNorm);sparkleAutoPanner.depth=clamp(0.62+0.08*weatherFx.reflect+0.16*windNorm,0.50,0.88);}if(airHighpass){airHighpass.frequency.value=clamp(70+44*seasonFx.brightness+36*windNorm,58,142);}if(airChorus){airChorus.depth=clamp(0.08+0.14*seasonFx.shimmer+0.12*windNorm,0.07,0.20);airChorus.wet.value=clamp(0.10+0.09*timeFx.space+0.07*weatherFx.reflect,0.08,0.22);airChorus.frequency.value=clamp(0.14+0.24*windNorm,0.11,0.40);}if(sparkle){sparkle.harmonicity.value=clamp(1.65+0.55*seasonFx.shimmer+0.38*windNorm+0.20*uvNorm,1.3,2.8);sparkle.modulationIndex.value=clamp(1.8+0.8*weatherFx.reflect+0.7*windNorm+0.7*uvNorm,1.1,3.4);sparkle.volume.value=clamp(-17.5+1.7*weatherFx.reflect+0.8*timeFx.brightness+1.4*uvNorm,-20,-12.5);}if(sparkleGlass){sparkleGlass.harmonicity.value=clamp(2.2+0.5*seasonFx.shimmer+0.2*windNorm+0.4*uvNorm,1.9,3.4);sparkleGlass.modulationIndex.value=clamp(0.9+0.9*weatherFx.reflect+0.5*windNorm,0.7,2.8);sparkleGlass.volume.value=clamp(-31+2.1*uvNorm+0.8*windNorm,-33,-24);}if(sparkleDust){sparkleDust.volume.value=clamp(-38+2.5*windNorm+1.4*uvNorm,-39,-30);}if(crystalLead){crystalLead.harmonicity.value=clamp(2.05+0.4*seasonFx.shimmer+0.2*windNorm,1.7,2.8);crystalLead.modulationIndex.value=clamp(1.3+0.9*weatherFx.reflect+0.25*windNorm,1.0,2.6);crystalLead.volume.value=clamp(-21+2.0*weatherFx.reflect+0.7*timeFx.brightness,-23,-16);}if(stringPad){stringPad.volume.value=clamp(-20+2.0*timeFx.space+1.2*seasonFx.calm-1.1*coldNorm,-22,-16);}if(lowLead){lowLead.volume.value=clamp(-21+1.5*seasonFx.calm+0.8*timeFx.space-0.6*coldNorm,-22,-17);}if(lowDrone){lowDrone.volume.value=clamp(-24+2.3*seasonFx.calm+2.4*timeFx.space+1.5*(env.time==="night"||env.time==="late"?1:0),-26,-18);}if(lowDroneHP){lowDroneHP.frequency.value=clamp(27+6*windNorm,24,36);}if(bellSynth){bellSynth.resonance=clamp(980+320*weatherFx.reflect+210*windNorm,860,1600);bellSynth.modulationIndex=clamp(14+7*seasonFx.shimmer+6*weatherFx.reflect,10,28);bellSynth.volume.value=clamp(-26+2.2*weatherFx.reflect+0.8*timeFx.brightness,-27,-20);}if(chimeSynth){chimeSynth.harmonicity.value=clamp(2.2+0.8*seasonFx.shimmer+0.5*windNorm,1.9,3.6);chimeSynth.modulationIndex.value=clamp(1.8+1.1*weatherFx.reflect+0.6*windNorm,1.4,3.5);chimeSynth.volume.value=clamp(-26+2.0*weatherFx.reflect+0.6*timeFx.brightness,-28,-20);}if(stringEnsemble){stringEnsemble.volume.value=clamp(-22+2.0*timeFx.space+1.0*seasonFx.calm,-23,-18);}if(harmonySlots){const hAttack=clamp(2.4*seasonFx.padAttack*(1+0.34*timeFx.space+0.25*coldNorm),2.0,5.3);const hRelease=clamp(17.5+4.8*timeFx.space+2.4*seasonFx.calm+2.0*coldNorm,14.8,25.0);const hHarmonicity=clamp(1.30+0.42*seasonFx.shimmer+0.18*weatherFx.reflect,1.15,2.2);harmonySlots.forEach(slot=>{slot.synth.set({harmonicity:hHarmonicity,modulationIndex:clamp(1.1+0.35*weatherFx.reflect,1.0,1.9),envelope:{attack:hAttack,decay:0.8,sustain:0.82,release:hRelease},modulationEnvelope:{attack:0.45,decay:0.9,sustain:0.26,release:clamp(3.0+timeFx.space*1.6,3.0,4.8)}});});}if(windFilter){windFilter.frequency.value=clamp(320+110*weatherFx.reflect+110*windNorm,260,520);windFilter.Q.value=clamp(0.80+0.22*windNorm+(env.time==="late"?0.10:0),0.76,1.18);}if(waterFilter){waterFilter.frequency.value=clamp(740+180*weatherFx.reflect+70*timeFx.space-80*coldNorm,620,1020);}const windText=`${(lastWeather.wind??0).toFixed(1)} m/s`;const tempText=(tempRaw===null)?"—":`${tempRaw.toFixed(1)}°C`;setMediaSessionMetadata(`${env.season} / ${env.weatherCat} / wind ${windText} / temp ${tempText} / UV ${uvText}`);const sub=`Key ${key}`;const mood=moodLine(env,windNorm);setStatusChip(describeWeather(lastWeather.code));playButtonTone(env);if(isRunning)setStatus(sub,mood);const mKey=document.getElementById("metricKey"),mTempo=document.getElementById("metricTempo"),mBright=document.getElementById("metricBrightness"),mKeyCore=document.getElementById("metricKeyCore"),mTempoCore=document.getElementById("metricTempoCore"),mBrightCore=document.getElementById("metricBrightnessCore"),mSpark=document.getElementById("metricSparkle"),mRev=document.getElementById("metricReverb"),mTail=document.getElementById("metricTail");const tempoText=`${Math.round(Tone.Transport.bpm.value)} BPM`;const brightText=(cutoff>2400)?"High":(cutoff>1650?"Mid":"Soft");if(mKey)mKey.textContent=key;if(mTempo)mTempo.textContent=tempoText;if(mBright)mBright.textContent=brightText;if(mKeyCore)mKeyCore.textContent=key;if(mTempoCore)mTempoCore.textContent=tempoText;if(mBrightCore)mBrightCore.textContent=brightText;if(mSpark)mSpark.textContent=(uvNorm>0.5||windNorm>0.6)?"Fine+":"Quiet";if(mRev)mRev.textContent=(wet>0.54)?"Deep":(wet>0.40?"Airy":"Dry");if(mTail)mTail.textContent=(wet>0.58)?"Long":(wet>0.44?"Mid":"Short");const eSeason=document.getElementById("envSeason"),eTime=document.getElementById("envTime"),eWeather=document.getElementById("envWeather"),eWindUv=document.getElementById("envWindUv");if(eSeason)eSeason.textContent=prettyTimeLabel(env.season)||env.season;if(eTime)eTime.textContent=prettyTimeLabel(env.time);if(eWeather)eWeather.textContent=prettyWeatherLabel(env.weatherCat);if(eWindUv)eWindUv.textContent=`${(lastWeather.wind??0).toFixed(1)}m/s · ${tempText} · UV ${uvText}`;setAmbientCaption(ambientPoemLine(env));lastRuntimeParams={...env,key,bpm:Tone.Transport.bpm.value,seasonFx,timeFx,weatherFx,windNorm,uvNorm,coldNorm,tempRaw};return lastRuntimeParams;}
 function clearHarmonyScheduler(){if(chordEventId!==null){try{Tone.Transport.clear(chordEventId);}catch(e){} chordEventId=null;}}
 function harmonyGapSeconds(r){let g=randomBetween(0.55,2.1);const burstChance=(r.time==="day"||r.time==="morning")?0.30:(r.time==="evening")?0.24:(r.time==="night")?0.16:0.12;if(Math.random()<burstChance){g*=randomBetween(0.20,0.46);}if(r.time==="late")g*=1.12;if(r.time==="night")g*=1.04;if(r.weatherCat==="rain")g*=1.05;return clamp(g,0.22,3.3);} function octaveShifted(note,octShift){const f=Tone.Frequency(note);return f.transpose(12*octShift).toNote();}
 function pickOverlapMode(r){let base=0.52;if(r.time==="day"||r.time==="morning")base=0.60;if(r.time==="evening")base=0.54;if(r.time==="night")base=0.44;if(r.time==="late")base=0.32;if(r.weatherCat==="rain")base*=0.92;if(Math.random()>=base)return"none";let earlyWeight=0.78;if(r.time==="late")earlyWeight=0.62;if(r.time==="night")earlyWeight=0.70;if(r.weatherCat==="rain")earlyWeight*=0.95;return(Math.random()<earlyWeight)?"early":"tail";}
@@ -770,17 +795,35 @@ melodyLoop=new Tone.Loop(safeLoopCallback("melody",(time)=>{if(!crystalLead)retu
 function playButtonTone(env){
   const btn=document.getElementById("btnToggle");
   if(!btn)return;
+  const weatherCat=env?.weatherCat||"other";
+  const windNorm=clamp((lastWeather.wind??0)/15,0,1);
+  const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;
+  const uvNorm=(uvRaw===null)?0:clamp(uvRaw/11,0,1);
+  const t=env?.time||"day";
   const byTime={
-    morning:["rgba(74,129,190,0.90)","rgba(170,210,239,0.88)","rgba(232,218,174,0.72)"],
-    day:["rgba(72,124,186,0.92)","rgba(168,208,238,0.9)","rgba(231,215,170,0.70)"],
-    evening:["rgba(93,118,171,0.9)","rgba(174,185,209,0.86)","rgba(233,198,153,0.72)"],
-    night:["rgba(64,108,164,0.88)","rgba(148,186,219,0.84)","rgba(210,205,188,0.62)"],
-    late:["rgba(64,108,164,0.86)","rgba(146,182,214,0.82)","rgba(206,200,184,0.60)"]
+    morning:["rgba(215,176,142,0.86)","rgba(236,220,198,0.84)","rgba(184,208,234,0.86)"],
+    day:["rgba(184,210,236,0.88)","rgba(232,241,250,0.92)","rgba(160,196,233,0.86)"],
+    evening:["rgba(175,172,210,0.86)","rgba(216,204,226,0.84)","rgba(143,174,220,0.82)"],
+    night:["rgba(116,142,205,0.82)","rgba(149,128,194,0.8)","rgba(97,126,184,0.8)"],
+    late:["rgba(110,134,192,0.8)","rgba(139,122,183,0.78)","rgba(92,120,172,0.78)"]
   };
-  const palette=byTime[env?.time]||byTime.day;
+  const palette=byTime[t]||byTime.day;
   btn.style.setProperty("--ring-a",palette[0]);
   btn.style.setProperty("--ring-b",palette[1]);
   btn.style.setProperty("--ring-c",palette[2]);
+  btn.style.setProperty("--ring-angle",`${Math.round(6+windNorm*26)}deg`);
+  btn.style.setProperty("--ring-breath",`${(8+Math.random()*4).toFixed(1)}s`);
+  btn.style.setProperty("--ring-drift",`${(20+Math.random()*20).toFixed(1)}s`);
+  btn.style.setProperty("--ring-hue-shift",`${(1+windNorm*4.5).toFixed(2)}deg`);
+  const contrast=(weatherCat==="clear")?1.08:(weatherCat==="rain"?0.95:0.98);
+  const innerBlur=(weatherCat==="clear")?"0px":(weatherCat==="rain"?"1.4px":"0.8px");
+  const sat=(weatherCat==="rain")?0.94:(weatherCat==="snow"?0.96:1.03);
+  const bright=1+(uvNorm*0.07)-((t==="night"||t==="late")?0.03:0);
+  btn.style.setProperty("--ring-contrast",String(contrast));
+  btn.style.setProperty("--ring-inner-blur",innerBlur);
+  btn.style.setProperty("--ring-sat",String(sat));
+  btn.style.setProperty("--ring-bright",String(clamp(bright,0.94,1.09)));
+  btn.style.setProperty("--ring-glow",String(clamp(0.16+uvNorm*0.18,0.14,0.36)));
 }
 
 async function recoverLayerLoopIfSilent(layer){
@@ -914,8 +957,9 @@ function setButtonState(){
       ringIntro.classList.remove("is-idle");
       ringIntro.classList.remove("is-fading");
       ringIntroShowTimer=setTimeout(()=>{ringIntro.classList.add("is-visible");},60);
-      ringIntroHideTimer=setTimeout(()=>{ringIntro.classList.add("is-fading");ringIntro.classList.remove("is-visible");},20000);
+      ringIntroHideTimer=setTimeout(()=>{ringIntro.classList.add("is-fading");ringIntro.classList.remove("is-visible");},6500);
     }
+    setAmbientCaption(ambientPoemLine(getEnv()));
   }else{
     label.textContent="Start";
     sub.textContent="タップで再生";
@@ -928,6 +972,7 @@ function setButtonState(){
     }
     setStatusChip("—");
     setStatus("待機中","夜の澄んだ空気、きらめき控えめ。");
+    setAmbientCaption("深夜・静けさ・微風");
   }
   playButtonTone(getEnv());
   updatePlaybackState();
