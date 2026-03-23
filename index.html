@@ -282,7 +282,7 @@
       position:absolute;
       top:50%;
       left:50%;
-      transform:translate(-50%,-53%);
+      transform:translate(-50%,-55%);
       z-index:2;
       width:100%;
       max-width:290px;
@@ -297,12 +297,31 @@
       pointer-events:none;
       transition:opacity 900ms ease, transform 900ms ease;
     }
-    .ring-intro.is-visible{opacity:1;transform:translate(-50%,-53%);}
-    .ring-intro.is-fading{opacity:0;transform:translate(-50%,calc(-53% - 4px));}
-    .ring-intro.is-idle{opacity:1;transform:translate(-50%,-53%);animation:ringIdleFloat 3.8s ease-in-out infinite;}
+    .ring-intro.is-visible{opacity:1;transform:translate(-50%,-55%);}
+    .ring-intro.is-fading{opacity:0;transform:translate(-50%,calc(-55% - 4px));}
+    .ring-intro.is-idle{opacity:1;transform:translate(-50%,-55%);animation:ringIdleFloat 3.8s ease-in-out infinite;}
     .ring-intro-line{display:block;white-space:nowrap;}
     .ring-intro-line.is-prompt{font-size:12px;line-height:1.5;letter-spacing:0.03em;}
-    @keyframes ringIdleFloat{0%,100%{transform:translate(-50%,-53%);}50%{transform:translate(-50%,calc(-53% - 2px));}}
+    @keyframes ringIdleFloat{0%,100%{transform:translate(-50%,-55%);}50%{transform:translate(-50%,calc(-55% - 2px));}}
+    .quiet-accordion summary{
+      list-style:none;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,0.26);
+      color:rgb(71 85 105);
+      font-size:12px;
+      background:rgba(248,250,252,0.88);
+      transition:background 220ms ease;
+    }
+    .quiet-accordion summary:hover{background:rgba(241,245,249,0.94);}
+    .quiet-accordion summary::-webkit-details-marker{display:none;}
+    .quiet-accordion-icon{font-size:13px;color:rgb(100 116 139);}
+    .quiet-accordion[open] .quiet-accordion-icon::before{content:"－";}
+    .quiet-accordion:not([open]) .quiet-accordion-icon::before{content:"＋";}
     .ambient-caption{
       text-align:center;
       font-size:10px;
@@ -488,7 +507,7 @@
               <button id="btnCloseSettings" class="px-3 py-1.5 rounded-xl text-sm bg-slate-900 text-white hover:bg-slate-800">閉じる</button>
             </div>
           </div>
-          <div class="mt-3 flex gap-2">
+          <div class="mt-3 flex gap-2 hidden">
             <button data-tab="tabSettings" class="tabBtn is-tab-active flex-1 px-3 py-2 rounded-2xl text-sm border border-slate-200">詳細</button>
           </div>
         </div>
@@ -503,21 +522,31 @@
             <div class="text-xs text-slate-600 tracking-[0.08em] text-center" id="detailStatusLine">春・深夜・晴れ・風3.7</div>
             <div class="text-xs text-slate-500 tracking-[0.06em] text-center" id="detailMusicLine">Key C ｜ 53 BPM ｜ Mid</div>
 
-            <div class="hidden">
-              <input id="nuanceSparkle" type="range" min="0" max="100" value="50" />
-              <input id="nuanceBright" type="range" min="0" max="100" value="50" />
-              <input id="nuanceReverb" type="range" min="0" max="100" value="50" />
-              <input id="nuanceSpeed" type="range" min="0" max="100" value="50" />
-              <input id="birdMix" type="range" min="0" max="100" value="50" />
-              <input id="windMix" type="range" min="0" max="100" value="50" />
-              <input id="waterMix" type="range" min="0" max="100" value="50" />
-              <span id="birdVal">50</span><span id="windVal">50</span><span id="waterVal">50</span>
-              <span id="nuanceSparkleMode">Auto</span><span id="nuanceBrightMode">Auto</span><span id="nuanceReverbMode">Auto</span><span id="nuanceSpeedMode">Auto</span>
-              <span id="metricKey">—</span><span id="metricTempo">—</span><span id="metricReverb">—</span>
-              <span id="metricBrightness">—</span><span id="metricSparkle">—</span><span id="metricTail">—</span>
-              <span id="metricKeyCore">—</span><span id="metricTempoCore">—</span><span id="metricBrightnessCore">—</span>
-              <span id="envSeason">—</span><span id="envTime">—</span><span id="envWeather">—</span><span id="envWindUv">—</span>
-            </div>
+            <details class="quiet-accordion">
+              <summary>
+                <span>細かく調整</span>
+                <span class="quiet-accordion-icon" aria-hidden="true"></span>
+              </summary>
+              <div class="mt-3 space-y-3 px-1 pb-1">
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">きらめき</div><span id="nuanceSparkleMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSparkle" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">明るさ</div><span id="nuanceBrightMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceBright" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">余韻</div><span id="nuanceReverbMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceReverb" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">自然レイヤー（鳥）</div><div id="birdVal" class="text-xs font-medium text-slate-700">50</div></div><input id="birdMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">自然レイヤー（風）</div><div id="windVal" class="text-xs font-medium text-slate-700">50</div></div><input id="windMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">自然レイヤー（水）</div><div id="waterVal" class="text-xs font-medium text-slate-700">50</div></div><input id="waterMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">スピード</div><span id="nuanceSpeedMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSpeed" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                <div class="grid grid-cols-3 gap-2 text-[11px] text-slate-500">
+                  <div class="manual-metric p-2">Key <span id="metricKey" class="ml-1 text-slate-700">—</span></div>
+                  <div class="manual-metric p-2">Tempo <span id="metricTempo" class="ml-1 text-slate-700">—</span></div>
+                  <div class="manual-metric p-2">Reverb <span id="metricReverb" class="ml-1 text-slate-700">—</span></div>
+                </div>
+                <div class="hidden">
+                  <span id="metricBrightness">—</span><span id="metricSparkle">—</span><span id="metricTail">—</span>
+                  <span id="metricKeyCore">—</span><span id="metricTempoCore">—</span><span id="metricBrightnessCore">—</span>
+                  <span id="envSeason">—</span><span id="envTime">—</span><span id="envWeather">—</span><span id="envWindUv">—</span>
+                </div>
+              </div>
+            </details>
           </section>
 
           <section id="tabGuide" class="hidden" aria-hidden="true">
