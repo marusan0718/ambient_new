@@ -219,7 +219,7 @@
     
 
     .play-ring{
-      width:min(56vw, 360px);
+      width:min(78vw, 360px);
       aspect-ratio:1/1;
       border-radius:9999px;
       border:0;
@@ -285,13 +285,13 @@
       transform:translate(-50%,-50%);
       z-index:2;
       width:100%;
-      max-width:260px;
+      max-width:290px;
       text-align:center;
       padding:0 16px;
       color:rgba(30,41,59,0.82);
-      font-size:11px;
-      line-height:1.9;
-      letter-spacing:0.02em;
+      font-size:10px;
+      line-height:1.75;
+      letter-spacing:0.01em;
       font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
       opacity:0;
       pointer-events:none;
@@ -300,7 +300,7 @@
     .ring-intro.is-visible{opacity:1;transform:translate(-50%,-50%);}
     .ring-intro.is-fading{opacity:0;transform:translate(-50%,calc(-50% - 4px));}
     .ring-intro.is-idle{opacity:1;transform:translate(-50%,-50%);animation:ringIdleFloat 3.8s ease-in-out infinite;}
-    .ring-intro-line{white-space:normal;}
+    .ring-intro-line{display:block;white-space:nowrap;}
     @keyframes ringIdleFloat{0%,100%{transform:translate(-50%,-50%);}50%{transform:translate(-50%,calc(-50% - 2px));}}
     .ambient-caption{
       text-align:center;
@@ -500,7 +500,7 @@
             <div class="text-xs text-slate-600 tracking-[0.08em] text-center" id="detailStatusLine">春・深夜・晴れ・風3.7</div>
             <div class="text-xs text-slate-500 tracking-[0.06em] text-center" id="detailMusicLine">Key C ｜ 53 BPM ｜ Mid</div>
 
-            <details class="manual-soft-card p-4" open>
+            <details class="manual-soft-card p-4">
               <summary class="cursor-pointer text-sm text-slate-700 select-none">音を調整する</summary>
               <div class="mt-3 space-y-3">
                 <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">きらめき</div><span id="nuanceSparkleMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSparkle" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
