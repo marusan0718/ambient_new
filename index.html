@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ambient Music</title>
+
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.3.5/Tone.js"></script>
+
+  <style>
+    summary::-webkit-details-marker { display:none; }
+    .ios-scroll { -webkit-overflow-scrolling: touch; }
+    .glass {
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    input[type="range"]{ accent-color:#0f172a; }
+    .subtitle-fit{
+      font-size: clamp(12px, 3.3vw, 14px);
+      line-height: 1.7;
+      letter-spacing: -0.015em;
+      white-space: pre-line;
+      word-break: keep-all;
+      overflow-wrap: normal;
+    }
+    .guide-reveal{
+      opacity: 0;
+      transform: translateY(11px); /* UI TWEAK */
+      transition: opacity 820ms cubic-bezier(0.22, 1, 0.36, 1), transform 820ms cubic-bezier(0.22, 1, 0.36, 1); /* UI TWEAK */
+      will-change: opacity, transform;
+    }
+    .guide-reveal.is-visible{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .museum-type{ /* UI TWEAK */
+      font-family: "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","HGS明朝E",serif;
+      color: rgb(30 41 59);
+    }
+    .guide-caption{
+      max-width: none; /* DESIGN UPDATE */
+      width: 100%; /* DESIGN UPDATE */
+      margin-inline: auto;
+      color: rgb(30 41 59);
+      font-size: clamp(13px, 1.2vw, 14px); /* DESIGN UPDATE */
+      line-height: 2.08; /* DESIGN UPDATE */
+      font-family: "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","HGS明朝E",serif;
+      font-weight: 400;
+      position: relative; /* DESIGN UPDATE */
+      background: #fff; /* DESIGN UPDATE */
+      padding: 0; /* DESIGN UPDATE */
+      border: 0 !important; /* DESIGN UPDATE */
+      outline: 0; /* DESIGN UPDATE */
+      box-shadow: none !important; /* DESIGN UPDATE */
+      isolation: isolate; /* DESIGN UPDATE */
+    }
+    .guide-caption-title{
+      font-size: clamp(13px, 1.2vw, 14px); /* DESIGN UPDATE */
+      letter-spacing: 0;
+      color: rgb(30 41 59);
+      font-weight: 400;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+    .rippleHint{position:relative;overflow:visible;background:#fff;} /* DESIGN UPDATE */
+    .rippleHint::before,
+    .rippleHint::after{ /* DESIGN UPDATE */
+      content:"";
+      position:absolute;
+      pointer-events:none;
+      z-index:0;
+      width:340px;
+      height:260px;
+      filter: blur(0.6px);
+      opacity:0.16;
+      background: radial-gradient(closest-side, rgba(148,163,184,0.16), rgba(255,255,255,0));
+      animation: watercolorBreath 32s ease-in-out infinite;
+    }
+    .rippleHint::before{left:-96px;top:-84px;} /* DESIGN UPDATE */
+    .rippleHint::after{right:-88px;bottom:-82px;background: radial-gradient(closest-side, rgba(134,190,174,0.15), rgba(255,255,255,0));animation-delay:-11s;} /* DESIGN UPDATE */
+    @keyframes watercolorBreath{ /* DESIGN UPDATE */
+      0%,100%{transform:translate(0,0) scale(1);opacity:0.12;}
+      50%{transform:translate(1px,-1px) scale(1.02);opacity:0.18;}
+    }
+    .rippleHint > *{position:relative;z-index:1;} /* DESIGN UPDATE */
+    .caption-line{margin:0;} /* UI TWEAK */
+    .caption-line + .caption-line{
+      margin-top: 24px; /* UI TWEAK */
+    }
+
+    .guide-pages{ /* DESIGN UPDATE */
+      height: min(68vh, 520px);
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      position: relative;
+      background: #fff; /* DESIGN UPDATE */
+      padding-inline: 18px; /* DESIGN UPDATE */
+      box-sizing: border-box; /* DESIGN UPDATE */
+    }
+    .guide-pages::-webkit-scrollbar{display:none;} /* UI TWEAK */
+    .guide-page{ /* DESIGN UPDATE */
+      min-height: 62vh;
+      position: relative; /* DESIGN UPDATE */
+      z-index: 1; /* DESIGN UPDATE */
+      scroll-snap-align: start;
+      display: grid;
+      align-content: start;
+      justify-items: center; /* DESIGN UPDATE */
+      padding: 11.5vh 0 8vh; /* DESIGN UPDATE */
+      box-sizing: border-box; /* DESIGN UPDATE */
+      background: #fff; /* DESIGN UPDATE */
+      border:0; /* DESIGN UPDATE */
+      box-shadow:none; /* DESIGN UPDATE */
+      outline:0; /* DESIGN UPDATE */
+      overflow:hidden; /* DESIGN UPDATE */
+      opacity:1; /* DESIGN UPDATE */
+      transform: translateY(0); /* DESIGN UPDATE */
+      transition: none; /* DESIGN UPDATE */
+    }
+    .guide-page.is-current{opacity:1;transform:translateY(0);} /* DESIGN UPDATE */
+    .guide-page-text{opacity:0;transform:translateY(8px);} /* DESIGN UPDATE */
+    .guide-page.is-current .guide-page-text{animation: captionReveal 10s cubic-bezier(0.16,1,0.3,1) forwards;} /* DESIGN UPDATE */
+    @keyframes captionReveal{ /* DESIGN UPDATE */
+      0%{opacity:0;transform:translateY(8px);}
+      8%{opacity:0.25;transform:translateY(6px);}
+      100%{opacity:1;transform:translateY(0);}
+    }
+
+    .guide-page::before,.guide-page::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;filter: blur(0.6px);} /* DESIGN UPDATE */
+    .guide-page[data-slide="0"]{background:#fff;} /* DESIGN UPDATE */
+    .guide-page[data-slide="0"]::before{background:radial-gradient(320px 230px at 14% 18%, rgba(148,163,184,0.24), rgba(255,255,255,0));opacity:.24;} /* DESIGN UPDATE */
+    .guide-page[data-slide="0"]::after{background:radial-gradient(300px 220px at 86% 84%, rgba(148,163,184,0.18), rgba(255,255,255,0));opacity:.18;} /* DESIGN UPDATE */
+
+    .guide-page[data-slide="1"]{background:#fff;} /* DESIGN UPDATE */
+    .guide-page[data-slide="1"]::before{background:radial-gradient(320px 230px at 14% 14%, rgba(134,190,174,0.24), rgba(255,255,255,0));opacity:.24;} /* DESIGN UPDATE */
+    .guide-page[data-slide="1"]::after{background:radial-gradient(280px 210px at 88% 82%, rgba(148,163,184,0.16), rgba(255,255,255,0));opacity:.16;} /* DESIGN UPDATE */
+
+    .guide-page[data-slide="2"]{background:#fff;} /* DESIGN UPDATE */
+    .guide-page[data-slide="2"]::before{background:radial-gradient(320px 230px at 84% 14%, rgba(125,211,252,0.24), rgba(255,255,255,0));opacity:.24;} /* DESIGN UPDATE */
+    .guide-page[data-slide="2"]::after{background:radial-gradient(260px 190px at 12% 84%, rgba(148,163,184,0.16), rgba(255,255,255,0));opacity:.16;} /* DESIGN UPDATE */
+
+    .guide-page[data-slide="3"]{background:#fff;} /* DESIGN UPDATE */
+    .guide-page[data-slide="3"]::before{background:radial-gradient(320px 230px at 12% 84%, rgba(250,204,21,0.23), rgba(255,255,255,0));opacity:.23;} /* DESIGN UPDATE */
+    .guide-page[data-slide="3"]::after{background:radial-gradient(260px 190px at 84% 16%, rgba(148,163,184,0.16), rgba(255,255,255,0));opacity:.16;} /* DESIGN UPDATE */
+
+    .guide-page[data-slide="4"]{background:#fff;} /* DESIGN UPDATE */
+    .guide-page[data-slide="4"]::before{background:radial-gradient(320px 230px at 86% 84%, rgba(125,211,252,0.22), rgba(255,255,255,0));opacity:.22;} /* DESIGN UPDATE */
+    .guide-page[data-slide="4"]::after{background:radial-gradient(280px 200px at 14% 16%, rgba(250,204,21,0.20), rgba(255,255,255,0));opacity:.20;} /* DESIGN UPDATE */
+
+    .guide-page[data-slide="5"]{background:#fff;} /* DESIGN UPDATE */
+    .guide-page[data-slide="5"]::before{background:radial-gradient(320px 230px at 14% 16%, rgba(148,163,184,0.24), rgba(255,255,255,0));opacity:.24;} /* DESIGN UPDATE */
+    .guide-page[data-slide="5"]::after{background:radial-gradient(260px 190px at 88% 84%, rgba(148,163,184,0.16), rgba(255,255,255,0));opacity:.16;} /* DESIGN UPDATE */
+
+    #guideTransitionLayer{position:absolute;inset:0;pointer-events:none;opacity:0;transform:scale(1);filter:blur(0);z-index:70;background:
+      radial-gradient(240px 170px at 84% 18%, rgba(148,163,184,0.42), rgba(255,255,255,0) 62%),
+      radial-gradient(260px 180px at 16% 84%, rgba(163,176,196,0.40), rgba(255,255,255,0) 66%),
+      radial-gradient(220px 160px at 78% 86%, rgba(120,138,156,0.36), rgba(255,255,255,0) 64%),
+      radial-gradient(220px 160px at 22% 22%, rgba(176,190,207,0.34), rgba(255,255,255,0) 64%), #fff;transition:opacity 2200ms cubic-bezier(0.16,1,0.3,1),transform 2200ms cubic-bezier(0.16,1,0.3,1),filter 2200ms cubic-bezier(0.16,1,0.3,1);} /* DESIGN UPDATE */
+    #guideTransitionLayer.is-active{opacity:1;transform:scale(1.04);filter:blur(14px);} /* DESIGN UPDATE */
+
+    .guide-page[data-slide="6"]{ /* DESIGN UPDATE */
+      background:
+        radial-gradient(210px 150px at 84% 18%, rgba(148,163,184,0.44), rgba(255,255,255,0) 62%),
+        radial-gradient(230px 160px at 16% 84%, rgba(163,176,196,0.40), rgba(255,255,255,0) 64%),
+        radial-gradient(180px 130px at 78% 86%, rgba(120,138,156,0.38), rgba(255,255,255,0) 64%),
+        radial-gradient(200px 140px at 22% 22%, rgba(176,190,207,0.34), rgba(255,255,255,0) 62%),
+        #fff;
+    }
+    .guide-page[data-slide="6"]::before,.guide-page[data-slide="6"]::after{background:none;} /* DESIGN UPDATE */
+    .guide-page-text{ /* DESIGN UPDATE */
+      position: relative; /* DESIGN UPDATE */
+      z-index: 1; /* DESIGN UPDATE */
+      margin: 0; /* DESIGN UPDATE */
+      line-height: 1.45; /* DESIGN UPDATE */
+      width: min(100%, 548px); /* DESIGN UPDATE */
+      box-sizing: border-box; /* DESIGN UPDATE */
+      padding-left: 24px; /* DESIGN UPDATE */
+      margin-left: -12px; /* DESIGN UPDATE */
+      color: rgb(30 41 59); /* DESIGN UPDATE */
+      font-size: clamp(13px, 1.2vw, 14px); /* DESIGN UPDATE */
+      font-weight: 400; /* DESIGN UPDATE */
+    }
+    .guide-page-text + .guide-page-text{margin-top: 10px;} /* DESIGN UPDATE */
+    .guide-page-text{white-space: pre-line;word-break: keep-all;overflow-wrap: anywhere;} /* DESIGN UPDATE */
+    .guide-indicator{ /* UI TWEAK */
+      margin-top: 4px;
+      display:flex;
+      justify-content:center;
+      gap:8px;
+    }
+    .guide-dot{ /* UI TWEAK */
+      width: 5px;
+      height: 5px;
+      border-radius: 9999px;
+      background: rgba(30,41,59,0.24); /* UI TWEAK */
+      transition: background 320ms ease, transform 320ms ease, opacity 320ms ease; /* UI TWEAK */
+      opacity: 0.34; /* UI TWEAK */
+    }
+    .guide-dot.is-active{background: rgba(30,41,59,0.62);opacity:0.82;transform: scale(1.18);animation: guideDotBreath 14s ease-in-out infinite;} /* UI TWEAK */
+    @keyframes guideDotBreath{ /* UI TWEAK */
+      0%,100%{opacity:0.55;}
+      50%{opacity:0.85;}
+    }
+    .guide-overlay-fade{opacity:0;transform:translateY(8px);transition:opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1), transform 2200ms cubic-bezier(0.16, 1, 0.3, 1);} /* DESIGN UPDATE */
+
+    #settingsOverlay{opacity:0;pointer-events:none;transition:opacity 560ms cubic-bezier(0.16, 1, 0.3, 1);} /* DESIGN UPDATE */
+    #settingsOverlay.is-open{opacity:1;pointer-events:auto;} /* DESIGN UPDATE */
+    #settingsOverlay .settings-shell{opacity:0;transform:translateY(6px);transition:opacity 560ms cubic-bezier(0.16, 1, 0.3, 1), transform 560ms cubic-bezier(0.16, 1, 0.3, 1);} /* DESIGN UPDATE */
+    #settingsOverlay.is-open .settings-shell{opacity:1;transform:translateY(0);} /* DESIGN UPDATE */
+    
+
+    .play-ring{
+      width:min(78vw, 360px);
+      aspect-ratio:1/1;
+      border-radius:9999px;
+      border:0;
+      padding:10px;
+      position:relative;
+      background:conic-gradient(from var(--ring-angle, 12deg), var(--ring-a, rgba(79,132,193,0.9)), var(--ring-b, rgba(186,219,244,0.9)), var(--ring-c, rgba(232,218,174,0.72)), color-mix(in oklab, var(--ring-a, rgba(79,132,193,0.9)) 76%, white 24%), var(--ring-a, rgba(79,132,193,0.9)));
+      box-shadow:0 3px 12px rgba(15,23,42,0.07);
+      transition:transform 300ms ease, filter 1600ms ease, box-shadow 1200ms ease, background 1800ms ease;
+      will-change:transform,filter;
+    }
+    .play-ring::before{
+      content:"";
+      position:absolute;
+      inset:10px;
+      border-radius:9999px;
+      background:#ececec;
+      filter:blur(var(--ring-inner-blur, 0px));
+      opacity:0.98;
+    }
+    .play-ring::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:9999px;
+      background:radial-gradient(circle at 22% 28%, rgba(255,255,255,var(--ring-glow,0.24)), rgba(255,255,255,0) 58%);
+      mix-blend-mode:screen;
+      pointer-events:none;
+    }
+    .play-ring.is-running{
+      filter:saturate(var(--ring-sat,1.08)) contrast(var(--ring-contrast,1.02)) brightness(var(--ring-bright,1));
+      box-shadow:0 5px 20px rgba(15,23,42,0.1);
+      animation:ringBreath var(--ring-breath,10s) ease-in-out infinite, ringDrift var(--ring-drift,32s) linear infinite;
+    }
+    .play-ring:active{transform:scale(0.992);}
+    @keyframes ringBreath{0%,100%{transform:scale(1);}50%{transform:scale(1.01);}}
+    @keyframes ringDrift{0%{filter:hue-rotate(0deg);}50%{filter:hue-rotate(var(--ring-hue-shift,3deg));}100%{filter:hue-rotate(0deg);}}
+
+    .home-settings-btn{
+      position:fixed;
+      top:18px;
+      right:18px;
+      width:34px;
+      height:34px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,0.08);
+      background:rgba(255,255,255,0.42);
+      color:rgba(15,23,42,0.34);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      font-size:18px;
+      line-height:1;
+      transition:opacity 220ms ease, background 220ms ease;
+      opacity:0.52;
+      z-index:65;
+    }
+    .home-settings-btn:hover{opacity:0.82;background:rgba(255,255,255,0.66);}
+
+    .ring-holder{position:relative;display:grid;place-items:center;gap:12px;}
+    .ring-intro{
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-55%);
+      z-index:2;
+      width:100%;
+      max-width:290px;
+      text-align:center;
+      padding:0 16px;
+      color:rgba(30,41,59,0.82);
+      font-size:10px;
+      line-height:1.75;
+      letter-spacing:0.01em;
+      font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity 900ms ease, transform 900ms ease;
+    }
+    .ring-intro.is-visible{opacity:1;transform:translate(-50%,-55%);}
+    .ring-intro.is-fading{opacity:0;transform:translate(-50%,calc(-55% - 4px));}
+    .ring-intro.is-idle{opacity:1;transform:translate(-50%,-55%);animation:ringIdleFloat 3.8s ease-in-out infinite;}
+    .ring-intro-line{display:block;white-space:nowrap;}
+    .ring-intro-line.is-prompt{font-size:12px;line-height:1.5;letter-spacing:0.03em;}
+    @keyframes ringIdleFloat{0%,100%{transform:translate(-50%,-55%);}50%{transform:translate(-50%,calc(-55% - 2px));}}
+    .quiet-accordion summary{
+      list-style:none;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,0.26);
+      color:rgb(71 85 105);
+      font-size:12px;
+      background:rgba(248,250,252,0.88);
+      transition:background 220ms ease;
+    }
+    .quiet-accordion summary:hover{background:rgba(241,245,249,0.94);}
+    .quiet-accordion summary::-webkit-details-marker{display:none;}
+    .quiet-accordion-icon{font-size:13px;color:rgb(100 116 139);}
+    .quiet-accordion[open] .quiet-accordion-icon::before{content:"－";}
+    .quiet-accordion:not([open]) .quiet-accordion-icon::before{content:"＋";}
+    .ambient-caption{
+      text-align:center;
+      font-size:10px;
+      opacity:0.3;
+      letter-spacing:0.14em;
+      color:rgb(71 85 105);
+      margin-top:4px;
+      min-height:1em;
+      user-select:none;
+      transition:opacity 600ms ease;
+    }
+    .ambient-caption.is-hidden{opacity:0;}
+
+    #settingsOverlay .settings-shell > div{
+      background:linear-gradient(160deg, rgba(255,255,255,0.62), rgba(255,255,255,0.44));
+      border-color:rgba(255,255,255,0.58);
+      box-shadow:0 18px 44px rgba(15,23,42,0.12), inset 0 1px 0 rgba(255,255,255,0.64);
+      backdrop-filter: blur(18px) saturate(1.12);
+      -webkit-backdrop-filter: blur(18px) saturate(1.12);
+    }
+    #settingsOverlay .settings-shell .tabBtn{
+      border-radius:999px !important;
+      border-color:rgba(255,255,255,0.78) !important;
+      background:rgba(255,255,255,0.44) !important;
+      color:rgba(15,23,42,0.72) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75), 0 1px 8px rgba(15,23,42,0.05);
+    }
+    #settingsOverlay .settings-shell .tabBtn.is-tab-active{
+      background:rgba(255,255,255,0.76) !important;
+      color:rgba(15,23,42,0.88) !important;
+      border-color:rgba(255,255,255,0.92) !important;
+      box-shadow:0 8px 14px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+    .guide-single{
+      border:none;
+      border-radius:0;
+      background:transparent;
+      padding:10px 2px 2px;
+      color:rgb(30 41 59);
+      line-height:1.86;
+      font-size:13px;
+      font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+      letter-spacing:0.02em;
+      text-align:justify;
+      text-justify:inter-character;
+      font-variant-east-asian: full-width;
+      position:relative;
+      overflow:hidden;
+    }
+    .guide-single::before{display:none;}
+    .guide-single h3{font-size:14px;margin:0 0 10px;font-weight:500;letter-spacing:0.07em;}
+    .guide-single p{margin:0 0 10px;}
+    .guide-single p:last-child{margin-bottom:0;}
+
+    .manual-ui{
+      --space-gap:10px;
+      --section-gap:24px;
+      --panel-pad:16px;
+    }
+    .manual-ui .manual-soft-card{
+      border:1px solid rgba(148,163,184,0.24);
+      background:#f7f8fa;
+      border-radius:18px;
+      box-shadow:none;
+    }
+    .manual-ui .manual-chip{
+      border:1px solid rgba(148,163,184,0.2);
+      border-radius:14px;
+      background:rgba(255,255,255,0.88);
+      box-shadow:none;
+    }
+    .manual-ui .manual-metric{border:1px solid rgba(148,163,184,0.22);background:rgba(255,255,255,0.82);border-radius:14px;}
+    .manual-ui select{
+      border-radius:14px !important;
+      border-color:rgba(255,255,255,0.84) !important;
+      background:rgba(255,255,255,0.48) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+      color:rgb(30 41 59);
+    }
+    .manual-ui .ring-slider{
+      width:100%;
+      height:10px;
+      border-radius:999px;
+      -webkit-appearance:none;
+      appearance:none;
+      background:linear-gradient(90deg, rgba(117,160,214,0.9), rgba(165,203,239,0.95), rgba(209,228,247,0.95));
+      box-shadow: inset 0 1px 2px rgba(15,23,42,0.12);
+    }
+    .manual-ui .ring-slider::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      appearance:none;
+      width:18px;
+      height:18px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,0.2);
+      background:#fff;
+      box-shadow:0 2px 8px rgba(15,23,42,0.18);
+    }
+    .manual-ui .ring-slider::-moz-range-thumb{
+      width:18px;
+      height:18px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,0.2);
+      background:#fff;
+      box-shadow:0 2px 8px rgba(15,23,42,0.18);
+    }
+    .manual-layout{display:grid;grid-template-columns:1fr;gap:var(--section-gap);}
+    @media (min-width: 900px){.manual-layout{grid-template-columns:1fr 0.72fr;align-items:start;}}
+    .manual-ui .summary-strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}
+    .manual-ui .summary-label{font-size:10px;color:rgb(100 116 139);}
+    .manual-ui .summary-value{margin-top:3px;font-size:12px;font-weight:600;color:rgb(30 41 59);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .manual-group{height:100%;}
+    .manual-group .group-title{font-size:12px;letter-spacing:0.05em;color:rgb(100 116 139);margin-bottom:8px;}
+    .manual-group .inner-stack{display:grid;gap:10px;}
+    .now-bar{
+      background:linear-gradient(180deg,#f8fafc,#f4f7fb);
+      border:1px solid rgba(148,163,184,0.24);
+      border-radius:18px;
+      padding:14px 16px;
+      display:grid;
+      gap:10px;
+    }
+    .now-flow{display:flex;flex-wrap:wrap;gap:8px 10px;}
+    .now-pill{
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.24);
+      background:rgba(255,255,255,0.84);
+      padding:5px 10px;
+      font-size:12px;
+      color:rgb(30 41 59);
+      min-width:0;
+    }
+    .now-pill strong{font-weight:600;margin-left:4px;}
+@media (prefers-reduced-motion: reduce){
+      .guide-reveal, .guide-reveal.is-visible{
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+      .rippleHint::before,.rippleHint::after,.guide-dot.is-active{animation:none !important;} /* UI TWEAK */
+      .guide-page-text{opacity:1 !important;transform:none !important;transition:none !important;animation:none !important;} /* DESIGN UPDATE */
+      #settingsOverlay,#settingsOverlay .settings-shell,.guide-overlay-fade,#guideTransitionLayer{transition:none !important;transform:none !important;filter:none !important;} /* DESIGN UPDATE */
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-slate-900">
+  <main class="min-h-screen grid place-items-center bg-[#ececec]">
+    <button id="btnOpenSettings" class="home-settings-btn" aria-label="Open settings">···</button>
+    <section class="ring-holder">
+      <button id="btnToggle" class="play-ring" aria-label="Toggle playback">
+        <span id="btnLabel" class="sr-only">Start</span>
+        <span id="btnSub" class="sr-only">タップで再生</span>
+        <svg id="iconSvg" width="1" height="1" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M8 5v14l11-7z"></path></svg>
+      </button>
+      <div id="ringIntro" class="ring-intro">
+        <div class="ring-intro-line">季節、天気、風のゆらぎ。</div>
+        <div class="ring-intro-line">この瞬間の自然と呼吸を合わせ、音は静かに生まれていく。</div>
+      </div>
+      <div id="ambientCaption" class="ambient-caption is-hidden"></div>
+    </section>
+
+    <div class="hidden" aria-hidden="true">
+      <span id="countdown">—</span>
+      <span id="statusMain">待機中</span>
+      <span id="statusSub">—</span>
+      <span id="statusChip">—</span>
+      <button id="btnRefresh" type="button">更新</button>
+      <details id="settingsDetails"><summary>詳細</summary></details>
+    </div>
+  </main>
+
+  <div id="settingsOverlay" class="fixed inset-0 z-50 hidden">
+    <div id="guideTransitionLayer" aria-hidden="true"></div> <!-- DESIGN UPDATE -->
+    <div id="settingsBackdrop" class="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px]"></div>
+    <div class="settings-shell absolute inset-0 flex items-end sm:items-center justify-center p-3 sm:p-6"> <!-- DESIGN UPDATE -->
+      <div class="w-full max-w-[760px] rounded-[30px] bg-white border border-slate-200/80 shadow-[0_20px_48px_rgba(15,23,42,0.12)] overflow-hidden">
+        <div class="px-5 sm:px-6 pt-4 pb-3 border-b border-slate-200">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm font-semibold text-slate-800">詳細</div>
+            <div class="flex items-center gap-2">
+              <button id="btnAllAuto" class="px-3 py-1.5 rounded-xl text-xs border border-white/80 bg-white/55 hover:bg-white/70">All Auto</button> <!-- UI TWEAK -->
+              <button id="btnCloseSettings" class="px-3 py-1.5 rounded-xl text-sm bg-slate-900 text-white hover:bg-slate-800">閉じる</button>
+            </div>
+          </div>
+          <div class="mt-3 flex gap-2 hidden">
+            <button data-tab="tabSettings" class="tabBtn is-tab-active flex-1 px-3 py-2 rounded-2xl text-sm border border-slate-200">詳細</button>
+          </div>
+        </div>
+
+        <div class="px-5 sm:px-6 py-4">
+          <section id="tabSettings" class="manual-ui space-y-4">
+            <div class="grid grid-cols-3 gap-2">
+              <select id="seasonSel" class="w-full rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm"><option value="auto">Auto</option><option value="spring">春</option><option value="summer">夏</option><option value="autumn">秋</option><option value="winter">冬</option></select>
+              <select id="timeSel" class="w-full rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm"><option value="auto">Auto</option><option value="morning">朝</option><option value="day">昼</option><option value="evening">夕</option><option value="night">夜</option><option value="late">深夜</option></select>
+              <select id="weatherSel" class="w-full rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm"><option value="auto">Auto</option><option value="clear">晴れ</option><option value="other">曇り</option><option value="rain">雨</option><option value="snow">雪</option></select>
+            </div>
+            <div class="text-xs text-slate-600 tracking-[0.08em] text-center" id="detailStatusLine">春・深夜・晴れ・風3.7</div>
+            <div class="text-xs text-slate-500 tracking-[0.06em] text-center" id="detailMusicLine">Key C ｜ 53 BPM ｜ Mid</div>
+
+            <details class="quiet-accordion">
+              <summary>
+                <span>細かく調整</span>
+                <span class="quiet-accordion-icon" aria-hidden="true"></span>
+              </summary>
+              <div class="mt-3 space-y-3 px-1 pb-1">
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">きらめき</div><span id="nuanceSparkleMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSparkle" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">明るさ</div><span id="nuanceBrightMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceBright" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">余韻</div><span id="nuanceReverbMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceReverb" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">自然レイヤー（鳥）</div><div id="birdVal" class="text-xs font-medium text-slate-700">50</div></div><input id="birdMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">自然レイヤー（風）</div><div id="windVal" class="text-xs font-medium text-slate-700">50</div></div><input id="windMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">自然レイヤー（水）</div><div id="waterVal" class="text-xs font-medium text-slate-700">50</div></div><input id="waterMix" type="range" min="0" max="100" step="1" class="ring-slider" /></div>
+                <div><div class="flex items-center justify-between mb-1"><div class="text-xs text-slate-500">スピード</div><span id="nuanceSpeedMode" class="text-[10px] px-2 py-0.5 rounded-full border border-slate-200">Auto</span></div><input id="nuanceSpeed" type="range" min="0" max="100" value="50" class="ring-slider" /></div>
+                <div class="grid grid-cols-3 gap-2 text-[11px] text-slate-500">
+                  <div class="manual-metric p-2">Key <span id="metricKey" class="ml-1 text-slate-700">—</span></div>
+                  <div class="manual-metric p-2">Tempo <span id="metricTempo" class="ml-1 text-slate-700">—</span></div>
+                  <div class="manual-metric p-2">Reverb <span id="metricReverb" class="ml-1 text-slate-700">—</span></div>
+                </div>
+                <div class="hidden">
+                  <span id="metricBrightness">—</span><span id="metricSparkle">—</span><span id="metricTail">—</span>
+                  <span id="metricKeyCore">—</span><span id="metricTempoCore">—</span><span id="metricBrightnessCore">—</span>
+                  <span id="envSeason">—</span><span id="envTime">—</span><span id="envWeather">—</span><span id="envWindUv">—</span>
+                </div>
+              </div>
+            </details>
+          </section>
+
+          <section id="tabGuide" class="hidden" aria-hidden="true">
+            <article class="guide-single">
+              <h3>音の設計思想</h3>
+              <p>このアプリは、季節や時間、天候、風、UVをそのまま音にするのではなく、調性やテンポ、音の明るさ、きらめき、余韻といった音楽の要素へと変換します。音楽は同じキーの三和音（I / IV / V / vi）を軸に、聴き疲れしない穏やかな流れで続いていきます。晴れた昼は軽やかに、雨の夜は静かに深く。大きく変わりすぎないまま、再生するたびにその瞬間の空気だけをそっと映すように設計されています。</p>
+            </article>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<script>
+const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
+const AUTO_UPDATE_MS = 5 * 60 * 1000;
+let nextUpdateAt = Date.now() + AUTO_UPDATE_MS;
+let isRefreshingWeather = false;
+const WEATHER_RETRY_MS = 60 * 1000;
+function describeWeather(code){if(code===0)return"快晴";if([1,2].includes(code))return"晴れ/薄曇り";if(code===3)return"くもり";if([45,48].includes(code))return"霧";if([51,53,55,56,57].includes(code))return"霧雨";if([61,63,65,66,67].includes(code))return"雨";if([71,73,75,77].includes(code))return"雪";if([80,81,82].includes(code))return"にわか雨";if([95,96,99].includes(code))return"雷雨";return"不明";}
+function weatherCategoryFromCode(code){if(code===0||[1,2].includes(code))return"clear";if([71,73,75,77].includes(code))return"snow";if([61,63,65,66,67,80,81,82,51,53,55,56,57,95,96,99].includes(code))return"rain";return"other";}
+async function fetchWeatherByCoords(lat,lon){const url=new URL(OPEN_METEO_URL);url.searchParams.set("latitude",lat);url.searchParams.set("longitude",lon);url.searchParams.set("current","weather_code,wind_speed_10m,temperature_2m");url.searchParams.set("daily","uv_index_max");url.searchParams.set("timezone","auto");const res=await fetch(url.toString());if(!res.ok)throw new Error("天気取得に失敗しました");const data=await res.json();const code=data?.current?.weather_code;const wind=data?.current?.wind_speed_10m;const temp=data?.current?.temperature_2m;const uvArr=data?.daily?.uv_index_max;const uv=Array.isArray(uvArr)?uvArr[0]:null;if(typeof code!=="number"||typeof wind!=="number")throw new Error("天気データ形式が想定と違います");return {code,wind,temp:(typeof temp==="number"?temp:null),uv:(typeof uv==="number"?uv:null)};}
+function getCurrentPosition(){return new Promise((resolve,reject)=>{if(!navigator.geolocation)return reject(new Error("このブラウザは位置情報に対応していません"));navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:false,timeout:8000,maximumAge:60_000});});}
+let wakeLock=null; async function requestWakeLock(){try{if(!("wakeLock" in navigator))return;wakeLock=await navigator.wakeLock.request("screen");wakeLock.addEventListener("release",()=>{wakeLock=null;});}catch(e){}} async function releaseWakeLock(){try{if(wakeLock)await wakeLock.release();}catch(e){}wakeLock=null;}
+// [STABILITY FIX] lightweight runtime guards and recovery state
+let lastSoundAt=Date.now();
+let audioRecoveryInFlight=false;
+let lastRecoveryAttemptAt=0;
+let lastRebuildAttemptAt=0;
+let lastHardRecoveryAt=0;
+const RECOVERY_COOLDOWN_MS=1000;
+const REBUILD_COOLDOWN_MS=20000;
+const HARD_RECOVERY_COOLDOWN_MS=120000;
+
+// STABILITY FIX: layer-level sound activity trackers for silence detection/recovery
+function markSoundActivity(){lastSoundAt=Date.now();}
+const layerLastSoundAt={sparkle:Date.now(),bird:Date.now(),wind:Date.now(),water:Date.now(),melody:Date.now(),pad:Date.now(),harmony:Date.now()};
+const layerLastRecoveryAt={sparkle:0,bird:0,wind:0,water:0,melody:0,pad:0,harmony:0};
+const LAYER_SILENCE_MS={sparkle:120000,bird:180000,wind:240000,water:240000,melody:180000,pad:300000,harmony:180000};
+const LAYER_RECOVERY_COOLDOWN_MS=120000;
+let lastAnyLayerRecoveryAt=0;
+const GLOBAL_LAYER_RECOVERY_COOLDOWN_MS=60000;
+let isRecovering=false;
+let audioStateWatcherBound=false;
+let audioStateWatcherTarget=null;
+let userGestureResumeBound=false;
+let lastForceResumeAt=0;
+let lastRuntimeParams=null;
+let transportKeepAliveSource=null,transportKeepAliveGain=null;
+function markLayerSound(layer){const now=Date.now();layerLastSoundAt[layer]=now;lastSoundAt=now;}
+function trackedTriggerAttackRelease(target,...args){markSoundActivity();return target.triggerAttackRelease(...args);}
+function trackedTriggerAttackReleaseLayer(layer,target,...args){markLayerSound(layer);return target.triggerAttackRelease(...args);}
+
+// [STABILITY FIX] robust context/transport resume for iOS Safari + background restores
+async function resumeAudioIfNeeded(reason="unknown",force=false){
+  try{
+    if(audioRecoveryInFlight)return false;
+    const now=Date.now();
+    if(!force&&now-lastRecoveryAttemptAt<RECOVERY_COOLDOWN_MS)return false;
+    audioRecoveryInFlight=true;
+    lastRecoveryAttemptAt=now;
+    const ctx=Tone.getContext?.().rawContext||Tone.context?.rawContext||Tone.context;
+    const state=ctx?.state;
+    if(state&&state!=="running"){
+      try{await Tone.start();}catch(e){}
+      try{await ctx.resume();}catch(e){}
+    }
+    if(isRunning&&Tone.Transport.state!=="started"){
+      try{Tone.Transport.start();}catch(e){}
+    }
+    return true;
+  }catch(e){
+    return false;
+  }finally{
+    audioRecoveryInFlight=false;
+  }
+}
+
+function bindAudioContextStateWatcher(){
+  const ctx=Tone.getContext?.().rawContext||Tone.context?.rawContext||Tone.context;
+  if(!ctx||!ctx.addEventListener)return;
+  if(audioStateWatcherBound&&audioStateWatcherTarget===ctx)return;
+  ctx.addEventListener("statechange",async()=>{
+    if(!isRunning)return;
+    if(ctx.state!=="suspended")return;
+    const now=Date.now();
+    if(now-lastForceResumeAt<500)return;
+    lastForceResumeAt=now;
+    try{await resumeAudioIfNeeded("statechange",true);}catch(e){}
+  });
+  audioStateWatcherBound=true;
+  audioStateWatcherTarget=ctx;
+}
+
+function bindUserGestureResume(){
+  if(userGestureResumeBound)return;
+  const onGesture=async()=>{
+    if(!isRunning)return;
+    try{await resumeAudioIfNeeded("user-gesture",true);}catch(e){}
+  };
+  ["pointerdown","touchstart","keydown","mousedown"].forEach(evt=>document.addEventListener(evt,onGesture,{passive:true}));
+  userGestureResumeBound=true;
+}
+
+// [STABILITY FIX] focus/visibility recovery hooks (throttled by resumeAudioIfNeeded)
+document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&isRunning){await resumeAudioIfNeeded("visibilitychange");await requestWakeLock();}});
+window.addEventListener("pageshow",async()=>{if(isRunning){await resumeAudioIfNeeded("pageshow");}});
+window.addEventListener("focus",async()=>{if(isRunning){await resumeAudioIfNeeded("focus");}});
+// STABILITY FIX: keep scheduler callbacks alive even if one tick throws
+function safeLoopCallback(name,fn){return (time)=>{try{fn(time);}catch(e){console.warn(`[${name}] loop callback error`,e);}};}
+function configureToneRuntime(){try{if(Tone.context){Tone.context.lookAhead=0.5;if(Tone.context.updateInterval)Tone.context.updateInterval=0.1;}const ctx=Tone.getContext?.().rawContext||Tone.context?.rawContext||Tone.context;if(ctx&&typeof ctx.latencyHint!=="undefined"){try{ctx.latencyHint="playback";}catch(e){}}}catch(e){}}
+function ensureTransportKeepAliveTone(){try{if(transportKeepAliveSource&&transportKeepAliveGain)return;transportKeepAliveGain=new Tone.Gain(0.000001).toDestination();transportKeepAliveSource=new Tone.Signal(1).connect(transportKeepAliveGain);}catch(e){}}
+const MIX_KEY="ambientMix_v1"; const mixState={bird:50,wind:50,water:50};
+function clamp(n,min,max){return Math.max(min,Math.min(max,n));} function randomBetween(min,max){return min+Math.random()*(max-min);} function randInt(min,max){return Math.floor(min+Math.random()*(max-min+1));} function choose(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function loadMix(){try{const raw=localStorage.getItem(MIX_KEY);if(!raw)return;const obj=JSON.parse(raw);if(typeof obj?.bird==="number")mixState.bird=clamp(Math.round(obj.bird),0,100);if(typeof obj?.wind==="number")mixState.wind=clamp(Math.round(obj.wind),0,100);if(typeof obj?.water==="number")mixState.water=clamp(Math.round(obj.water),0,100);}catch(e){}}
+function saveMix(){try{localStorage.setItem(MIX_KEY,JSON.stringify(mixState));}catch(e){}}
+function mixMultiplierFromPercent(p){const x=clamp(p,0,100)/50;return clamp(x,0,2.0);} function getMix(){return {birdMul:mixMultiplierFromPercent(mixState.bird),windMul:mixMultiplierFromPercent(mixState.wind),waterMul:mixMultiplierFromPercent(mixState.water),birdPct:mixState.bird,windPct:mixState.wind,waterPct:mixState.water};}
+function syncMixUI(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix"),bv=document.getElementById("birdVal"),wv=document.getElementById("windVal"),wav=document.getElementById("waterVal");if(!b||!w||!wa||!bv||!wv||!wav)return;b.value=String(mixState.bird);w.value=String(mixState.wind);wa.value=String(mixState.water);bv.textContent=String(mixState.bird);wv.textContent=String(mixState.wind);wav.textContent=String(mixState.water);} function onMixChange(){syncMixUI();saveMix();if(isRunning){const r=lastRuntimeParams||applyParams();const now=Tone.now();if(windGain)windGain.gain.setValueAtTime(Math.max(0.000001,windBaseLevel(r)),now);if(waterGain)waterGain.gain.setValueAtTime(Math.max(0.000001,waterBaseLevel(r)),now);}}
+function autoTimeBlock(){const h=new Date().getHours();if(h>=5&&h<10)return"morning";if(h>=10&&h<16)return"day";if(h>=16&&h<19)return"evening";if(h>=19&&h<24)return"night";return"late";} function autoSeason(){const m=new Date().getMonth()+1;if(m>=3&&m<=5)return"spring";if(m>=6&&m<=8)return"summer";if(m>=9&&m<=11)return"autumn";return"winter";}
+function setStatus(main,sub="—"){const a=document.getElementById("statusMain"),b=document.getElementById("statusSub");if(!a||!b)return;a.textContent=(sub&&sub!=="—")?sub:main;b.textContent="";} function setStatusChip(text="—"){const el=document.getElementById("statusChip");if(el)el.textContent=text;} function setAmbientCaption(text="",visible=true){const el=document.getElementById("ambientCaption");if(!el)return;el.textContent=text||" ";el.classList.toggle("is-hidden",!visible||!text);} function ambientPoemLine(env){const wind=(lastWeather.wind??0);const shortWind=Math.round(wind*10)/10;const weatherWord=prettyWeatherLabel(env.weatherCat);const timeWord=(env.time==="morning")?"朝":(env.time==="day")?"昼":(env.time==="evening")?"夕":(env.time==="night")?"夜":"深夜";const windWord=(wind<1.5)?"微風":`風${shortWind.toFixed(1)}`;let text=`${timeWord}・${weatherWord}・${windWord}`;if(text.length>20)text=`${timeWord}・${weatherWord}・風`;return text;}
+function applyWhiteByTime(time){const map={morning:["from-sky-50","via-white","to-slate-100"],day:["from-white","via-white","to-slate-100"],evening:["from-rose-50","via-stone-50","to-zinc-100"],night:["from-slate-100","via-slate-50","to-slate-200"],late:["from-slate-100","via-slate-50","to-slate-200"]};const [a,b,c]=map[time]||map.day;const cat=weatherCategoryFromCode(lastWeather.code);const uv=(typeof lastWeather.uv==="number")?clamp(lastWeather.uv/11,0,1):0;const rainTint=(cat==="rain")?" saturate-[0.96] brightness-[0.985]":"";const uvTint=(uv>0.55)?" saturate-[1.02]":"";document.body.className=`min-h-screen text-slate-900 bg-gradient-to-b ${a} ${b} ${c}${rainTint}${uvTint}`;}
+function setMediaSessionMetadata(text){if(!("mediaSession" in navigator))return;try{navigator.mediaSession.metadata=new MediaMetadata({title:"Ambient Music",artist:text,album:"Nature Sync"});navigator.mediaSession.setActionHandler("play",async()=>{if(!isRunning)await start();});navigator.mediaSession.setActionHandler("pause",()=>{if(isRunning)stop();});}catch(e){}}
+function updatePlaybackState(){if(!("mediaSession" in navigator))return;try{navigator.mediaSession.playbackState=isRunning?"playing":"paused";}catch(e){}}
+let isRunning=false;
+let playbackWatchdogId=null;
+let playbackKeepAliveId=null;
+let lastKeepAliveRebuildAt=0;
+let lastTransportSeconds=0;
+let lastTransportCheckAt=0;
+let silentRecoveryCount=0; // [STABILITY FIX]
+let isRebuildingLoops=false;
+let ringIntroShowTimer=null;
+let ringIntroHideTimer=null;
+let masterReverb, masterComp, masterLimiter;
+let filter, airHighpass, airChorus;
+let sparkle, crystalLead, lowLead, lowDrone, nightPiano, bellSynth, chimeSynth, stringEnsemble, stringPad, padGain, sparkleDust, sparkleGlass, lowDroneHP; let bird,birdFilter,birdTremolo; let windNoise,windFilter,windGain; let waterNoise,waterFilter,waterGain;
+let sparkleMulti=null,sparkleAutoPanner=null,sparkleHitPanner=null;
+let lastSparkleDelayRebuildAt=0;
+let sparkleLoop,sparkleGlassLoop,birdLoop,windLoop,waterLoop,melodyLoop,lowMelodyLoop,nightPianoLoop,padLoop,crystalHarmonyLoop,stringHarmonyLoop,lowResonanceLoop,subDroneLoop,bellLoop,chimeLoop,chordEventId=null;
+let harmonySlots=null,harmonySlotIndex=0;
+let lastWeather={code:0,wind:0,temp:null,uv:null}; let lastRoot=null;
+const SEASON_SOUND_PROFILE={spring:{brightness:0.1,padAttack:1.06,shimmer:0.22,calm:0.1},summer:{brightness:0.18,padAttack:0.94,shimmer:0.30,calm:0.02},autumn:{brightness:-0.06,padAttack:1.12,shimmer:0.14,calm:0.18},winter:{brightness:0.05,padAttack:1.16,shimmer:0.26,calm:0.24}};
+const TIME_SOUND_PROFILE={morning:{density:0.08,space:0.08,brightness:0.10},day:{density:0.14,space:0,brightness:0.15},evening:{density:-0.04,space:0.14,brightness:-0.02},night:{density:-0.12,space:0.20,brightness:-0.08},late:{density:-0.18,space:0.28,brightness:-0.12}};
+const WEATHER_SOUND_PROFILE={clear:{brightness:0.20,wet:-0.05,decay:-1.8,reflect:0.22},rain:{brightness:-0.14,wet:0.08,decay:2.2,reflect:-0.10},snow:{brightness:-0.18,wet:0.12,decay:3.1,reflect:-0.16},other:{brightness:0,wet:0,decay:0,reflect:0}};
+async function ensureAudioGraph(){if(sparkle)return;masterReverb=new Tone.Reverb({decay:14.5,wet:0.42});if(masterReverb.generate){try{await masterReverb.generate();}catch(e){}}masterReverb.toDestination();masterComp=new Tone.Compressor({threshold:-20,ratio:2.8,attack:0.008,release:0.24}).connect(masterReverb);masterLimiter=new Tone.Limiter(-0.6).connect(masterComp);airChorus=new Tone.Chorus({frequency:0.18,delayTime:3.2,depth:0.12,spread:120,wet:0.16}).start();airHighpass=new Tone.Filter({type:"highpass",frequency:90,rolloff:-12}).connect(airChorus);filter=new Tone.Filter({type:"lowpass",frequency:1900,rolloff:-12}).connect(airHighpass);airChorus.connect(masterLimiter);sparkleAutoPanner=new Tone.AutoPanner({frequency:0.10,depth:0.85,wet:1.0}).start();sparkleHitPanner=new Tone.Panner(0);sparkleAutoPanner.connect(sparkleHitPanner);sparkleHitPanner.connect(filter);sparkle=new Tone.FMSynth({oscillator:{type:"triangle"},modulation:{type:"sine"},harmonicity:2.0,modulationIndex:2.8,envelope:{attack:0.008,decay:0.12,sustain:0,release:1.35},modulationEnvelope:{attack:0.01,decay:0.16,sustain:0,release:0.8}});sparkle.volume.value=-10;crystalLead=new Tone.FMSynth({oscillator:{type:"triangle"},modulation:{type:"sine"},harmonicity:2.4,modulationIndex:1.8,envelope:{attack:0.35,decay:1.2,sustain:0.25,release:4.8},modulationEnvelope:{attack:0.25,decay:1.1,sustain:0.12,release:2.6}}).connect(filter);crystalLead.volume.value=-15;lowLead=new Tone.Synth({oscillator:{type:"triangle"},envelope:{attack:0.22,decay:0.9,sustain:0.25,release:3.8}}).connect(filter);lowLead.volume.value=-19;nightPiano=new Tone.PolySynth(Tone.Synth,{oscillator:{type:"triangle"},envelope:{attack:0.03,decay:0.45,sustain:0.18,release:3.8}}).connect(filter);nightPiano.volume.value=-22;lowDrone=new Tone.MonoSynth({oscillator:{type:"sine"},filter:{Q:1.6,type:"lowpass",rolloff:-12},envelope:{attack:1.4,decay:0.8,sustain:0.62,release:6.8},filterEnvelope:{attack:1.1,decay:1.2,sustain:0.35,release:5.5,baseFrequency:70,octaves:2.1}}).connect(filter);lowDrone.volume.value=-16;bellSynth=new Tone.MetalSynth({frequency:380,envelope:{attack:0.001,decay:1.4,release:2.4},harmonicity:3.2,modulationIndex:22,resonance:1300,octaves:1.8}).connect(filter);bellSynth.volume.value=-21;chimeSynth=new Tone.FMSynth({oscillator:{type:"sine"},modulation:{type:"triangle"},harmonicity:2.9,modulationIndex:2.6,envelope:{attack:0.002,decay:0.7,sustain:0.0,release:2.8},modulationEnvelope:{attack:0.01,decay:0.5,sustain:0.0,release:1.7}}).connect(filter);chimeSynth.volume.value=-20;stringEnsemble=new Tone.PolySynth(Tone.AMSynth,{harmonicity:1.6,oscillator:{type:"triangle"},envelope:{attack:1.8,decay:0.9,sustain:0.72,release:8.5},modulation:{type:"sine"},modulationEnvelope:{attack:0.4,decay:0.7,sustain:0.3,release:1.8}}).connect(filter);stringEnsemble.volume.value=-21;padGain=new Tone.Gain(0.000001).connect(filter);stringPad=new Tone.PolySynth(Tone.Synth,{oscillator:{type:"triangle"},envelope:{attack:3.2,decay:1.6,sustain:0.86,release:14.0}}).connect(padGain);stringPad.volume.value=-19;birdTremolo=new Tone.Tremolo({frequency:9,depth:0.65,wet:1.0}).start();birdFilter=new Tone.Filter({type:"bandpass",frequency:2300,Q:6});bird=new Tone.Synth({oscillator:{type:"sine"},envelope:{attack:0.004,decay:0.07,sustain:0,release:0.17}});bird.chain(birdTremolo,birdFilter,filter);bird.volume.value=-17;windNoise=new Tone.Noise("pink").start();windFilter=new Tone.Filter({type:"bandpass",frequency:420,Q:0.9});windGain=new Tone.Gain(0.000001);windNoise.chain(windFilter,windGain,filter);waterNoise=new Tone.Noise("brown").start();waterFilter=new Tone.Filter({type:"lowpass",frequency:900,rolloff:-12});waterGain=new Tone.Gain(0.000001);waterNoise.chain(waterFilter,waterGain,filter);sparkleDust=new Tone.NoiseSynth({noise:{type:"white"},envelope:{attack:0.03,decay:0.42,sustain:0,release:1.8}}).connect(filter);sparkleDust.volume.value=-36;sparkleGlass=new Tone.FMSynth({oscillator:{type:"sine"},modulation:{type:"triangle"},harmonicity:2.7,modulationIndex:1.1,envelope:{attack:0.045,decay:1.4,sustain:0.0,release:5.2},modulationEnvelope:{attack:0.06,decay:0.8,sustain:0.0,release:2.8}}).connect(filter);sparkleGlass.volume.value=-29;lowDroneHP=new Tone.Filter({type:"highpass",frequency:28,rolloff:-24});if(lowDrone){try{lowDrone.disconnect();}catch(e){}lowDrone.connect(lowDroneHP);lowDroneHP.connect(filter);}if(!harmonySlots){harmonySlots=[0,1].map(()=>{const g=new Tone.Gain(0.000001).connect(filter);const s=new Tone.PolySynth(Tone.FMSynth,{oscillator:{type:"triangle"},modulation:{type:"sine"},harmonicity:1.5,modulationIndex:1.4,envelope:{attack:2.4,decay:0.7,sustain:0.8,release:18},modulationEnvelope:{attack:0.4,decay:0.8,sustain:0.3,release:3.2}}).connect(g);s.volume.value=-15;return {synth:s,gain:g};});}}
+function disposeToneNode(node){if(!node)return;try{node.dispose();}catch(e){}}
+function disposeAudioGraphForRecovery(){
+  clearHarmonyScheduler();
+  [sparkleLoop,sparkleGlassLoop,birdLoop,windLoop,waterLoop,melodyLoop,lowMelodyLoop,nightPianoLoop,padLoop,crystalHarmonyLoop,stringHarmonyLoop,lowResonanceLoop,subDroneLoop,bellLoop,chimeLoop].forEach(loop=>{if(!loop)return;try{loop.stop(0);}catch(e){}disposeToneNode(loop);});
+  sparkleLoop=sparkleGlassLoop=birdLoop=windLoop=waterLoop=melodyLoop=lowMelodyLoop=nightPianoLoop=padLoop=crystalHarmonyLoop=stringHarmonyLoop=lowResonanceLoop=subDroneLoop=bellLoop=chimeLoop=null;
+
+  if(sparkleMulti){(sparkleMulti.tapNodes||[]).forEach(disposeToneNode);disposeToneNode(sparkleMulti.input);disposeToneNode(sparkleMulti.merger);sparkleMulti=null;}lastSparkleDelayRebuildAt=0;
+
+  if(harmonySlots){harmonySlots.forEach(slot=>{disposeToneNode(slot?.synth);disposeToneNode(slot?.gain);});}
+  harmonySlots=null;harmonySlotIndex=0;
+
+  [sparkle,crystalLead,lowLead,lowDrone,nightPiano,bellSynth,chimeSynth,stringEnsemble,stringPad,padGain,sparkleDust,sparkleGlass,lowDroneHP,bird,birdFilter,birdTremolo,windNoise,windFilter,windGain,waterNoise,waterFilter,waterGain,sparkleAutoPanner,sparkleHitPanner,filter,airHighpass,airChorus,masterLimiter,masterComp,masterReverb].forEach(disposeToneNode);
+  sparkle=crystalLead=lowLead=lowDrone=nightPiano=bellSynth=chimeSynth=stringEnsemble=stringPad=padGain=sparkleDust=sparkleGlass=lowDroneHP=bird=birdFilter=birdTremolo=windNoise=windFilter=windGain=waterNoise=waterFilter=waterGain=sparkleAutoPanner=sparkleHitPanner=filter=airHighpass=airChorus=masterLimiter=masterComp=masterReverb=null;
+  audioStateWatcherBound=false;audioStateWatcherTarget=null;
+  try{if(transportKeepAliveSource)transportKeepAliveSource.dispose();}catch(e){}
+  try{if(transportKeepAliveGain)transportKeepAliveGain.dispose();}catch(e){}
+  transportKeepAliveSource=null;transportKeepAliveGain=null;
+}
+
+function keyFromSeason(season){if(season==="spring")return"C";if(season==="summer")return"D";if(season==="autumn")return"Eb";if(season==="winter")return"A";return"C";} function chordChoicesForKey(key){const map={"C":["C4","F4","G4","A4"],"D":["D4","G4","A4","B4"],"Eb":["Eb4","Ab4","Bb4","C5"],"A":["A3","D4","E4","F#4"]};return map[key]||map["C"];}
+function triad(rootNote){const r=Tone.Frequency(rootNote);return [r.toNote(),r.transpose(4).toNote(),r.transpose(7).toNote()];}
+function sparkleScale(key,weatherCat,time){const major={"C":["C5","D5","E5","F5","G5","A5","B5","C6"],"D":["D5","E5","F#5","G5","A5","B5","C#6","D6"],"Eb":["Eb5","F5","G5","Ab5","Bb5","C6","D6","Eb6"],"A":["A4","B4","C#5","D5","E5","F#5","G#5","A5"]};const pent={"C":["C5","D5","E5","G5","A5","C6"],"D":["D5","E5","F#5","A5","B5","D6"],"Eb":["Eb5","F5","G5","Bb5","C6","Eb6"],"A":["A4","B4","C#5","E5","F#5","A5"]};const usePent=(weatherCat==="rain")||(time==="night"||time==="late");return usePent?(pent[key]||pent["C"]):(major[key]||major["C"]);}function melodyScaleForKey(key){const map={"C":["C4","D4","E4","G4","A4","C5","E5"],"D":["D4","E4","F#4","A4","B4","D5","F#5"],"Eb":["Eb4","F4","G4","Bb4","C5","Eb5","G5"],"A":["A3","B3","C#4","E4","F#4","A4","C#5"]};return map[key]||map["C"];}function lowMelodyScaleForKey(key){const map={"C":["C3","E3","G3","A3","C4","E4"],"D":["D3","F#3","A3","B3","D4","F#4"],"Eb":["Eb3","G3","Bb3","C4","Eb4","G4"],"A":["A2","C#3","E3","F#3","A3","C#4"]};return map[key]||map["C"];}function melodyDuration(r){let d=randomBetween(1.8,4.8);if(r.time==="night"||r.time==="late")d*=1.25;if(r.weatherCat==="clear")d*=0.9;return clamp(d,1.4,6.8);}
+function getEnv(){const seasonSel=document.getElementById("seasonSel").value,timeSel=document.getElementById("timeSel").value,weatherSel=document.getElementById("weatherSel").value;const season=(seasonSel==="auto")?autoSeason():seasonSel;const time=(timeSel==="auto")?autoTimeBlock():timeSel;const weatherCat=(weatherSel==="auto")?weatherCategoryFromCode(lastWeather.code):weatherSel;return {season,time,weatherCat};}
+function prettyTimeLabel(t){if(t==="morning")return"朝";if(t==="day")return"昼";if(t==="evening")return"夕";if(t==="night")return"夜";if(t==="late")return"深夜";if(t==="spring")return"春";if(t==="summer")return"夏";if(t==="autumn")return"秋";if(t==="winter")return"冬";return t;} function prettyWeatherLabel(w){if(w==="clear")return"晴れ";if(w==="rain")return"雨";if(w==="snow")return"雪";if(w==="other")return"曇り";return w;}
+function isDayTimeBlock(time){return(time==="day"||time==="morning"||time==="evening");}
+function moodLine(env,windNorm){ // UI TWEAK
+  const wind=clamp(lastWeather.wind??0,0,30);
+  const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;
+  const uvDay=(uvRaw!==null&&(env.time==="morning"||env.time==="day"||env.time==="evening"))?uvRaw:0;
+  const windBand=(wind<1.2)?"calm":(wind<3.5)?"breeze":(wind<7)?"windy":"strong";
+
+  if(env.time==="morning"){
+    const byWeather={
+      clear:["朝の光がやわらかく差し、空気は澄んでいる。","静かな朝、透明な余韻が穏やかに広がる。"],
+      rain:["朝の雨に輪郭がなじみ、余韻は静かに滲む。","湿った朝の空気に、やわらかな残響が重なる。"],
+      other:["朝の空気は軽く、端正な響きがそっと並ぶ。","穏やかな朝の景色に、淡い奥行きが宿る。"]
+    };
+    return choose(byWeather[env.weatherCat]||byWeather.other);
+  }
+
+  if(env.time==="day"){
+    if(env.weatherCat==="clear"&&uvDay>=7){
+      return choose(["光の密度が高く、乾いた余韻がすっと伸びる。","明るい空気に、透明な反射が細く差し込む。"]);
+    }
+    const dayByWeather={
+      clear:["昼の澄んだ空気に、きらめきが静かに重なる。","明るい景色の中で、余韻は軽やかに保たれる。"],
+      rain:["昼の雨は輪郭をやわらげ、響きはしっとり続く。","湿度を帯びた空気に、やさしい余白が生まれる。"],
+      other:["中庸な昼の空気に、整った響きが穏やかに漂う。","落ち着いた明るさで、透明な層が重なっていく。"]
+    };
+    return choose(dayByWeather[env.weatherCat]||dayByWeather.other);
+  }
+
+  if(env.time==="evening"){
+    const eveByWeather={
+      clear:["夕方の光は穏やかで、余韻は静かに沈み込む。","淡い陰影の中で、透明な響きがゆるやかに残る。"],
+      rain:["夕方の雨が空気を丸め、残響はやわらかく続く。","濡れた景色に寄り添い、余韻が静かに滲む。"],
+      other:["夕方の空気は落ち着き、響きの輪郭が整っていく。","静かな陰影の中で、層の深さがゆっくり増す。"]
+    };
+    return choose(eveByWeather[env.weatherCat]||eveByWeather.other);
+  }
+
+  if(env.time==="night"){
+    const nightByWind={
+      calm:["夜の静けさに、余韻が穏やかに漂う。","澄んだ夜気の中で、響きが静かに広がる。"],
+      breeze:["夜の空気に軽い揺らぎが混じり、余韻は上品に続く。","静かな夜、淡いきらめきがそっと残る。"],
+      windy:["夜の風に合わせ、響きの層がゆるやかに入れ替わる。","静けさを保ったまま、夜の奥行きが深まる。"],
+      strong:["夜の空気に風の気配が重なり、余韻が長く残る。","深い夜の景色に、静かな反射がわずかに差す。"]
+    };
+    return choose(nightByWind[windBand]);
+  }
+
+  const lateByWeather={
+    clear:["深夜の呼吸に合わせ、輪郭はやわらかくほどける。","深夜の静けさに、透明な余韻だけが残る。"],
+    rain:["深夜の雨が空気を丸め、滲む余韻が静かに続く。","深夜の湿った静けさに、響きが淡く溶け込む。"],
+    other:["深夜の呼吸に合わせ、輪郭はやわらかくほどける。","深い余白の中で、響きは静かに滞在する。"]
+  };
+  return choose(lateByWeather[env.weatherCat]||lateByWeather.other);
+}
+function applyParams(){const env=getEnv();const key=keyFromSeason(env.season);applyWhiteByTime(env.time);const tempRaw=(typeof lastWeather.temp==="number")?lastWeather.temp:null;const coldNorm=(tempRaw===null)?0.28:clamp((12-tempRaw)/24,0,1);let bpm=66;if(env.time==="morning")bpm=74;if(env.time==="day")bpm=78;if(env.time==="evening")bpm=70;if(env.time==="night")bpm=60;if(env.time==="late")bpm=54;bpm*=1-0.12*coldNorm;Tone.Transport.bpm.value=clamp(bpm,46,80);const seasonFx=SEASON_SOUND_PROFILE[env.season]||SEASON_SOUND_PROFILE.spring;const timeFx=TIME_SOUND_PROFILE[env.time]||TIME_SOUND_PROFILE.day;const weatherFx=WEATHER_SOUND_PROFILE[env.weatherCat]||WEATHER_SOUND_PROFILE.other;const windNorm=clamp((lastWeather.wind??0)/15,0,1);let cutoff=1920+940*weatherFx.brightness+520*seasonFx.brightness+440*timeFx.brightness-230*coldNorm;let wet=0.45+weatherFx.wet+0.05*timeFx.space+0.03*coldNorm;const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;const showUv=(uvRaw!==null)&&isDayTimeBlock(env.time);const uvText=showUv?uvRaw.toFixed(1):"—";const uvNorm=showUv?clamp(uvRaw/11,0,1):0;if(showUv){cutoff+=420*uvNorm;wet-=0.05*uvNorm;}filter.frequency.value=clamp(cutoff,900,3200);masterReverb.wet.value=clamp(wet,0.30,0.74);if(birdFilter){birdFilter.frequency.value=clamp(1960+420*weatherFx.reflect+190*timeFx.brightness,1650,2750);}if(sparkleAutoPanner){let f=0.10;if(env.time==="day")f=0.12;if(env.time==="morning")f=0.11;if(env.time==="evening")f=0.095;if(env.time==="night")f=0.075;if(env.time==="late")f=0.062;sparkleAutoPanner.frequency.value=f*(1+0.18*windNorm);sparkleAutoPanner.depth=clamp(0.62+0.08*weatherFx.reflect+0.16*windNorm,0.50,0.88);}if(airHighpass){airHighpass.frequency.value=clamp(70+44*seasonFx.brightness+36*windNorm,58,142);}if(airChorus){airChorus.depth=clamp(0.08+0.14*seasonFx.shimmer+0.12*windNorm,0.07,0.20);airChorus.wet.value=clamp(0.10+0.09*timeFx.space+0.07*weatherFx.reflect,0.08,0.22);airChorus.frequency.value=clamp(0.14+0.24*windNorm,0.11,0.40);}if(sparkle){sparkle.harmonicity.value=clamp(1.65+0.55*seasonFx.shimmer+0.38*windNorm+0.20*uvNorm,1.3,2.8);sparkle.modulationIndex.value=clamp(1.8+0.8*weatherFx.reflect+0.7*windNorm+0.7*uvNorm,1.1,3.4);sparkle.volume.value=clamp(-17.5+1.7*weatherFx.reflect+0.8*timeFx.brightness+1.4*uvNorm,-20,-12.5);}if(sparkleGlass){sparkleGlass.harmonicity.value=clamp(2.2+0.5*seasonFx.shimmer+0.2*windNorm+0.4*uvNorm,1.9,3.4);sparkleGlass.modulationIndex.value=clamp(0.9+0.9*weatherFx.reflect+0.5*windNorm,0.7,2.8);sparkleGlass.volume.value=clamp(-31+2.1*uvNorm+0.8*windNorm,-33,-24);}if(sparkleDust){sparkleDust.volume.value=clamp(-38+2.5*windNorm+1.4*uvNorm,-39,-30);}if(crystalLead){crystalLead.harmonicity.value=clamp(2.05+0.4*seasonFx.shimmer+0.2*windNorm,1.7,2.8);crystalLead.modulationIndex.value=clamp(1.3+0.9*weatherFx.reflect+0.25*windNorm,1.0,2.6);crystalLead.volume.value=clamp(-21+2.0*weatherFx.reflect+0.7*timeFx.brightness,-23,-16);}if(stringPad){stringPad.volume.value=clamp(-20+2.0*timeFx.space+1.2*seasonFx.calm-1.1*coldNorm,-22,-16);}if(lowLead){lowLead.volume.value=clamp(-21+1.5*seasonFx.calm+0.8*timeFx.space-0.6*coldNorm,-22,-17);}if(lowDrone){lowDrone.volume.value=clamp(-24+2.3*seasonFx.calm+2.4*timeFx.space+1.5*(env.time==="night"||env.time==="late"?1:0),-26,-18);}if(lowDroneHP){lowDroneHP.frequency.value=clamp(27+6*windNorm,24,36);}if(bellSynth){bellSynth.resonance=clamp(980+320*weatherFx.reflect+210*windNorm,860,1600);bellSynth.modulationIndex=clamp(14+7*seasonFx.shimmer+6*weatherFx.reflect,10,28);bellSynth.volume.value=clamp(-26+2.2*weatherFx.reflect+0.8*timeFx.brightness,-27,-20);}if(chimeSynth){chimeSynth.harmonicity.value=clamp(2.2+0.8*seasonFx.shimmer+0.5*windNorm,1.9,3.6);chimeSynth.modulationIndex.value=clamp(1.8+1.1*weatherFx.reflect+0.6*windNorm,1.4,3.5);chimeSynth.volume.value=clamp(-26+2.0*weatherFx.reflect+0.6*timeFx.brightness,-28,-20);}if(stringEnsemble){stringEnsemble.volume.value=clamp(-22+2.0*timeFx.space+1.0*seasonFx.calm,-23,-18);}if(harmonySlots){const hAttack=clamp(2.4*seasonFx.padAttack*(1+0.34*timeFx.space+0.25*coldNorm),2.0,5.3);const hRelease=clamp(17.5+4.8*timeFx.space+2.4*seasonFx.calm+2.0*coldNorm,14.8,25.0);const hHarmonicity=clamp(1.30+0.42*seasonFx.shimmer+0.18*weatherFx.reflect,1.15,2.2);harmonySlots.forEach(slot=>{slot.synth.set({harmonicity:hHarmonicity,modulationIndex:clamp(1.1+0.35*weatherFx.reflect,1.0,1.9),envelope:{attack:hAttack,decay:0.8,sustain:0.82,release:hRelease},modulationEnvelope:{attack:0.45,decay:0.9,sustain:0.26,release:clamp(3.0+timeFx.space*1.6,3.0,4.8)}});});}if(windFilter){windFilter.frequency.value=clamp(320+110*weatherFx.reflect+110*windNorm,260,520);windFilter.Q.value=clamp(0.80+0.22*windNorm+(env.time==="late"?0.10:0),0.76,1.18);}if(waterFilter){waterFilter.frequency.value=clamp(740+180*weatherFx.reflect+70*timeFx.space-80*coldNorm,620,1020);}const windText=`${(lastWeather.wind??0).toFixed(1)} m/s`;const tempText=(tempRaw===null)?"—":`${tempRaw.toFixed(1)}°C`;setMediaSessionMetadata(`${env.season} / ${env.weatherCat} / wind ${windText} / temp ${tempText} / UV ${uvText}`);const sub=`Key ${key}`;const mood=moodLine(env,windNorm);setStatusChip(describeWeather(lastWeather.code));playButtonTone(env);if(isRunning)setStatus(sub,mood);const mKey=document.getElementById("metricKey"),mTempo=document.getElementById("metricTempo"),mBright=document.getElementById("metricBrightness"),mKeyCore=document.getElementById("metricKeyCore"),mTempoCore=document.getElementById("metricTempoCore"),mBrightCore=document.getElementById("metricBrightnessCore"),mSpark=document.getElementById("metricSparkle"),mRev=document.getElementById("metricReverb"),mTail=document.getElementById("metricTail");const tempoText=`${Math.round(Tone.Transport.bpm.value)} BPM`;const brightText=(cutoff>2400)?"High":(cutoff>1650?"Mid":"Soft");if(mKey)mKey.textContent=key;if(mTempo)mTempo.textContent=tempoText;if(mBright)mBright.textContent=brightText;if(mKeyCore)mKeyCore.textContent=key;if(mTempoCore)mTempoCore.textContent=tempoText;if(mBrightCore)mBrightCore.textContent=brightText;if(mSpark)mSpark.textContent=(uvNorm>0.5||windNorm>0.6)?"Fine+":"Quiet";if(mRev)mRev.textContent=(wet>0.54)?"Deep":(wet>0.40?"Airy":"Dry");if(mTail)mTail.textContent=(wet>0.58)?"Long":(wet>0.44?"Mid":"Short");const eSeason=document.getElementById("envSeason"),eTime=document.getElementById("envTime"),eWeather=document.getElementById("envWeather"),eWindUv=document.getElementById("envWindUv"),detailStatusLine=document.getElementById("detailStatusLine"),detailMusicLine=document.getElementById("detailMusicLine");if(eSeason)eSeason.textContent=prettyTimeLabel(env.season)||env.season;if(eTime)eTime.textContent=prettyTimeLabel(env.time);if(eWeather)eWeather.textContent=prettyWeatherLabel(env.weatherCat);if(eWindUv)eWindUv.textContent=`${(lastWeather.wind??0).toFixed(1)}m/s · ${tempText} · UV ${uvText}`;if(detailStatusLine)detailStatusLine.textContent=`${prettyTimeLabel(env.season)}・${prettyTimeLabel(env.time)}・${prettyWeatherLabel(env.weatherCat)}・風${(lastWeather.wind??0).toFixed(1)}`;if(detailMusicLine)detailMusicLine.textContent=`Key ${key} ｜ ${Math.round(Tone.Transport.bpm.value)} BPM ｜ ${brightText}`;setAmbientCaption(ambientPoemLine(env),isRunning);lastRuntimeParams={...env,key,bpm:Tone.Transport.bpm.value,seasonFx,timeFx,weatherFx,windNorm,uvNorm,coldNorm,tempRaw};return lastRuntimeParams;}
+function clearHarmonyScheduler(){if(chordEventId!==null){try{Tone.Transport.clear(chordEventId);}catch(e){} chordEventId=null;}}
+function harmonyGapSeconds(r){let g=randomBetween(0.55,2.1);const burstChance=(r.time==="day"||r.time==="morning")?0.30:(r.time==="evening")?0.24:(r.time==="night")?0.16:0.12;if(Math.random()<burstChance){g*=randomBetween(0.20,0.46);}if(r.time==="late")g*=1.12;if(r.time==="night")g*=1.04;if(r.weatherCat==="rain")g*=1.05;return clamp(g,0.22,3.3);} function octaveShifted(note,octShift){const f=Tone.Frequency(note);return f.transpose(12*octShift).toNote();}
+function pickOverlapMode(r){let base=0.52;if(r.time==="day"||r.time==="morning")base=0.60;if(r.time==="evening")base=0.54;if(r.time==="night")base=0.44;if(r.time==="late")base=0.32;if(r.weatherCat==="rain")base*=0.92;if(Math.random()>=base)return"none";let earlyWeight=0.78;if(r.time==="late")earlyWeight=0.62;if(r.time==="night")earlyWeight=0.70;if(r.weatherCat==="rain")earlyWeight*=0.95;return(Math.random()<earlyWeight)?"early":"tail";}
+function playOneHarmony(startTime,r){if(!harmonySlots)return;const choices=chordChoicesForKey(r.key);let root=choices[Math.floor(Math.random()*choices.length)];if(root===lastRoot)root=choices[Math.floor(Math.random()*choices.length)];lastRoot=root;const playDur=randomBetween(26.0,52.0);const gapDur=harmonyGapSeconds(r);let oct=choose([-1,0,0,0,+1,+1]);if(Math.random()<0.10)oct=choose([-2,+2]);const shiftedRoot=octaveShifted(root,oct);const slot=harmonySlots[harmonySlotIndex%harmonySlots.length];harmonySlotIndex++;const chordGain=slot.gain;const chordPad=slot.synth;let peak=0.15+Math.random()*0.17;if(r.time==="night"||r.time==="late")peak*=0.78;if(r.weatherCat==="rain")peak*=0.86;peak*=(1+(r.timeFx?.density??0)*0.22);peak*=(1+(r.seasonFx?.shimmer??0)*0.12);const t0=startTime,tPeak=startTime+playDur*(0.35+Math.random()*0.35),tEnd=startTime+playDur;chordGain.gain.cancelScheduledValues(t0);chordGain.gain.setValueAtTime(Math.max(0.000001,chordGain.gain.value),t0);chordGain.gain.exponentialRampToValueAtTime(Math.max(0.00018,peak),tPeak);chordGain.gain.exponentialRampToValueAtTime(0.00012,tEnd);markLayerSound("harmony");trackedTriggerAttackRelease(chordPad,triad(shiftedRoot),playDur,startTime,0.72);const mode=pickOverlapMode(r);let nextTime=startTime+playDur+gapDur;if(mode==="tail"){nextTime=tEnd+randomBetween(-10.0,6.0);nextTime=Math.max(nextTime,startTime+7.0);}else if(mode==="early"){const frac=randomBetween(0.30,0.70);nextTime=startTime+playDur*frac;}const nowSec=Tone.Transport.seconds||0;nextTime=Math.max(nextTime,nowSec+2.0);chordEventId=Tone.Transport.scheduleOnce((t)=>{try{playOneHarmony(t,r);}catch(e){console.warn("[harmony] scheduleOnce error",e);}},nextTime);}
+function buildMultiTapDelay(){if(sparkleMulti){sparkleMulti.tapNodes.forEach(n=>{try{n.dispose();}catch(e){}});try{sparkleMulti.input.dispose();}catch(e){}try{sparkleMulti.merger.dispose();}catch(e){} sparkleMulti=null;}lastSparkleDelayRebuildAt=0;const taps=randInt(4,7);const merger=new Tone.Gain(1).connect(sparkleAutoPanner);const wetBase=randomBetween(0.40,0.62);const tapNodes=[];for(let i=0;i<taps;i++){const dt=randomBetween(0.03,0.23),fb=randomBetween(0.18,0.44)*(1-i*0.08),wt=clamp(wetBase*(0.85-i*0.06),0.18,0.65);const d=new Tone.FeedbackDelay({delayTime:dt,feedback:fb,wet:wt});d.connect(merger);tapNodes.push(d);}const input=new Tone.Gain(1);tapNodes.forEach(d=>input.connect(d));sparkleMulti={input,tapNodes,merger};return sparkleMulti;}
+function pickSparkleDelayRefreshChance(r){return 0;} function rebuildSparkleDelayIfNeeded(r){if(!sparkleMulti){buildMultiTapDelay();sparkle.disconnect();sparkle.connect(sparkleMulti.input);lastSparkleDelayRebuildAt=Date.now();return;}}
+function randomRhythmDuration(r){const dayish=(r.time==="morning"||r.time==="day"),nightish=(r.time==="night"||r.time==="late");const short=["32n","16n","16t"],mid=["24n","8t","12n"],long=["8n","4n","6n"];let pool=[...mid,...long];if(dayish)pool=[...short,...mid,...mid];if(nightish)pool=[...long,...mid,...long];if(r.weatherCat==="rain"||r.weatherCat==="snow")pool=[...pool,...long];const d=choose(pool),sec=Tone.Time(d).toSeconds();const coldSlow=1+0.30*(r.coldNorm??0);return clamp(sec*coldSlow,0.08,0.92);} function applyHitPan(time,r){if(!sparkleHitPanner)return;let width=0.85;if(r.weatherCat==="rain")width=0.70;if(r.time==="night")width=0.62;if(r.time==="late")width=0.52;if(r.time==="day")width=0.92;const target=(Math.random()*2-1)*width;sparkleHitPanner.pan.cancelScheduledValues(time);sparkleHitPanner.pan.setValueAtTime(sparkleHitPanner.pan.value,time);sparkleHitPanner.pan.linearRampToValueAtTime(target,time+0.06);}
+function windBaseLevel(r){const mix=getMix();const w=clamp(lastWeather.wind??0,0,15);let base=0.00006+0.00010*(w/15);if(r.time==="night")base*=0.78;if(r.time==="late")base*=0.65;if(r.weatherCat==="rain")base*=0.90;base*=mix.windMul;return clamp(base,0.000001,0.00035);} function waterBaseLevel(r){const mix=getMix();let base=0.00004;if(r.weatherCat==="rain")base=0.00008;if(r.time==="night")base*=0.85;if(r.time==="late")base*=0.70;base*=mix.waterMul;return clamp(base,0.000001,0.00030);} function triggerWindGust(time,r){if(!windGain)return;markLayerSound("wind");const base=windBaseLevel(r),peak=clamp(base*randomBetween(2.0,4.8),0.00001,0.00090),dur=randomBetween(2.4,6.8);windGain.gain.cancelScheduledValues(time);windGain.gain.setValueAtTime(Math.max(0.000001,windGain.gain.value),time);windGain.gain.exponentialRampToValueAtTime(Math.max(0.000001,peak),time+0.7);windGain.gain.exponentialRampToValueAtTime(Math.max(0.000001,base),time+dur);} function triggerWaterRipple(time,r){if(!waterGain)return;markLayerSound("water");const base=waterBaseLevel(r),peak=clamp(base*randomBetween(1.6,3.2),0.00001,0.00085),dur=randomBetween(1.4,4.6);waterGain.gain.cancelScheduledValues(time);waterGain.gain.setValueAtTime(Math.max(0.000001,waterGain.gain.value),time);waterGain.gain.exponentialRampToValueAtTime(Math.max(0.000001,peak),time+0.25);waterGain.gain.exponentialRampToValueAtTime(Math.max(0.000001,base),time+dur);}
+function rebuildLoops(){if(isRebuildingLoops)return;isRebuildingLoops=true;try{if(sparkleLoop){try{sparkleLoop.stop(0);}catch(e){}sparkleLoop.dispose();sparkleLoop=null;}if(sparkleGlassLoop){try{sparkleGlassLoop.stop(0);}catch(e){}sparkleGlassLoop.dispose();sparkleGlassLoop=null;}if(subDroneLoop){try{subDroneLoop.stop(0);}catch(e){}subDroneLoop.dispose();subDroneLoop=null;}if(birdLoop){try{birdLoop.stop(0);}catch(e){}birdLoop.dispose();birdLoop=null;}if(windLoop){try{windLoop.stop(0);}catch(e){}windLoop.dispose();windLoop=null;}if(waterLoop){try{waterLoop.stop(0);}catch(e){}waterLoop.dispose();waterLoop=null;}if(melodyLoop){try{melodyLoop.stop(0);}catch(e){}melodyLoop.dispose();melodyLoop=null;}if(lowMelodyLoop){try{lowMelodyLoop.stop(0);}catch(e){}lowMelodyLoop.dispose();lowMelodyLoop=null;}if(nightPianoLoop){try{nightPianoLoop.stop(0);}catch(e){}nightPianoLoop.dispose();nightPianoLoop=null;}if(padLoop){try{padLoop.stop(0);}catch(e){}padLoop.dispose();padLoop=null;}if(crystalHarmonyLoop){try{crystalHarmonyLoop.stop(0);}catch(e){}crystalHarmonyLoop.dispose();crystalHarmonyLoop=null;}if(stringHarmonyLoop){try{stringHarmonyLoop.stop(0);}catch(e){}stringHarmonyLoop.dispose();stringHarmonyLoop=null;}if(lowResonanceLoop){try{lowResonanceLoop.stop(0);}catch(e){}lowResonanceLoop.dispose();lowResonanceLoop=null;}if(bellLoop){try{bellLoop.stop(0);}catch(e){}bellLoop.dispose();bellLoop=null;}if(chimeLoop){try{chimeLoop.stop(0);}catch(e){}chimeLoop.dispose();chimeLoop=null;}clearHarmonyScheduler();const r=applyParams();const nightMode=(r.time==="night"||r.time==="late");const now=Tone.now();if(windGain)windGain.gain.setValueAtTime(Math.max(0.000001,windBaseLevel(r)),now);if(waterGain)waterGain.gain.setValueAtTime(Math.max(0.000001,waterBaseLevel(r)),now);const startAt=Tone.Transport.seconds+0.1;chordEventId=Tone.Transport.scheduleOnce((t)=>{try{playOneHarmony(t,r);}catch(e){console.warn("[harmony] start schedule error",e);}},startAt);rebuildSparkleDelayIfNeeded(r);const sparkleInterval=nightMode?1.28:0.88;sparkleLoop=new Tone.Loop(safeLoopCallback("sparkle",(time)=>{rebuildSparkleDelayIfNeeded(r);const scale=sparkleScale(r.key,r.weatherCat,r.time);let p=0.30;if(r.weatherCat==="rain"||r.weatherCat==="snow")p=0.22;if(r.time==="late")p=0.08;if(r.time==="night")p=Math.min(p,0.10);if(r.weatherCat==="clear"&&(r.time==="day"||r.time==="morning"))p=0.38;p+=(r.seasonFx?.shimmer??0)*0.05;p+=(r.timeFx?.density??0)*0.08;p+=(r.weatherFx?.reflect??0)*0.07;const windBoost=clamp(((lastWeather.wind??0)-2)/10,0,0.12);p+=windBoost;const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;if(uvRaw!==null&&(r.time==="day"||r.time==="morning")){const u=clamp(uvRaw/11,0,1);p+=0.10*u;}p*=1-0.35*(r.coldNorm??0);p=clamp(p,nightMode?0.02:0.10,nightMode?0.18:0.52);if(Math.random()<p){applyHitPan(time,r);const note=scale[Math.floor(Math.random()*scale.length)];const durSec=clamp(randomRhythmDuration(r)*(1+(r.timeFx?.space??0)*0.25),0.05,0.66);const amp=0.20+Math.random()*0.08;if(Math.random()<0.10){const note2=scale[Math.floor(Math.random()*scale.length)],dur2=clamp(durSec*randomBetween(0.75,1.15),0.05,0.55);trackedTriggerAttackReleaseLayer("sparkle",sparkle,note,durSec,time,amp);trackedTriggerAttackReleaseLayer("sparkle",sparkle,note2,dur2,time+0.02,amp*0.82);}else trackedTriggerAttackReleaseLayer("sparkle",sparkle,note,durSec,time,amp);}}),sparkleInterval).start(0);sparkleGlassLoop=new Tone.Loop(safeLoopCallback("sparkleGlass",(time)=>{if(!sparkleGlass||!sparkleDust)return;let p=0.10+0.16*(r.uvNorm??0)+0.12*(r.windNorm??0);if(r.time==="night"||r.time==="late")p*=0.45;p*=1-0.30*(r.coldNorm??0);p=clamp(p,0.02,0.28);if(Math.random()<p){const gScale=sparkleScale(r.key,r.weatherCat,r.time);const n=choose(gScale);const d=randomBetween(1.8,5.0)*(1+0.25*(r.coldNorm??0));const v=0.11+Math.random()*0.08;trackedTriggerAttackReleaseLayer("sparkle",sparkleGlass,n,d,time,v);if(Math.random()<0.42){sparkleDust.triggerAttackRelease(randomBetween(0.25,0.9),time+randomBetween(0.04,0.22),0.08+Math.random()*0.05);markLayerSound("sparkle");}}}),nightMode?randomBetween(7.5,13.5):randomBetween(5.8,10.8)).start(0);subDroneLoop=new Tone.Loop(safeLoopCallback("subDrone",(time)=>{if(!lowDrone)return;const roots=chordChoicesForKey(r.key);const root=choose(roots);const base=octaveShifted(root,-2);const fifth=octaveShifted(root,-1);const pick=(Math.random()<0.78)?base:fifth;const dur=randomBetween(14.0,32.0)*(1+0.30*(r.coldNorm??0));const amp=((r.time==="night"||r.time==="late")?0.22:0.16)*(1+0.12*(r.coldNorm??0));trackedTriggerAttackReleaseLayer("pad",lowDrone,pick,dur,time,amp);}),nightMode?randomBetween(15.0,24.0):randomBetween(18.0,30.0)).start(0);
+function birdChance(){const mix=getMix();let base=0.08;if(r.time==="morning")base=0.18;if(r.time==="day")base=0.26;if(r.time==="evening")base=0.14;if(r.time==="night")base=0.04;if(r.time==="late")base=0.018;if(r.weatherCat==="rain")base*=0.70;if(r.weatherCat==="clear"&&(r.time==="day"||r.time==="morning"))base*=1.10;const w=clamp(lastWeather.wind??0,0,15);base*=(1+0.12*(w/15));const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;if(uvRaw!==null&&r.time==="day"){const u=clamp(uvRaw/11,0,1);base*=(1+0.12*u);}base*=mix.birdMul;return clamp(base,0.0,0.55);} function chirp(time,amp=0.30){const base=1450+Math.random()*700,up=base+980+Math.random()*560,dur=0.055+Math.random()*0.070;bird.frequency.setValueAtTime(base,time);bird.frequency.linearRampToValueAtTime(up,time+dur);bird.frequency.linearRampToValueAtTime(base+240,time+dur+0.03);trackedTriggerAttackReleaseLayer("bird",bird,"C6",dur+0.06,time,amp);} function phrase(time){const n=(Math.random()<0.50)?2:(Math.random()<0.80?3:5);const baseGap=0.10+Math.random()*0.09;for(let i=0;i<n;i++){const t=time+i*(baseGap+Math.random()*0.06);chirp(t,0.26+Math.random()*0.12);}} function birdLoopIntervalSeconds(){if(r.time==="day")return 1.55;if(r.time==="morning")return 1.70;if(r.time==="evening")return 2.05;if(r.time==="night")return 2.80;return 3.40;}
+birdLoop=new Tone.Loop(safeLoopCallback("bird",(time)=>{if(!bird)return;const p=birdChance();if(Math.random()<p){if(r.time==="night"||r.time==="late"){chirp(time,0.23);if(Math.random()<0.22)chirp(time+0.16+Math.random()*0.10,0.21);return;}const roll=Math.random();if(roll<0.46){chirp(time,0.28+Math.random()*0.10);if(Math.random()<(r.time==="day"?0.62:0.46))chirp(time+0.12+Math.random()*0.12,0.24+Math.random()*0.10);}else if(roll<0.80){const n=(Math.random()<0.55)?2:4;for(let i=0;i<n;i++)chirp(time+i*(0.11+Math.random()*0.10),0.23+Math.random()*0.12);}else phrase(time);}}),birdLoopIntervalSeconds()).start(0);
+function windLoopInterval(){if(r.time==="day")return 3.2;if(r.time==="morning")return 3.6;if(r.time==="evening")return 4.0;if(r.time==="night")return 5.0;return 6.2;} windLoop=new Tone.Loop(safeLoopCallback("wind",(time)=>{const mix=getMix();const w=clamp(lastWeather.wind??0,0,15);let p=0.20+0.35*(w/15);if(r.time==="late")p*=0.70;if(r.weatherCat==="rain")p*=0.90;p*=clamp(0.15+0.85*mix.windMul,0.0,2.0);p=clamp(p,0.0,0.78);if(Math.random()<p)triggerWindGust(time,r);}),windLoopInterval()).start(0);
+function waterLoopInterval(){if(r.weatherCat==="rain")return 3.0;if(r.time==="day")return 4.2;if(r.time==="morning")return 4.6;if(r.time==="evening")return 5.0;if(r.time==="night")return 6.2;return 7.2;} waterLoop=new Tone.Loop(safeLoopCallback("water",(time)=>{const mix=getMix();let p=(r.weatherCat==="rain")?0.44:0.26;if(r.time==="late")p*=0.75;if(r.time==="night")p*=0.85;p*=clamp(0.15+0.85*mix.waterMul,0.0,2.0);p=clamp(p,0.0,0.66);if(Math.random()<p)triggerWaterRipple(time,r);}),waterLoopInterval()).start(0);
+padLoop=new Tone.Loop(safeLoopCallback("pad",(time)=>{if(!stringPad||!padGain)return;const roots=chordChoicesForKey(r.key);const root=choose(roots);const dur=randomBetween(18,34);const notes=triad(octaveShifted(root,-1));const base=0.00010+(r.time==="night"||r.time==="late"?0.00002:0.00005);padGain.gain.cancelScheduledValues(time);padGain.gain.setValueAtTime(Math.max(0.000001,padGain.gain.value),time);padGain.gain.exponentialRampToValueAtTime(base,time+4.0);padGain.gain.exponentialRampToValueAtTime(0.00002,time+dur);trackedTriggerAttackReleaseLayer("pad",stringPad,notes,dur,time,0.28);}),randomBetween(12,18)).start(0);
+melodyLoop=new Tone.Loop(safeLoopCallback("melody",(time)=>{if(!crystalLead)return;const mScale=melodyScaleForKey(r.key);const melodyOnlyChance=nightMode?0.78:0.22;const useMelodyOnly=Math.random()<melodyOnlyChance;const phraseLen=nightMode?(Math.random()<0.6?4:5):(useMelodyOnly?(Math.random()<0.7?4:5):(Math.random()<0.55?3:4));for(let i=0;i<phraseLen;i++){const n=choose(mScale);const step=nightMode?randomBetween(0.58,1.15):randomBetween(0.42,0.86);const t=time+i*step;const d=melodyDuration(r)*(nightMode?1.42:(useMelodyOnly?1.24:0.94));const v=nightMode?0.40:(useMelodyOnly?0.38:0.32);trackedTriggerAttackReleaseLayer("melody",crystalLead,n,d,t,v);if(Math.random()<0.58){const hi=octaveShifted(n,1);trackedTriggerAttackReleaseLayer("melody",crystalLead,hi,d*0.62,t+randomBetween(0.08,0.24),v*0.72);}}if(nightMode&&sparkle){sparkle.volume.value=-25;}else if(useMelodyOnly&&sparkle&&Math.random()<0.7){sparkle.volume.value=-22;}else if(sparkle){sparkle.volume.value=-10;}}),nightMode?randomBetween(2.3,4.4):randomBetween(3.4,6.2)).start(0);lowMelodyLoop=new Tone.Loop(safeLoopCallback("lowMelody",(time)=>{if(!lowLead)return;const lowScale=lowMelodyScaleForKey(r.key);const n=choose(lowScale);const d=clamp(melodyDuration(r)*1.22,2.2,7.2);trackedTriggerAttackReleaseLayer("melody",lowLead,n,d,time,0.34);const lowEchoChance=nightMode?0.62:0.35;if(Math.random()<lowEchoChance){const n2=choose(lowScale);trackedTriggerAttackReleaseLayer("melody",lowLead,n2,d*0.78,time+randomBetween(0.7,1.4),0.26);}if(nightMode&&Math.random()<0.28){trackedTriggerAttackReleaseLayer("melody",lowLead,choose(lowScale),d*0.58,time+randomBetween(1.4,2.4),0.22);}}),nightMode?randomBetween(4.2,7.0):randomBetween(5.2,8.4)).start(0);nightPianoLoop=new Tone.Loop(safeLoopCallback("nightPiano",(time)=>{if(!nightMode||!nightPiano)return;const pScale=melodyScaleForKey(r.key);const phrase=(Math.random()<0.55)?2:3;for(let i=0;i<phrase;i++){const pt=time+i*randomBetween(1.0,1.45);const pn=choose(pScale);trackedTriggerAttackReleaseLayer("melody",nightPiano,pn,randomBetween(2.2,4.8),pt,0.20);}if(Math.random()<0.35){trackedTriggerAttackReleaseLayer("melody",nightPiano,[choose(pScale),choose(pScale)],randomBetween(2.8,5.4),time+randomBetween(0.5,1.1),0.16);}}),nightMode?randomBetween(4.8,8.8):randomBetween(8.0,12.0)).start(0);crystalHarmonyLoop=new Tone.Loop(safeLoopCallback("crystalHarmony",(time)=>{if(!crystalLead)return;const root=choose(chordChoicesForKey(r.key));const chord=triad(octaveShifted(root,1));const pick=[chord[0],chord[1],chord[2]];trackedTriggerAttackReleaseLayer("melody",crystalLead,choose(pick),randomBetween(2.4,4.8),time,0.24);if(Math.random()<0.66){trackedTriggerAttackReleaseLayer("melody",crystalLead,choose(pick),randomBetween(2.0,4.2),time+randomBetween(0.25,0.7),0.20);}if(Math.random()<0.52){trackedTriggerAttackReleaseLayer("melody",crystalLead,octaveShifted(choose(pick),1),randomBetween(1.4,2.6),time+randomBetween(0.12,0.46),0.17);}}),randomBetween(4.2,7.2)).start(0);stringHarmonyLoop=new Tone.Loop(safeLoopCallback("stringHarmony",(time)=>{if(!stringPad)return;const root=choose(chordChoicesForKey(r.key));const chord=triad(octaveShifted(root,0));const seasonalChance=(r.season==="winter"||r.season==="autumn")?0.82:0.64;if(Math.random()<seasonalChance){trackedTriggerAttackRelease(stringPad,[chord[1],chord[2]],randomBetween(4.8,8.4),time,0.22);}if(Math.random()<0.42){trackedTriggerAttackRelease(stringPad,[chord[0]],randomBetween(3.8,6.5),time+randomBetween(0.3,0.9),0.18);}}),randomBetween(6.2,10.0)).start(0);lowResonanceLoop=new Tone.Loop(safeLoopCallback("lowResonance",(time)=>{if(!lowDrone)return;const lowScale=lowMelodyScaleForKey(r.key);const note=choose(lowScale.slice(0,4));const dur=randomBetween(10.0,20.0)*(1+0.30*(r.coldNorm??0));const amp=(r.time==="night"||r.time==="late")?0.24:0.18;trackedTriggerAttackReleaseLayer("melody",lowDrone,note,dur,time,amp);if(Math.random()<0.20){trackedTriggerAttackReleaseLayer("melody",lowDrone,note,dur*0.55,time+randomBetween(2.6,4.6),amp*0.60);}}),randomBetween(9.0,14.0)).start(0);bellLoop=new Tone.Loop(safeLoopCallback("bell",(time)=>{if(!bellSynth)return;const brightChance=clamp(0.08+0.20*(r.weatherFx?.reflect??0)+0.16*(r.seasonFx?.shimmer??0)+0.10*(r.windNorm??0),0.03,0.34);if(Math.random()<brightChance){bellSynth.frequency=choose([320,360,420,480,540,620]);markSoundActivity();bellSynth.triggerAttack(time,0.22);}if(Math.random()<brightChance*0.45){bellSynth.frequency=choose([520,620,760]);markSoundActivity();bellSynth.triggerAttack(time+randomBetween(0.08,0.3),0.15);}if(nightMode&&Math.random()<0.48){bellSynth.frequency=choose([150,180,220,260]);markSoundActivity();bellSynth.triggerAttack(time+randomBetween(0.02,0.12),0.10);}}),nightMode?randomBetween(2.0,3.6):randomBetween(2.8,5.6)).start(0);chimeLoop=new Tone.Loop(safeLoopCallback("chime",(time)=>{if(!chimeSynth)return;const scale=melodyScaleForKey(r.key);const p=(r.weatherCat==="clear"?0.38:(r.weatherCat==="rain"?0.20:0.28))*(r.time==="late"?0.90:1.0)*(r.time==="night"?1.28:1.0);if(Math.random()<p){const n=choose(scale);trackedTriggerAttackReleaseLayer("melody",chimeSynth,n,randomBetween(1.2,2.8),time,0.24);}if(Math.random()<p*0.56){trackedTriggerAttackReleaseLayer("melody",chimeSynth,choose(scale),randomBetween(0.9,2.2),time+randomBetween(0.15,0.5),0.19);}if(nightMode&&Math.random()<0.62){const burstCount=(Math.random()<0.55)?2:3;for(let i=0;i<burstCount;i++){const bt=time+0.18*i+randomBetween(0.02,0.08);trackedTriggerAttackReleaseLayer("melody",chimeSynth,choose(scale),randomBetween(0.55,1.25),bt,0.16);}}}),nightMode?randomBetween(2.1,4.4):randomBetween(3.0,6.8)).start(0);
+}finally{isRebuildingLoops=false;} // STABILITY FIX: always release rebuild guard
+}
+function playButtonTone(env){
+  const btn=document.getElementById("btnToggle");
+  if(!btn)return;
+  const weatherCat=env?.weatherCat||"other";
+  const windNorm=clamp((lastWeather.wind??0)/15,0,1);
+  const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;
+  const uvNorm=(uvRaw===null)?0:clamp(uvRaw/11,0,1);
+  const t=env?.time||"day";
+  const byTime={
+    morning:["rgba(215,176,142,0.86)","rgba(236,220,198,0.84)","rgba(184,208,234,0.86)"],
+    day:["rgba(184,210,236,0.88)","rgba(232,241,250,0.92)","rgba(160,196,233,0.86)"],
+    evening:["rgba(223,166,131,0.84)","rgba(225,168,192,0.82)","rgba(170,143,206,0.80)"],
+    night:["rgba(116,142,205,0.82)","rgba(149,128,194,0.8)","rgba(97,126,184,0.8)"],
+    late:["rgba(110,134,192,0.8)","rgba(139,122,183,0.78)","rgba(92,120,172,0.78)"]
+  };
+  const palette=byTime[t]||byTime.day;
+  btn.style.setProperty("--ring-a",palette[0]);
+  btn.style.setProperty("--ring-b",palette[1]);
+  btn.style.setProperty("--ring-c",palette[2]);
+  btn.style.setProperty("--ring-angle",`${Math.round(6+windNorm*26)}deg`);
+  btn.style.setProperty("--ring-breath",`${(8+Math.random()*4).toFixed(1)}s`);
+  btn.style.setProperty("--ring-drift",`${(20+Math.random()*20).toFixed(1)}s`);
+  btn.style.setProperty("--ring-hue-shift",`${(1+windNorm*4.5).toFixed(2)}deg`);
+  const contrast=(weatherCat==="clear")?1.08:(weatherCat==="rain"?0.95:0.98);
+  const innerBlur=(weatherCat==="clear")?"0px":(weatherCat==="rain"?"1.4px":"0.8px");
+  const sat=(weatherCat==="rain")?0.94:(weatherCat==="snow"?0.96:1.03);
+  const bright=1+(uvNorm*0.07)-((t==="night"||t==="late")?0.03:0);
+  btn.style.setProperty("--ring-contrast",String(contrast));
+  btn.style.setProperty("--ring-inner-blur",innerBlur);
+  btn.style.setProperty("--ring-sat",String(sat));
+  btn.style.setProperty("--ring-bright",String(clamp(bright,0.94,1.09)));
+  btn.style.setProperty("--ring-glow",String(clamp(0.16+uvNorm*0.18,0.14,0.36)));
+}
+
+async function recoverLayerLoopIfSilent(layer){
+  const now=Date.now();
+  const lastAt=layerLastSoundAt[layer]||0;
+  const lastRecovery=layerLastRecoveryAt[layer]||0;
+  const threshold=LAYER_SILENCE_MS[layer]||60000;
+  if(!isRunning)return false;
+  if(now-lastAt<=threshold)return false;
+  if(now-lastRecovery<=LAYER_RECOVERY_COOLDOWN_MS)return false;
+  if(now-lastAnyLayerRecoveryAt<=GLOBAL_LAYER_RECOVERY_COOLDOWN_MS)return false;
+  layerLastRecoveryAt[layer]=now;
+  lastAnyLayerRecoveryAt=now;
+
+  await resumeAudioIfNeeded(`layer-${layer}`);
+
+  if(layer==="harmony"){
+    try{
+      clearHarmonyScheduler();
+      const startAt=Tone.Transport.seconds+0.12;
+      chordEventId=Tone.Transport.scheduleOnce((t)=>{try{playOneHarmony(t,applyParams());}catch(e){console.warn("[harmony] reschedule failed",e);}},startAt);
+      markLayerSound("harmony");
+      return true;
+    }catch(e){
+      console.warn("[harmony] recovery failed",e);
+      return false;
+    }
+  }
+
+  return false;
+}
+
+function ensureHarmonySchedulerAlive(){
+  if(!isRunning||isRebuildingLoops)return;
+  if(chordEventId!==null)return;
+  const nowSec=Tone.Transport.seconds||0;
+  try{
+    const r=lastRuntimeParams||applyParams();
+    chordEventId=Tone.Transport.scheduleOnce((t)=>{try{playOneHarmony(t,r);}catch(e){console.warn("[harmony] watchdog schedule error",e);}},nowSec+0.2);
+  }catch(e){console.warn("[harmony] watchdog ensure failed",e);}
+}
+
+function startPlaybackKeepAlive(){
+  if(playbackKeepAliveId)return;
+  playbackKeepAliveId=setInterval(async()=>{
+    if(!isRunning)return;
+    try{await resumeAudioIfNeeded("keepalive",true);}catch(e){}
+    try{if(Tone.Transport.state!=="started")Tone.Transport.start();}catch(e){}
+    ensureHarmonySchedulerAlive();
+
+    const coreLoopsAlive=Boolean(sparkleLoop||melodyLoop||padLoop||birdLoop||windLoop||waterLoop||chordEventId!==null);
+    const now=Date.now();
+    if(!coreLoopsAlive&&!isRebuildingLoops&&(now-lastKeepAliveRebuildAt>120000)){
+      lastKeepAliveRebuildAt=now;
+      try{rebuildLoops();}catch(e){console.warn("[keepalive] rebuild failed",e);}
+    }
+  },5000);
+}
+
+function stopPlaybackKeepAlive(){
+  if(!playbackKeepAliveId)return;
+  clearInterval(playbackKeepAliveId);
+  playbackKeepAliveId=null;
+}
+
+// [STABILITY FIX] watchdog: context + transport + silence detection with bounded recovery
+function startPlaybackWatchdog(){
+  if(playbackWatchdogId)return;
+  lastTransportSeconds=Tone.Transport.seconds||0;
+  lastTransportCheckAt=Date.now();
+  lastSoundAt=Date.now();
+  silentRecoveryCount=0;
+  playbackWatchdogId=setInterval(async()=>{
+    if(isRecovering)return;
+    isRecovering=true;
+    try{
+    if(!isRunning)return;
+    const nowMs=Date.now();
+    const nowSec=Tone.Transport.seconds||0;
+    const stalled=(Math.abs(nowSec-lastTransportSeconds)<0.0001)&&(nowMs-lastTransportCheckAt>15000);
+    const silent=(nowMs-lastSoundAt)>120000;
+    lastTransportSeconds=nowSec;
+    lastTransportCheckAt=nowMs;
+
+    if(stalled||silent){
+      await resumeAudioIfNeeded(stalled?"transport-stall":"silence");
+    }
+
+    ensureHarmonySchedulerAlive();
+
+    // STABILITY FIX: detect per-layer silence while transport still runs
+    if(!stalled){
+      const recoveredSparkle=await recoverLayerLoopIfSilent("sparkle");
+      const recoveredBird=await recoverLayerLoopIfSilent("bird");
+      const recoveredWind=await recoverLayerLoopIfSilent("wind");
+      const recoveredWater=await recoverLayerLoopIfSilent("water");
+      const recoveredMelody=await recoverLayerLoopIfSilent("melody");
+      const recoveredPad=await recoverLayerLoopIfSilent("pad");
+      const recoveredHarmony=await recoverLayerLoopIfSilent("harmony");
+      if(recoveredSparkle||recoveredBird||recoveredWind||recoveredWater||recoveredMelody||recoveredPad||recoveredHarmony){
+        await resumeAudioIfNeeded("layer-recovered");
+      }
+    }
+
+    if(silent){
+      // Stability-first unattended mode: avoid graph/loop teardown churn during long runs.
+      try{await resumeAudioIfNeeded("silent-force",true);}catch(e){}
+      try{if(Tone.Transport.state!=="started")Tone.Transport.start();}catch(e){}
+      ensureHarmonySchedulerAlive();
+    }else{
+      silentRecoveryCount=0;
+    }
+    }finally{
+      isRecovering=false;
+    }
+  },10000);
+}
+function stopPlaybackWatchdog(){if(!playbackWatchdogId)return;clearInterval(playbackWatchdogId);playbackWatchdogId=null;silentRecoveryCount=0;}
+function setButtonState(){
+  const btn=document.getElementById("btnToggle"),label=document.getElementById("btnLabel"),sub=document.getElementById("btnSub"),iconSvg=document.getElementById("iconSvg"),ringIntro=document.getElementById("ringIntro");
+  if(!btn||!label||!sub||!iconSvg)return;
+  if(ringIntroShowTimer){clearTimeout(ringIntroShowTimer);ringIntroShowTimer=null;}
+  if(ringIntroHideTimer){clearTimeout(ringIntroHideTimer);ringIntroHideTimer=null;}
+  if(isRunning){
+    label.textContent="Stop";
+    sub.textContent="タップで停止";
+    iconSvg.innerHTML='<path d="M6 6h5v12H6zM13 6h5v12h-5z"></path>';
+    btn.classList.add("is-running");
+    if(ringIntro){
+      ringIntro.innerHTML='<div class="ring-intro-line">季節、天気、風のゆらぎ。</div><div class="ring-intro-line">この瞬間の自然と呼吸を合わせ、音は静かに生まれていく。</div>';
+      ringIntro.classList.remove("is-idle");
+      ringIntro.classList.remove("is-fading");
+      ringIntroShowTimer=setTimeout(()=>{ringIntro.classList.add("is-visible");},60);
+      ringIntroHideTimer=setTimeout(()=>{ringIntro.classList.add("is-fading");ringIntro.classList.remove("is-visible");},6500);
+    }
+    setAmbientCaption(ambientPoemLine(getEnv()),true);
+  }else{
+    label.textContent="Start";
+    sub.textContent="タップで再生";
+    iconSvg.innerHTML='<path d="M8 5v14l11-7z"></path>';
+    btn.classList.remove("is-running");
+    if(ringIntro){
+      ringIntro.innerHTML='<div class="ring-intro-line is-prompt">タップして再生</div>';
+      ringIntro.classList.remove("is-visible","is-fading");
+      ringIntro.classList.add("is-idle");
+    }
+    setStatusChip("—");
+    setStatus("待機中","夜の澄んだ空気、きらめき控えめ。");
+    setAmbientCaption("",false);
+  }
+  playButtonTone(getEnv());
+  updatePlaybackState();
+}
+
+async function start(){configureToneRuntime();ensureTransportKeepAliveTone();await ensureAudioGraph();Tone.Destination.mute=false;await Tone.start();bindAudioContextStateWatcher();bindUserGestureResume();await resumeAudioIfNeeded("start",true);await requestWakeLock();Tone.Transport.start();rebuildLoops();isRunning=true;lastSoundAt=Date.now();Object.keys(layerLastSoundAt).forEach(k=>layerLastSoundAt[k]=Date.now());startPlaybackWatchdog();startPlaybackKeepAlive();setButtonState();applyParams();}
+function stop(){isRunning=false;stopPlaybackWatchdog();stopPlaybackKeepAlive();lastKeepAliveRebuildAt=0;Tone.Destination.mute=true;audioRecoveryInFlight=false;isRecovering=false;clearHarmonyScheduler();if(sparkleLoop){sparkleLoop.stop();sparkleLoop.dispose();sparkleLoop=null;}if(birdLoop){birdLoop.stop();birdLoop.dispose();birdLoop=null;}if(windLoop){windLoop.stop();windLoop.dispose();windLoop=null;}if(waterLoop){waterLoop.stop();waterLoop.dispose();waterLoop=null;}if(melodyLoop){melodyLoop.stop();melodyLoop.dispose();melodyLoop=null;}if(lowMelodyLoop){lowMelodyLoop.stop();lowMelodyLoop.dispose();lowMelodyLoop=null;}if(padLoop){padLoop.stop();padLoop.dispose();padLoop=null;}if(crystalHarmonyLoop){crystalHarmonyLoop.stop();crystalHarmonyLoop.dispose();crystalHarmonyLoop=null;}if(stringHarmonyLoop){stringHarmonyLoop.stop();stringHarmonyLoop.dispose();stringHarmonyLoop=null;}if(lowResonanceLoop){lowResonanceLoop.stop();lowResonanceLoop.dispose();lowResonanceLoop=null;}if(bellLoop){bellLoop.stop();bellLoop.dispose();bellLoop=null;}if(chimeLoop){chimeLoop.stop();chimeLoop.dispose();chimeLoop=null;}if(sparkleGlassLoop){sparkleGlassLoop.stop();sparkleGlassLoop.dispose();sparkleGlassLoop=null;}if(subDroneLoop){subDroneLoop.stop();subDroneLoop.dispose();subDroneLoop=null;}if(nightPianoLoop){nightPianoLoop.stop();nightPianoLoop.dispose();nightPianoLoop=null;}Tone.Transport.stop();Tone.Transport.cancel(0);if(sparkleMulti){sparkleMulti.tapNodes.forEach(n=>{try{n.dispose();}catch(e){}});try{sparkleMulti.input.dispose();}catch(e){}try{sparkleMulti.merger.dispose();}catch(e){} sparkleMulti=null;}lastSparkleDelayRebuildAt=0;try{if(transportKeepAliveSource)transportKeepAliveSource.dispose();}catch(e){}try{if(transportKeepAliveGain)transportKeepAliveGain.dispose();}catch(e){}transportKeepAliveSource=null;transportKeepAliveGain=null;const now=Tone.now();try{if(windGain)windGain.gain.setValueAtTime(0.000001,now);if(waterGain)waterGain.gain.setValueAtTime(0.000001,now);if(harmonySlots){harmonySlots.forEach(s=>{try{s.gain.gain.cancelScheduledValues(now);}catch(e){}try{s.gain.gain.setValueAtTime(0.000001,now);}catch(e){}});}if(padGain){padGain.gain.setValueAtTime(0.000001,now);}if(sparkle){sparkle.volume.value=-10;}if(sparkleGlass){sparkleGlass.volume.value=-29;}}catch(e){} setStatusChip(describeWeather(lastWeather.code));setStatus("待機中","再生ボタンで開始");setButtonState();releaseWakeLock();}
+async function refreshWeather(){if(isRefreshingWeather)return;isRefreshingWeather=true;try{nextUpdateAt=Date.now()+AUTO_UPDATE_MS;setStatusChip("—");setStatus("取得中…","天気/風/UV");const pos=await getCurrentPosition();const lat=pos.coords.latitude,lon=pos.coords.longitude;const {code,wind,temp,uv}=await fetchWeatherByCoords(lat,lon);lastWeather={code,wind,temp,uv};applyParams();if(isRunning){applyParams();}else{const env=getEnv();const key=keyFromSeason(env.season);const uvRaw=(typeof lastWeather.uv==="number")?lastWeather.uv:null;const showUv=(uvRaw!==null)&&isDayTimeBlock(env.time);const uvText=showUv?uvRaw.toFixed(1):"—";const mood=moodLine(env,clamp((lastWeather.wind??0)/15,0,1));setStatusChip(describeWeather(lastWeather.code));setStatus(`Key ${key}`,mood);}}catch(e){console.error(e);nextUpdateAt=Date.now()+WEATHER_RETRY_MS;setStatusChip("—");setStatus("エラー",`${e.message}（${Math.floor(WEATHER_RETRY_MS/1000)}秒後に再試行）`);}finally{isRefreshingWeather=false;}}
+function tick(){const remain=Math.max(0,nextUpdateAt-Date.now());const mm=String(Math.floor(remain/60000)).padStart(2,"0"),ss=String(Math.floor((remain%60000)/1000)).padStart(2,"0");document.getElementById("countdown").textContent=`${mm}:${ss}`;if(remain<=0&&!isRefreshingWeather)refreshWeather();requestAnimationFrame(tick);} 
+const settingsDetails=document.getElementById("settingsDetails"),settingsOverlay=document.getElementById("settingsOverlay"),settingsBackdrop=document.getElementById("settingsBackdrop"),btnCloseSettings=document.getElementById("btnCloseSettings");
+const tabButtons=Array.from(document.querySelectorAll(".tabBtn")),tabSettings=document.getElementById("tabSettings"),tabGuide=document.getElementById("tabGuide");let settingsCloseTimer=null;const guideTransitionLayer=document.getElementById("guideTransitionLayer"); function resetGuideToStart(){const scroller=document.getElementById("guidePages");if(scroller)scroller.scrollTo({top:0,behavior:"auto"});const dots=Array.from(document.querySelectorAll("#guideIndicator .guide-dot"));if(dots.length)dots.forEach((d,i)=>d.classList.toggle("is-active",i===0));const pages=Array.from(document.querySelectorAll("#guidePages .guide-page"));if(pages.length)pages.forEach((pg,i)=>pg.classList.toggle("is-current",i===0));} /* DESIGN UPDATE */ function setTab(id){const isSettings=(id==="tabSettings");tabSettings.classList.toggle("hidden",!isSettings);tabGuide.classList.toggle("hidden",isSettings);if(id==="tabGuide")resetGuideToStart();tabButtons.forEach(btn=>{const active=btn.dataset.tab===id;btn.className="tabBtn flex-1 px-3 py-2 rounded-2xl text-sm border border-slate-200";btn.classList.toggle("is-tab-active",active);});}
+function openSettings(){if(settingsCloseTimer){clearTimeout(settingsCloseTimer);settingsCloseTimer=null;}if(guideTransitionLayer)guideTransitionLayer.classList.remove("is-active");settingsOverlay.classList.remove("hidden");requestAnimationFrame(()=>settingsOverlay.classList.add("is-open"));settingsDetails.open=false;document.documentElement.classList.add("overflow-hidden");document.body.classList.add("overflow-hidden");setTab("tabSettings");} function closeSettings(afterClose,durationMs=560){settingsOverlay.classList.remove("is-open");const finalize=()=>{settingsOverlay.classList.add("hidden");document.documentElement.classList.remove("overflow-hidden");document.body.classList.remove("overflow-hidden");if(typeof afterClose==="function")afterClose();};settingsCloseTimer=setTimeout(finalize,durationMs);} /* DESIGN UPDATE */
+settingsDetails.addEventListener("toggle",()=>{if(settingsDetails.open)openSettings();}); btnCloseSettings.addEventListener("click",closeSettings); settingsBackdrop.addEventListener("click",closeSettings); document.addEventListener("keydown",(e)=>{if(e.key==="Escape")closeSettings();}); tabButtons.forEach(btn=>btn.addEventListener("click",()=>setTab(btn.dataset.tab))); const btnOpenSettings=document.getElementById("btnOpenSettings"); if(btnOpenSettings)btnOpenSettings.addEventListener("click",openSettings);
+document.getElementById("btnToggle").addEventListener("click",async()=>{if(!isRunning)await start();else stop();}); document.getElementById("btnRefresh").addEventListener("click",()=>refreshWeather()); ["seasonSel","timeSel","weatherSel"].forEach(id=>{document.getElementById(id).addEventListener("change",()=>{applyParams();if(isRunning&&!isRebuildingLoops)rebuildLoops();applyParams();});});
+function bindMixSliders(){const b=document.getElementById("birdMix"),w=document.getElementById("windMix"),wa=document.getElementById("waterMix");if(!b||!w||!wa)return;b.addEventListener("input",()=>{mixState.bird=clamp(parseInt(b.value,10)||0,0,100);onMixChange();});w.addEventListener("input",()=>{mixState.wind=clamp(parseInt(w.value,10)||0,0,100);onMixChange();});wa.addEventListener("input",()=>{mixState.water=clamp(parseInt(wa.value,10)||0,0,100);onMixChange();});}function bindUiNuance(){const ids=["nuanceSparkle","nuanceSpeed","nuanceBright","nuanceReverb"];ids.forEach(id=>{const el=document.getElementById(id);const chip=document.getElementById(id.replace("nuance","nuance")+"Mode");if(!el||!chip)return;el.addEventListener("input",()=>{const v=parseInt(el.value,10)||0;chip.textContent=(v===50)?"Auto":"Manual";chip.className="text-[10px] px-2 py-0.5 rounded-full border "+((v===50)?"border-slate-200 text-slate-500":"border-slate-900 text-slate-800 bg-slate-50");});});const btn=document.getElementById("btnAllAuto");if(btn){btn.addEventListener("click",()=>{["seasonSel","timeSel","weatherSel"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="auto";});ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value="50";const chip=document.getElementById(id+"Mode");if(chip){chip.textContent="Auto";chip.className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200";}});mixState.bird=50;mixState.wind=50;mixState.water=50;syncMixUI();saveMix();applyParams();if(isRunning)rebuildLoops();});}}
+
+function initGuideReveal(){return;}
+loadMix();syncMixUI();setButtonState();applyWhiteByTime(autoTimeBlock());refreshWeather();tick();bindMixSliders();bindUiNuance();initGuideReveal();
+</script>
+</body>
+</html>
